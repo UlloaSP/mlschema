@@ -42,7 +42,7 @@ class DateField(BaseField):
     step: PositiveInt = 1
 
     @model_validator(mode="after")
-    def _check_dates(self) -> "DateField":
+    def _check_dates(self) -> DateField:
         """Valida la coherencia entre *min*, *max* y *value*.
 
         Returns

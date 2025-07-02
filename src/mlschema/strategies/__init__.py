@@ -1,9 +1,9 @@
 from .app import (
     BooleanStrategy,
-    DateStrategy,
-    TextStrategy,
-    NumberStrategy,
     CategoryStrategy,
+    DateStrategy,
+    NumberStrategy,
+    TextStrategy,
 )
 
 __all__ = [

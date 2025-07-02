@@ -36,8 +36,7 @@ Ejemplo de uso
 
 from __future__ import annotations
 
-from abc import ABC
-from typing import Sequence, Type
+from collections.abc import Sequence
 
 from numpy import dtype as np_dtype
 from pandas import Series, api
@@ -45,7 +44,7 @@ from pandas import Series, api
 from mlschema.core.domain import BaseField
 
 
-class FieldStrategy(ABC):
+class FieldStrategy:
     """Contrato base para todas las estrategias de campo.
 
     Cada subclase debe (opcionalmente) sobreescribir
@@ -67,7 +66,7 @@ class FieldStrategy(ABC):
         self,
         *,
         type_name: str,
-        schema_cls: Type[BaseField],
+        schema_cls: type[BaseField],
         dtypes: Sequence[str | np_dtype],
     ) -> None:
         """Inicializa la estrategia.
@@ -82,11 +81,11 @@ class FieldStrategy(ABC):
             Secuencia de ``dtype`` (instancias o nombres) a los que se aplica la estrategia.
         """
         self._type_name: str = type_name
-        self._schema_cls: Type[BaseField] = schema_cls
+        self._schema_cls: type[BaseField] = schema_cls
         # Normalizamos los dtype a ``str`` para comparaciones futuras
         self._dtypes: tuple[str, ...] = tuple(
             dt.name
-            if isinstance(dt, (np_dtype, api.extensions.ExtensionDtype))
+            if isinstance(dt, np_dtype | api.extensions.ExtensionDtype)
             else str(dt)
             for dt in dtypes
         )
@@ -98,7 +97,7 @@ class FieldStrategy(ABC):
         return self._type_name
 
     @property
-    def schema_cls(self) -> Type[BaseField]:
+    def schema_cls(self) -> type[BaseField]:
         """Clase Pydantic utilizada para serializar el schema."""
         return self._schema_cls
 
