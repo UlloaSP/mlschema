@@ -1,2 +1,3 @@
-def hello() -> str:
-    return "Hello from mlschema!"
+from .mls import MLSchema
+
+__all__ = ["MLSchema"]
