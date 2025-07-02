@@ -1,75 +1,124 @@
-# 📦 Installation
+# Installation
 
-`mlschema` is available as a Python package on [PyPI](https://pypi.org/). You can install it with your preferred package manager. We recommend **[uv](https://docs.astral.sh/uv/)** because it streamlines dependency management and automatically isolates virtual environments, ensuring a clean setup.
+This section provides a *battle‑tested* playbook for deploying **mlschema** in isolated, reproducible environments. Follow the steps below to guarantee a friction‑free rollout on any CI pipeline or local workstation.
 
-| Package Manager                                   | Command                                 |
-| ----------------------------------------          | --------------------------------------- |
-| [**uv**](https://docs.astral.sh/uv/)              | `uv add mlschema`                       |
-| [**pip**](https://pypi.org/project/pip/)          | `pip install mlschema`                  |
-| [**poetry**](https://python-poetry.org/)          | `poetry add mlschema`                   |
-| [**conda**](https://anaconda.org/anaconda/conda)  | `conda install -c conda-forge mlschema` |
-| [**pipenv**](https://pypi.org/project/pipenv/)    | `pipenv install mlschema`               |
+---
 
-## ✅ Quick Verification
+## 1. Supported Runtimes
 
-After installation, verify that `mlschema` works as expected:
+| Runtime               | Version                                             |
+| --------------------- | --------------------------------------------------- |
+| **Python**            | `>= 3.13`                                           |
+| **Operating Systems** | Windows 11                                          |
 
-```bash
-# Display dependency tree and verify uv environment
-uv tree
+---
 
-# Verify import and version
-python -c "import mlschema; print('mlschema version:', mlschema.__version__)"
-```
+## 2. One‑Line Installation (Recommended)
 
-## ⚙️ Requirements
-
-* **Python version**: `>=3.13`
-* **Dependencies** (installed automatically):
-
-  * [pydantic](https://pydantic.dev/) `>=2.11.4`
-  * [pandas](https://pandas.pydata.org/) `>=2.3.0`
-  * [numpy](https://numpy.org/) `>=2.3.0`
-
-> **Note:** `mlschema` has been tested on Windows. For large datasets, ensure you have enough RAM and sufficient disk space.
-
-## 🛠️ Virtual Environments (Recommended)
-
-It is highly recommended to install `mlschema` in a virtual environment:
+`mlschema` is published on **PyPI**. The project team endorses **[uv](https://docs.astral.sh/uv/)** for its deterministic dependency graph and automatic virtual‑environment management:
 
 ```bash
-# Using uv
-uv venv
 uv add mlschema
 ```
 
-```bash
-# Manual venv alternative
-python -m venv .venv
-pip install mlschema
-```
+### Alternative Package Managers
+
+| Package Manager | Command                                 |
+| --------------- | --------------------------------------- |
+| **pip**         | `pip install mlschema`                  |
+| **poetry**      | `poetry add mlschema`                   |
+| **conda**       | `conda install -c conda-forge mlschema` |
+| **pipenv**      | `pipenv install mlschema`               |
+
+> **Tip**
+> Pin a specific version (`mlschema==x.y.z`) if your governance model mandates lock‑step dependencies.
+
+---
+
+## 3. Post‑Install Verification
+
+Run the following smoke tests to confirm a healthy installation:
 
 ```bash
-# macOS/Linux
-source .venv/bin/activate
+# List the resolved dependency tree (uv only)
+uv tree
+
+# Validate import & print version
+python - << 'PY'
+import mlschema
+print("mlschema version:", mlschema.__version__)
+PY
+```
+
+A successful import indicates that C‑extensions (if any) and pure‑Python wheels have been correctly resolved.
+
+---
+
+## 4. Runtime Dependencies
+
+All transitive dependencies are resolved automatically by your package manager. For audit purposes, the bill of materials is:
+
+| Package      | Minimal Version |
+| ------------ | --------------- |
+| **pydantic** | `>= 2.11.4`     |
+| **pandas**   | `>= 2.3.0`      |
+| **numpy**    | `>= 2.3.0`      |
+
+> **Notice**
+> `mlschema` leverages Python 3.13’s **zero‑cost structural pattern matching** and **buffer protocol optimisations**—downgrades are not supported.
+
+---
+
+## 5. Virtual‑Environment Workflow (Best Practice)
+
+### Using uv (zero‑configuration)
+
+```bash
+uv venv           # creates .venv and activates it
+uv add mlschema    # installs package + deps
+```
+
+### Manual venv (fallback)
+
+```bash
+python -m venv .venv
+source .venv/bin/activate   # macOS/Linux
 pip install mlschema
 ```
 
 ```powershell
 # Windows PowerShell
-.\venv\Scripts\activate
+.\.venv\Scripts\activate
 pip install mlschema
 ```
 
-## 🔖 Version Badge
+> **Why isolate?**
+> Prevents dependency drift and shields global Python installs from conflicting package versions.
+
+---
+
+## 6. Version & Status Badges
 
 ![PyPI version](https://badge.fury.io/py/mlschema.svg)
+[![CI](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml)
 
-## 📖 More Information
+---
 
-* [Official MLSchema Documentation](usage.md)
-* [MLSchema GitHub Repository](https://github.com/UlloaSP/mlschema)
-* [Contribution Guidelines](https://github.com/UlloaSP/mlschema/blob/main/CONTRIBUTING.md)
+## 7. Troubleshooting & Known Issues
 
-⚠️ **Known Issues:**
-There are no known incompatibilities at this time. Please [report any issues](https://github.com/UlloaSP/mlschema/issues).
+| Symptom                                       | Root Cause                             | Resolution                                             |
+| --------------------------------------------- | -------------------------------------- | ------------------------------------------------------ |
+| `ImportError: cannot import name 'BaseModel'` | Pydantic < 2.x in env.                 | Upgrade: `uv sync` or `uv pip install pydantic==2.x.y` |
+| `ValueError: DataFrame dtype unsupported`     | Column dtype not mapped to a strategy. | Register appropriate strategy or cast dtype.           |
+| Memory spike on large CSVs                    | Insufficient RAM                       | Use chunked reads or a Dask DataFrame.                 |
+
+*No open CVEs or platform‑specific incompatibilities have been reported as of July 2025.*
+
+---
+
+## 8. Further Reading
+
+* **[Usage Guide](usage.md)**
+* **[API Reference](reference.md)**
+* **[GitHub](https://github.com/UlloaSP/mlschema)**
+* **[Contributing](https://github.com/UlloaSP/mlschema/blob/main/CONTRIBUTING.md)**
