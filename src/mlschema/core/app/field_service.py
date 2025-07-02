@@ -40,12 +40,12 @@ Example of complete flow:
 from __future__ import annotations
 
 from json import dumps as json_dumps
-from typing import Dict, List
 
 from pandas import DataFrame, Series
 
-from .field_strategy import FieldStrategy
 from mlschema.core.app.field_registry import FieldRegistry
+
+from .field_strategy import FieldStrategy
 
 
 class FieldService:
@@ -71,7 +71,7 @@ class FieldService:
         """
         self._registry.register(strategy)
 
-    def register_all(self, strategies: List[FieldStrategy]) -> None:
+    def register_all(self, strategies: list[FieldStrategy]) -> None:
         """Registra múltiples estrategias de campo.
 
         Parameters
@@ -90,7 +90,7 @@ class FieldService:
         strategy:
             Instancia de :class:`FieldStrategy` a desregistrar.
         """
-        self._registry.unregister(strategy)
+        self._registry.unregister(strategy.type_name)
 
     def update(self, strategy: FieldStrategy) -> None:
         """Actualiza una estrategia ya registrada.
@@ -107,7 +107,7 @@ class FieldService:
     # ------------------------------------------------------------------ #
     # Helpers internos                                                   #
     # ------------------------------------------------------------------ #
-    def _field_payload(self, series: Series) -> Dict:
+    def _field_payload(self, series: Series) -> str:
         """Genera el schema para una columna concreta.
 
         Si el *dtype* de la serie no está asociado a ninguna estrategia,
@@ -120,8 +120,8 @@ class FieldService:
 
         Returns
         -------
-        dict
-            Diccionario con el schema de la columna.
+        str
+            Cadena JSON con el schema de la columna.
 
         Raises
         ------
@@ -129,7 +129,7 @@ class FieldService:
             Si no existe estrategia de reserva.
         """
         strat = self._registry.strategy_for_dtype(
-            series.dtype
+            str(series.dtype)
         ) or self._registry.strategy_for_name("text")
         if strat is None:
             raise RuntimeError("No hay estrategia de fallback 'text' registrada.")
@@ -138,7 +138,7 @@ class FieldService:
     # ------------------------------------------------------------------ #
     # API pública                                                        #
     # ------------------------------------------------------------------ #
-    def _schema_payload(self, df: DataFrame) -> List[Dict]:
+    def _schema_payload(self, df: DataFrame) -> list[str]:
         """Construye la lista de schemas para cada columna.
 
         Parameters
@@ -148,7 +148,7 @@ class FieldService:
 
         Returns
         -------
-        list[dict]
+        list[str]
             Lista ordenada de schemas.
 
         Raises
@@ -158,7 +158,7 @@ class FieldService:
         """
         if df.empty:
             raise ValueError("El DataFrame no contiene columnas.")
-        return [self._field_payload(df[col]) for col in df.columns]
+        return [self._field_payload(df.iloc[:, i]) for i, _ in enumerate(df.columns)]
 
     def build(self, df: DataFrame) -> str:
         """Devuelve el *payload* final listo para inyección en el front‑end.

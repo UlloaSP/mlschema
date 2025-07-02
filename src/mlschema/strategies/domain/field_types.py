@@ -31,8 +31,8 @@ __all__ = ["FieldTypes"]
 class FieldTypes(str, Enum):
     """Tipos de campo reconocidos por el *schema*."""
 
-    TEXT: str = "text"
-    NUMBER: str = "number"
-    BOOLEAN: str = "boolean"
-    CATEGORY: str = "category"
-    DATE: str = "date"
+    TEXT = "text"
+    NUMBER = "number"
+    BOOLEAN = "boolean"
+    CATEGORY = "category"
+    DATE = "date"

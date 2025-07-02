@@ -43,7 +43,7 @@ class NumberField(BaseField):
     unit: str | None = None
 
     @model_validator(mode="after")
-    def _check_numeric_constraints(self) -> "NumberField":
+    def _check_numeric_constraints(self) -> NumberField:
         """Valida que *min* ≤ *value* ≤ *max*.
 
         Returns
