@@ -1,9 +1,9 @@
 {
     "include": [
-        "src",
-        "tests"
+        "src"
     ],
     "exclude": [
+        "test",
         "**/node_modules",
         "**/__pycache__",
         ".venv",
