@@ -137,12 +137,6 @@ jobs:
             --cov=src \
             --cov-report=xml \
             --cov-fail-under=80
-            || rc=$? && \
-          if [ $rc -eq 5 ]; then \
-            echo "⚠️ No tests found, pero continuamos."; \
-          else \
-            exit $rc; \
-          fi
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
