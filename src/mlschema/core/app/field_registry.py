@@ -10,19 +10,21 @@ layer to ask:
 * "Give me the *strategy* capable of handling a ``dtype('float64')``".
 
 Example usage
->>> from numpy import dtype
->>> from mlschema.core.app.field_strategy import FieldStrategy
->>> class DummyStrategy(FieldStrategy):
-...     def __init__(self):
-...         super().__init__(
-...             type_name="dummy",
-...             schema_cls=BaseField,  # fictitious type
-...             dtypes=("int64",),
-...         )
->>> registry = FieldRegistry()
->>> registry.register(DummyStrategy())
->>> assert registry.strategy_for_name("dummy").type_name == "dummy"
->>> assert registry.strategy_for_dtype(dtype("int64")).type_name == "dummy"
+```python
+ from numpy import dtype
+ from mlschema.core.app.field_strategy import FieldStrategy
+ class DummyStrategy(FieldStrategy):
+     def __init__(self):
+         super().__init__(
+             type_name="dummy",
+             schema_cls=BaseField,  # fictitious type
+             dtypes=("int64",),
+         )
+ registry = FieldRegistry()
+ registry.register(DummyStrategy())
+ assert registry.strategy_for_name("dummy").type_name == "dummy"
+ assert registry.strategy_for_dtype(dtype("int64")).type_name == "dummy"
+```
 """
 
 from __future__ import annotations
