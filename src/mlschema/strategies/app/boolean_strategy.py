@@ -1,20 +1,13 @@
 """mlschema.strategies.app.boolean_strategy
 ==========================================
-Estrategia de inferencia para columnas **booleanas**.
+Inference strategy for **boolean** columns.
 
-La clase :class:`BooleanStrategy` es una implementación concreta de
-:class:`mlschema.core.app.field_strategy.FieldStrategy` que cubre los
-``dtype`` de pandas/NumPy ``"bool"`` y ``"boolean"``. No requiere
-atributos adicionales, por lo que delega en la clase base la generación
-del *schema* estándar.
+The :class:`BooleanStrategy` class is a concrete implementation of
+:class:`mlschema.core.app.field_strategy.FieldStrategy` that covers the
+pandas/NumPy ``dtype`` ``"bool"`` and ``"boolean"``. It does not require
+additional attributes, so it delegates to the base class the generation
+of the standard *schema*.
 
-Ejemplo mínimo
---------------
->>> import pandas as pd
->>> from mlschema.strategies.app.boolean_strategy import BooleanStrategy
->>> s = pd.Series([True, False, True], name="activo", dtype="bool")
->>> BooleanStrategy().build_dict(s)
-'{"title":"activo","required":false,"description":null,"type":"boolean"}'
 """
 
 from __future__ import annotations
@@ -24,7 +17,7 @@ from mlschema.strategies.domain import BooleanField, FieldTypes
 
 
 class BooleanStrategy(FieldStrategy):
-    """Estrategia específica para campos booleanos."""
+    """Specific strategy for boolean fields."""
 
     def __init__(self) -> None:
         super().__init__(
