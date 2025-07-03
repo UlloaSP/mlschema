@@ -1,0 +1,151 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - docs
+      - develop
+      - config
+      - application
+      - domain
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'release/*'
+
+jobs:
+  pre-commit:
+    name: Run pre-commit hooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install UV CLI
+        run: pip install uv
+
+      - name: Create and activate virtual environment
+        run: |
+          uv venv
+          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
+          echo ".venv/bin" >> $GITHUB_PATH
+
+      - name: Cache pre-commit
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Install dev dependencies
+        run: uv sync
+
+      - name: Run pre-commit hooks
+        run: uv run pre-commit run --all-files
+
+  docs:
+    name: Build MkDocs site
+    runs-on: ubuntu-latest
+    needs: pre-commit
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install UV CLI
+        run: pip install uv
+
+      - name: Create and activate virtual environment
+        run: |
+          uv venv
+          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
+          echo ".venv/bin" >> $GITHUB_PATH
+
+      - name: Cache pip for docs
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-docs-${{ hashFiles('pyproject.toml') }}
+
+      - name: Install docs dependencies
+        run: |
+          uv sync
+          uv pip install mkdocs
+          uv pip install mkdocstrings[python]
+          uv pip install mkdocs-material
+
+      - name: Build MkDocs (strict)
+        run: uv run mkdocs build --strict
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    needs: pre-commit
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install UV CLI
+        run: pip install uv
+
+      - name: Create and activate virtual environment
+        run: |
+          uv venv
+          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
+          echo ".venv/bin" >> $GITHUB_PATH
+
+      - name: Cache pip for tests
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-tests-${{ hashFiles('pyproject.toml') }}
+
+      - name: Install test dependencies
+        run: |
+          uv sync
+          uv pip install pytest
+          uv pip install pytest-mock
+          uv pip install pytest-cov
+
+      - name: Run tests with coverage
+        run: |
+          uv run pytest \
+            --maxfail=1 \
+            --disable-warnings \
+            --cov=src \
+            --cov-report=xml \
+            --cov-fail-under=80
+            || rc=$? && \
+          if [ $rc -eq 5 ]; then \
+            echo "⚠️ No tests found, pero continuamos."; \
+          else \
+            exit $rc; \
+          fi
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
