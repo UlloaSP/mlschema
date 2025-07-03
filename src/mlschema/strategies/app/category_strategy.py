@@ -1,23 +1,15 @@
 """mlschema.strategies.app.category_strategy
 ===========================================
-Estrategia de inferencia para columnas **categóricas**.
+Inference strategy for **categorical** columns.
 
-Esta implementación concreta de :class:`mlschema.core.app.field_strategy.FieldStrategy`
-extrae el conjunto de valores distintos presentes en la serie y los
-publica en el atributo ``options`` del schema.
+This concrete implementation of :class:`mlschema.core.app.field_strategy.FieldStrategy`
+extracts the set of distinct values present in the series and
+publishes them in the ``options`` attribute of the schema.
 
-- Si la columna ya es de tipo ``CategoricalDtype`` se respetan las
-  categorías definidas.
-- En caso contrario, se construye la lista a partir de los valores únicos
-  no nulos.
+- If the column is already of type ``CategoricalDtype``, the defined
+  categories are respected.
+- Otherwise, the list is built from unique non-null values.
 
-Ejemplo de uso
---------------
->>> import pandas as pd
->>> from mlschema.strategies.app.category_strategy import CategoryStrategy
->>> s = pd.Series(["A", "B", "A"], name="color", dtype="object")
->>> CategoryStrategy().build_dict(s)
-'{"title":"color","required":false,"description":null,"type":"category","options":["A","B"]}'
 """
 
 from __future__ import annotations
@@ -27,11 +19,9 @@ from pandas import CategoricalDtype, Series
 from mlschema.core.app.field_strategy import FieldStrategy
 from mlschema.strategies.domain import CategoryField, FieldTypes
 
-__all__ = ["CategoryStrategy"]
-
 
 class CategoryStrategy(FieldStrategy):
-    """Estrategia para columnas categóricas."""
+    """Strategy for categorical columns."""
 
     def __init__(self) -> None:
         super().__init__(
@@ -40,22 +30,19 @@ class CategoryStrategy(FieldStrategy):
             dtypes=("category",),
         )
 
-    # ------------------------------------------------------------------ #
-    # Métodos específicos                                                #
-    # ------------------------------------------------------------------ #
     def attributes_from_series(self, series: Series) -> dict:
-        """Deriva la lista de *options* a partir de la serie.
+        """Derives the list of *options* from the series.
 
         Parameters
         ----------
         series:
-            Serie de pandas con valores categóricos.
+            Pandas series with categorical values.
 
         Returns
         -------
         dict
-            Diccionario con la clave ``options`` y la lista de valores
-            únicos.
+            Dictionary with the ``options`` key and the list of unique
+            values.
         """
         if isinstance(series.dtype, CategoricalDtype):
             options = list(series.cat.categories)

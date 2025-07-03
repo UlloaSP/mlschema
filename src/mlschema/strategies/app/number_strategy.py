@@ -1,23 +1,16 @@
 """mlschema.strategies.app.number_strategy
 =========================================
-Estrategia de inferencia para columnas **numéricas**.
+Inference strategy for **numeric** columns.
 
-Deriva metadatos adicionales aptos para campos de entrada de tipo número.
-Concretamente, calcula el atributo ``step`` que el front-end utilizará
-como incremento por defecto en controles ``<input type="number">``.
+Derives additional metadata suitable for number input fields.
+Specifically, calculates the ``step`` attribute that the front-end will use
+as the default increment in ``<input type="number">`` controls.
 
-Reglas de negocio
------------------
-* Para ``float`` → ``step = 0.1``.
-* Para ``int``   → ``step = 1``.
-
-Ejemplo de uso
+Business rules
 --------------
->>> import pandas as pd
->>> from mlschema.strategies.app.number_strategy import NumberStrategy
->>> s = pd.Series([1, 2, 3], name="edad", dtype="int64")
->>> NumberStrategy().build_dict(s)
-'{"title":"edad","required":true,"description":null,"type":"number","step":1}'
+* For ``float`` → ``step = 0.1``.
+* For ``int``   → ``step = 1``.
+
 """
 
 from __future__ import annotations
@@ -29,7 +22,7 @@ from mlschema.strategies.domain import FieldTypes, NumberField
 
 
 class NumberStrategy(FieldStrategy):
-    """Estrategia para columnas numéricas (enteras y flotantes)."""
+    """Strategy for numeric columns."""
 
     def __init__(self) -> None:
         super().__init__(
@@ -38,22 +31,19 @@ class NumberStrategy(FieldStrategy):
             dtypes=("int64", "float64", "int32", "float32"),
         )
 
-    # ------------------------------------------------------------------ #
-    # Métodos específicos                                                #
-    # ------------------------------------------------------------------ #
     def attributes_from_series(self, series: Series) -> dict:
-        """Deriva el atributo ``step`` a partir del ``dtype``.
+        """Derives the ``step`` attribute from the ``dtype``.
 
         Parameters
         ----------
         series:
-            Serie de pandas con valores numéricos.
+            Pandas series with numeric values.
 
         Returns
         -------
         dict
-            Diccionario con la clave ``step``.
+            Dictionary with the ``step`` key.
         """
-        # Paso por defecto: 0.1 para floats, 1 para enteros
+        # Default step: 0.1 for floats, 1 for integers
         step = 0.1 if api.types.is_float_dtype(series.dtype) else 1
         return {"step": step}

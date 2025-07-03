@@ -1,24 +1,17 @@
 """mlschema.strategies.domain.date_field
 =======================================
-Modelo Pydantic para campos **fecha/hora**.
+Pydantic model for **date** fields.
 
-Extiende :class:`mlschema.core.domain.BaseField` fijando el atributo
-``type`` a ``"date"`` y añadiendo metadatos específicos:
+Extends :class:`mlschema.core.domain.BaseField` by fixing the
+``type`` attribute to ``"date"`` and adding specific metadata:
 
-* ``value`` - Fecha seleccionada (opcional).
-* ``min``   - Fecha mínima permitida.
-* ``max``   - Fecha máxima permitida.
-* ``step``  - Incremento en días (``PositiveInt``).
+* ``value`` - Selected date (optional).
+* ``min``   - Minimum allowed date.
+* ``max``   - Maximum allowed date.
+* ``step``  - Increment in days (``PositiveInt``).
 
-El validador ``_check_dates`` impone coherencia interna entre ``min``,
-``max`` y ``value``.
-
-Ejemplo de uso
---------------
->>> from datetime import date
->>> from mlschema.strategies.domain.date_field import DateField
->>> DateField(title="inicio", min=date(2024, 1, 1), max=date(2024, 12, 31)).model_dump()
-{'title': 'inicio', 'description': None, 'required': True, 'type': 'date', 'value': None, 'min': datetime.date(2024, 1, 1), 'max': datetime.date(2024, 12, 31), 'step': 1}
+The ``_check_dates`` validator enforces internal consistency between ``min``,
+``max`` and ``value``.
 """
 
 from __future__ import annotations
@@ -33,7 +26,7 @@ from mlschema.strategies.domain.field_types import FieldTypes
 
 
 class DateField(BaseField):
-    """Schema Pydantic para un campo de fecha/hora."""
+    """Pydantic schema for a date/time field."""
 
     type: Literal[FieldTypes.DATE] = FieldTypes.DATE
     value: date | None = None
@@ -43,28 +36,26 @@ class DateField(BaseField):
 
     @model_validator(mode="after")
     def _check_dates(self) -> DateField:
-        """Valida la coherencia entre *min*, *max* y *value*.
+        """Validates consistency between *min*, *max* and *value*.
 
         Returns
         -------
         DateField
-            Instancia validada.
+            Validated instance.
 
         Raises
         ------
         ValueError
-            Si las fechas son incoherentes.
+            If dates are inconsistent.
         """
         if self.min and self.max and self.min > self.max:
             raise ValueError(
-                "La fecha mínima debe ser anterior o igual a la fecha máxima"
+                "Minimum date must be earlier than or equal to maximum date"
             )
 
         if self.value:
             if self.min and self.value < self.min:
-                raise ValueError(
-                    "La fecha debe ser posterior o igual a la fecha mínima"
-                )
+                raise ValueError("Date must be later than or equal to minimum date")
             if self.max and self.value > self.max:
-                raise ValueError("La fecha debe ser anterior o igual a la fecha máxima")
+                raise ValueError("Date must be earlier than or equal to maximum date")
         return self

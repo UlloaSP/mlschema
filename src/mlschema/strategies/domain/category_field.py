@@ -1,21 +1,16 @@
 """mlschema.strategies.domain.category_field
 ===========================================
-Modelo Pydantic para campos **categóricos**.
+Pydantic model for **categorical** fields.
 
-Amplía :class:`mlschema.core.domain.BaseField` fijando el atributo
-``type`` a ``"category"`` y añadiendo:
+Extends :class:`mlschema.core.domain.BaseField` by fixing the
+``type`` attribute to ``"category"`` and adding:
 
-* ``value``   – Valor actual (opcional).
-* ``options`` – Lista de categorías permitidas (mínimo 1 elemento).
+* ``value``   - Current value (optional).
+* ``options`` - List of allowed categories (minimum 1 element).
 
-El validador ``_check_value_in_options`` garantiza que, si se especifica
-``value``, éste aparece dentro de ``options``.
+The ``_check_value_in_options`` validator ensures that, if ``value`` is specified,
+it appears within ``options``.
 
-Ejemplo de uso
---------------
->>> from mlschema.strategies.domain.category_field import CategoryField
->>> CategoryField(title="color", options=["A", "B"], value="A").model_dump()
-{'title': 'color', 'description': None, 'required': True, 'type': 'category', 'value': 'A', 'options': ['A', 'B']}
 """
 
 from __future__ import annotations
@@ -29,7 +24,7 @@ from mlschema.strategies.domain.field_types import FieldTypes
 
 
 class CategoryField(BaseField):
-    """Schema Pydantic para un campo categórico."""
+    """Pydantic schema for a categorical field."""
 
     type: Literal[FieldTypes.CATEGORY] = FieldTypes.CATEGORY
     value: str | None = None
@@ -37,20 +32,18 @@ class CategoryField(BaseField):
 
     @model_validator(mode="after")
     def _check_value_in_options(self) -> CategoryField:
-        """Valida que ``value`` esté dentro de ``options``.
+        """Validates that ``value`` is within ``options``.
 
         Returns
         -------
         CategoryField
-            Instancia válida.
+            Valid instance.
 
         Raises
         ------
         ValueError
-            Si ``value`` no pertenece a ``options``.
+            If ``value`` is not in ``options``.
         """
         if self.value is not None and self.value not in self.options:
-            raise ValueError(
-                "El valor debe coincidir con una de las opciones permitidas"
-            )
+            raise ValueError("Value must match one of the allowed options")
         return self
