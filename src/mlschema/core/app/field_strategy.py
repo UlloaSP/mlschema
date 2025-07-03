@@ -15,22 +15,24 @@ data type strategies (number, text, date, etc.). Each strategy defines:
 
 Example Usage
 -------------
->>> import pandas as pd
->>> from mlschema.core.domain import NumberField
->>> class NumberStrategy(FieldStrategy):
-...     def __init__(self) -> None:
-...         super().__init__(
-...             type_name="number",
-...             schema_cls=NumberField,
-...             dtypes=("float64", "int64"),
-...         )
-...
-...     def attributes_from_series(self, series: pd.Series) -> dict:
-...         'Derives basic attributes: minimum and maximum.'
-...         return {"min": float(series.min()), "max": float(series.max())}
->>> s = pd.Series([1, 2, 3], name="age", dtype="int64")
->>> NumberStrategy().build_dict(s)
+```python
+ import pandas as pd
+ from mlschema.core.domain import NumberField
+ class NumberStrategy(FieldStrategy):
+     def __init__(self) -> None:
+         super().__init__(
+             type_name="number",
+             schema_cls=NumberField,
+             dtypes=("float64", "int64"),
+         )
+
+     def attributes_from_series(self, series: pd.Series) -> dict:
+         'Derives basic attributes: minimum and maximum.'
+         return {"min": float(series.min()), "max": float(series.max())}
+ s = pd.Series([1, 2, 3], name="age", dtype="int64")
+ NumberStrategy().build_dict(s)
 '{"title":"age","required":true,"description":null,"type":"number","min":1.0,"max":3.0}'
+```
 """
 
 from __future__ import annotations
