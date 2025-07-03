@@ -1,16 +1,10 @@
 """mlschema.strategies.domain.boolean_field
 ==========================================
-Modelo Pydantic para campos **booleanos**.
+Pydantic model for **boolean** fields.
 
-Extiende :class:`mlschema.core.domain.BaseField` fijando el atributo
-``type`` al valor ``"boolean"`` y añadiendo la clave ``value`` que puede
-ser ``True``, ``False`` o ``None``.
-
-Ejemplo mínimo
---------------
->>> from mlschema.strategies.domain.boolean_field import BooleanField
->>> BooleanField(title="activo", value=True).model_dump()
-{'title': 'activo', 'description': None, 'required': True, 'type': 'boolean', 'value': True}
+Extends :class:`mlschema.core.domain.BaseField` by fixing the
+``type`` attribute to the value ``"boolean"`` and adding the ``value`` key that can
+be ``True``, ``False`` or ``None``.
 """
 
 from __future__ import annotations
@@ -22,7 +16,7 @@ from mlschema.strategies.domain.field_types import FieldTypes
 
 
 class BooleanField(BaseField):
-    """Schema Pydantic para un campo booleano."""
+    """Pydantic schema for a boolean field."""
 
     type: Literal[FieldTypes.BOOLEAN] = FieldTypes.BOOLEAN
     value: bool | None = None

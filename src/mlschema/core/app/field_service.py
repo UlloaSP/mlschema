@@ -49,132 +49,132 @@ from .field_strategy import FieldStrategy
 
 
 class FieldService:
-    """Traduce un :class:`~pandas.DataFrame` a la *spec* JSON consumida por el front.
+    """Translates a :class:`~pandas.DataFrame` to the JSON spec consumed by the front-end.
 
     Parameters
     ----------
     registry:
-        Instancia pre‑cargada de :class:`FieldRegistry` que resuelve la
-        estrategia apropiada para cada columna.
+        Pre-loaded instance of :class:`FieldRegistry` that resolves the
+        appropriate strategy for each column.
     """
 
     def __init__(self) -> None:
         self._registry = FieldRegistry()
 
     def register(self, strategy: FieldStrategy) -> None:
-        """Registra una nueva estrategia de campo.
+        """Register a new field strategy.
 
         Parameters
         ----------
         strategy:
-            Instancia de :class:`FieldStrategy` a registrar.
+            Instance of :class:`FieldStrategy` to register.
         """
         self._registry.register(strategy)
 
     def register_all(self, strategies: list[FieldStrategy]) -> None:
-        """Registra múltiples estrategias de campo.
+        """Register multiple field strategies.
 
         Parameters
         ----------
         strategies:
-            Secuencia de instancias de :class:`FieldStrategy` a registrar.
+            Sequence of :class:`FieldStrategy` instances to register.
         """
         for strategy in strategies:
             self.register(strategy)
 
     def unregister(self, strategy: FieldStrategy) -> None:
-        """Desregistra una estrategia previamente registrada.
+        """Unregister a previously registered strategy.
 
         Parameters
         ----------
         strategy:
-            Instancia de :class:`FieldStrategy` a desregistrar.
+            Instance of :class:`FieldStrategy` to unregister.
         """
         self._registry.unregister(strategy.type_name)
 
     def update(self, strategy: FieldStrategy) -> None:
-        """Actualiza una estrategia ya registrada.
+        """Update an already registered strategy.
 
-        Si la estrategia no existe, se registra como nueva.
+        If the strategy doesn't exist, it's registered as new.
 
         Parameters
         ----------
         strategy:
-            Instancia de :class:`FieldStrategy` a actualizar.
+            Instance of :class:`FieldStrategy` to update.
         """
         self._registry.update(strategy)
 
     # ------------------------------------------------------------------ #
-    # Helpers internos                                                   #
+    # Internal helpers                                                   #
     # ------------------------------------------------------------------ #
     def _field_payload(self, series: Series) -> str:
-        """Genera el schema para una columna concreta.
+        """Generate the schema for a specific column.
 
-        Si el *dtype* de la serie no está asociado a ninguna estrategia,
-        se intenta una de reserva bajo el ``type_name`` "text".
+        If the series dtype is not associated with any strategy,
+        a fallback strategy under the ``type_name`` "text" is attempted.
 
         Parameters
         ----------
         series:
-            Serie de pandas a inspeccionar.
+            Pandas series to inspect.
 
         Returns
         -------
         str
-            Cadena JSON con el schema de la columna.
+            JSON string with the column schema.
 
         Raises
         ------
         RuntimeError
-            Si no existe estrategia de reserva.
+            If no fallback strategy exists.
         """
         strat = self._registry.strategy_for_dtype(
             str(series.dtype)
         ) or self._registry.strategy_for_name("text")
         if strat is None:
-            raise RuntimeError("No hay estrategia de fallback 'text' registrada.")
+            raise RuntimeError("No fallback 'text' strategy registered.")
         return strat.build_dict(series)
 
     # ------------------------------------------------------------------ #
-    # API pública                                                        #
+    # Public API                                                         #
     # ------------------------------------------------------------------ #
     def _schema_payload(self, df: DataFrame) -> list[str]:
-        """Construye la lista de schemas para cada columna.
+        """Build the list of schemas for each column.
 
         Parameters
         ----------
         df:
-            DataFrame de origen.
+            Source DataFrame.
 
         Returns
         -------
         list[str]
-            Lista ordenada de schemas.
+            Ordered list of schemas.
 
         Raises
         ------
         ValueError
-            Si el DataFrame no contiene columnas.
+            If the DataFrame contains no columns.
         """
         if df.empty:
-            raise ValueError("El DataFrame no contiene columnas.")
+            raise ValueError("DataFrame contains no columns.")
         return [self._field_payload(df.iloc[:, i]) for i, _ in enumerate(df.columns)]
 
     def build(self, df: DataFrame) -> str:
-        """Devuelve el *payload* final listo para inyección en el front‑end.
+        """Return the final payload ready for injection into the front-end.
 
         Parameters
         ----------
         df:
-            DataFrame a convertir.
+            DataFrame to convert.
 
         Returns
         -------
         str
-            Cadena JSON terminada en ';' conforme al contrato del front.
+            JSON string ending in ';' conforming to the front-end contract.
         """
         raw = json_dumps({"input": self._schema_payload(df)})
-        # Limpieza mínima para adaptar al front (compatibilidad histórica)
+        # Minimal cleanup to adapt to front-end (historical compatibility)
         return (
             raw.replace('\\"', '"')
             .replace('"{', "{")

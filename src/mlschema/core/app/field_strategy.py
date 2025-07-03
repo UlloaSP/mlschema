@@ -1,21 +1,20 @@
 """
 FieldStrategy
 ================================
-Estrategias para derivar metadatos de una columna (``pandas.Series``) y
-materializarlos en un *schema* Pydantic.
+Strategies for deriving metadata from a column (``pandas.Series``) and
+materializing them into a Pydantic schema.
 
-La clase :class:`FieldStrategy` sirve como clase base para estrategias
-específicas de tipo de dato (número, texto, fecha, etc.). Cada estrategia
-define:
+The :class:`FieldStrategy` class serves as a base class for specific
+data type strategies (number, text, date, etc.). Each strategy defines:
 
-* ``type_name``  – Identificador lógico del tipo (``"number"``, ``"text"``, …).
-* ``schema_cls`` – Subclase de :class:`mlschema.core.domain.BaseField`
-  utilizada para serializar el resultado.
-* ``dtypes``     – Conjunto de *dtype* de NumPy / pandas para los que la
-  estrategia es válida.
+* ``type_name``  - Logical identifier for the type (``"number"``, ``"text"``, …).
+* ``schema_cls`` - Subclass of :class:`mlschema.core.domain.BaseField`
+  used to serialize the result.
+* ``dtypes``     - Set of NumPy / pandas dtypes for which the
+  strategy is valid.
 
-Ejemplo de uso
---------------
+Example Usage
+-------------
 >>> import pandas as pd
 >>> from mlschema.core.domain import NumberField
 >>> class NumberStrategy(FieldStrategy):
@@ -27,11 +26,11 @@ Ejemplo de uso
 ...         )
 ...
 ...     def attributes_from_series(self, series: pd.Series) -> dict:
-...         'Deriva atributos básicos: mínimo y máximo.'
+...         'Derives basic attributes: minimum and maximum.'
 ...         return {"min": float(series.min()), "max": float(series.max())}
->>> s = pd.Series([1, 2, 3], name="edad", dtype="int64")
+>>> s = pd.Series([1, 2, 3], name="age", dtype="int64")
 >>> NumberStrategy().build_dict(s)
-'{"title":"edad","required":true,"description":null,"type":"number","min":1.0,"max":3.0}'
+'{"title":"age","required":true,"description":null,"type":"number","min":1.0,"max":3.0}'
 """
 
 from __future__ import annotations
@@ -45,23 +44,23 @@ from mlschema.core.domain import BaseField
 
 
 class FieldStrategy:
-    """Contrato base para todas las estrategias de campo.
+    """Base contract for all field strategies.
 
-    Cada subclase debe (opcionalmente) sobreescribir
-    :meth:`attributes_from_series` para añadir metadatos específicos al
-    *schema* generado.
+    Each subclass should (optionally) override
+    :meth:`attributes_from_series` to add specific metadata to
+    the generated schema.
 
     Attributes
     ----------
     _type_name:
-        Identificador lógico del tipo de campo.
+        Logical identifier for the field type.
     _schema_cls:
-        Subclase de :class:`BaseField` utilizada para la serialización.
+        Subclass of :class:`BaseField` used for serialization.
     _dtypes:
-        *Tuple* de nombres de ``dtype`` compatibles con la estrategia.
+        Tuple of ``dtype`` names compatible with the strategy.
     """
 
-    # -------------------------- construcción --------------------------- #
+    # -------------------------- construction --------------------------- #
     def __init__(
         self,
         *,
@@ -69,20 +68,20 @@ class FieldStrategy:
         schema_cls: type[BaseField],
         dtypes: Sequence[str | np_dtype],
     ) -> None:
-        """Inicializa la estrategia.
+        """Initialize the strategy.
 
         Parameters
         ----------
         type_name:
-            Identificador lógico del tipo (p. ej. ``"number"``).
+            Logical identifier for the type (e.g. ``"number"``).
         schema_cls:
-            Clase Pydantic que modeliza el campo.
+            Pydantic class that models the field.
         dtypes:
-            Secuencia de ``dtype`` (instancias o nombres) a los que se aplica la estrategia.
+            Sequence of ``dtype`` (instances or names) to which the strategy applies.
         """
         self._type_name: str = type_name
         self._schema_cls: type[BaseField] = schema_cls
-        # Normalizamos los dtype a ``str`` para comparaciones futuras
+        # Normalize dtypes to ``str`` for future comparisons
         self._dtypes: tuple[str, ...] = tuple(
             dt.name
             if isinstance(dt, np_dtype | api.extensions.ExtensionDtype)
@@ -93,56 +92,56 @@ class FieldStrategy:
     # -------------------------- properties ----------------------------- #
     @property
     def type_name(self) -> str:
-        """Nombre lógico del tipo de campo."""
+        """Logical name of the field type."""
         return self._type_name
 
     @property
     def schema_cls(self) -> type[BaseField]:
-        """Clase Pydantic utilizada para serializar el schema."""
+        """Pydantic class used to serialize the schema."""
         return self._schema_cls
 
     @property
     def dtypes(self) -> tuple[str, ...]:
-        """Tupla de nombres de ``dtype`` soportados."""
+        """Tuple of supported ``dtype`` names."""
         return self._dtypes
 
-    # -------------------- punto de extensión opcional ----------------- #
+    # -------------------- optional extension point ------------------- #
     def attributes_from_series(self, series: Series) -> dict:
-        """Calcula los atributos específicos del campo.
+        """Calculate field-specific attributes.
 
-        Este método puede ser sobreescrito en cada estrategia concreta
-        para derivar atributos como ``min``, ``max``, ``options``, etc.
+        This method can be overridden in each concrete strategy
+        to derive attributes like ``min``, ``max``, ``options``, etc.
 
         Parameters
         ----------
         series:
-            Columna de pandas a analizar.
+            Pandas column to analyze.
 
         Returns
         -------
         dict
-            Diccionario con atributos adicionales; nunca incluye las claves
-            estándar ``title``, ``required``, ``description`` o ``type``.
+            Dictionary with additional attributes; never includes the
+            standard keys ``title``, ``required``, ``description`` or ``type``.
         """
         return {}
 
-    # -------------------- fabricador de payload completo --------------- #
+    # -------------------- complete payload factory ------------------- #
     def build_dict(self, series: Series) -> str:
-        """Crea la representación JSON del schema.
+        """Create the JSON representation of the schema.
 
-        Combina los atributos estándar con los devueltos por
-        :meth:`attributes_from_series` y serializa el resultado con la
-        clase Pydantic asociada.
+        Combines standard attributes with those returned by
+        :meth:`attributes_from_series` and serializes the result with the
+        associated Pydantic class.
 
         Parameters
         ----------
         series:
-            Columna de pandas a documentar.
+            Pandas column to document.
 
         Returns
         -------
         str
-            Cadena JSON con el schema del campo.
+            JSON string with the field schema.
         """
         base_attrs: dict = {
             "title": series.name,
@@ -150,8 +149,8 @@ class FieldStrategy:
             "description": None,
             "type": self.type_name,
         }
-        # Incorporar atributos específicos de la implementación
+        # Incorporate implementation-specific attributes
         base_attrs.update(self.attributes_from_series(series))
 
-        # Instanciar la clase Pydantic y volcar a JSON
+        # Instantiate the Pydantic class and dump to JSON
         return self._schema_cls(**base_attrs).model_dump_json()

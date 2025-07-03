@@ -1,20 +1,12 @@
 """mlschema.strategies.app.date_strategy
 =======================================
-Estrategia de inferencia para columnas **fecha/hora**.
+Inference strategy for **date** columns.
 
-Esta implementación concreta de
-:class:`mlschema.core.app.field_strategy.FieldStrategy` cubre los ``dtype``
-clásicos de pandas/NumPy ``"datetime64[ns]"`` y ``"datetime64"``.
-No añade atributos específicos; simplemente delega en la clase base la
-construcción del *schema* estándar.
-
-Ejemplo mínimo
---------------
->>> import pandas as pd
->>> from mlschema.strategies.app.date_strategy import DateStrategy
->>> s = pd.Series(pd.date_range("2024-01-01", periods=3), name="fecha")
->>> DateStrategy().build_dict(s)
-'{"title":"fecha","required":true,"description":null,"type":"date"}'
+This concrete implementation of
+:class:`mlschema.core.app.field_strategy.FieldStrategy` covers the classic
+pandas/NumPy ``dtype`` ``"datetime64[ns]"`` and ``"datetime64"``.
+It does not add specific attributes; it simply delegates to the base class
+the construction of the standard *schema*.
 """
 
 from __future__ import annotations
@@ -24,7 +16,7 @@ from mlschema.strategies.domain import DateField, FieldTypes
 
 
 class DateStrategy(FieldStrategy):
-    """Estrategia específica para campos de fecha/hora."""
+    """Specific strategy for date fields."""
 
     def __init__(self) -> None:
         super().__init__(
