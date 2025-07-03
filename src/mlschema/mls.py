@@ -32,6 +32,7 @@ Examples:
 """
 
 from pandas import DataFrame
+
 from mlschema.core.app import FieldService, FieldStrategy
 
 

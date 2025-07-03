@@ -74,4 +74,3 @@ nav:
   - Changelog: changelog.md             # mantén un historial de versiones
 
 strict: true                             # detecta errores de configuración
-

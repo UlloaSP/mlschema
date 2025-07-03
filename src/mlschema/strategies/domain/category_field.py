@@ -20,7 +20,7 @@ Ejemplo de uso
 
 from __future__ import annotations
 
-from typing import Annotated, List, Literal
+from typing import Annotated, Literal
 
 from pydantic import Field, model_validator
 
@@ -33,10 +33,10 @@ class CategoryField(BaseField):
 
     type: Literal[FieldTypes.CATEGORY] = FieldTypes.CATEGORY
     value: str | None = None
-    options: Annotated[List[str], Field(min_length=1)]
+    options: Annotated[list[str], Field(min_length=1)]
 
     @model_validator(mode="after")
-    def _check_value_in_options(self) -> "CategoryField":
+    def _check_value_in_options(self) -> CategoryField:
         """Valida que ``value`` esté dentro de ``options``.
 
         Returns

@@ -27,8 +27,6 @@ Ejemplo de uso
 
 from __future__ import annotations
 
-from typing import Dict
-
 from numpy import dtype as np_dtype
 from pandas import api
 
@@ -50,8 +48,8 @@ class FieldRegistry:
 
     def __init__(self) -> None:
         """Inicializa los contenedores internos vacíos."""
-        self._by_name: Dict[str, FieldStrategy] = {}
-        self._by_dtype: Dict[str, FieldStrategy] = {}
+        self._by_name: dict[str, FieldStrategy] = {}
+        self._by_dtype: dict[str, FieldStrategy] = {}
 
     # ------------------------------------------------------------------ #
     # CRUD                                                               #
@@ -94,7 +92,7 @@ class FieldRegistry:
         """
         self.register(strategy, overwrite=True)
 
-    def unregister(self, *, type_name: str) -> None:
+    def unregister(self, type_name: str) -> None:
         """Elimina una estrategia del registro.
 
         Parameters
@@ -138,6 +136,6 @@ class FieldRegistry:
         """
         return (
             dtype.name
-            if isinstance(dtype, (np_dtype, api.extensions.ExtensionDtype))
+            if isinstance(dtype, np_dtype | api.extensions.ExtensionDtype)
             else str(dtype)
         )

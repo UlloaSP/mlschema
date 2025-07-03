@@ -52,7 +52,7 @@ class TextField(BaseField):
     )
 
     @model_validator(mode="after")
-    def _check_lengths(self) -> "TextField":
+    def _check_lengths(self) -> TextField:
         """Valida que *minLength* ≤ *maxLength*.
 
         Returns
