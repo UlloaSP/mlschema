@@ -1,24 +1,18 @@
 """mlschema.strategies.domain.number_field
 ========================================
-Modelo Pydantic para campos **numéricos** (enteros o flotantes).
+Pydantic model for **numeric** fields (integers or floats).
 
-Basado en :class:`mlschema.core.domain.BaseField`, añade los siguientes
-atributos:
+Based on :class:`mlschema.core.domain.BaseField`, adds the following
+attributes:
 
-* ``min`` / ``max`` - Cotas inferior y superior permitidas.
-* ``step``          - Incremento por defecto (``1`` si no se especifica).
-* ``placeholder``   - Texto guía para el front-end.
-* ``value``         - Valor actual (opcional).
-* ``unit``          - Unidad de medida (p. ej. "kg", "€").
+* ``min`` / ``max`` - Lower and upper allowed bounds.
+* ``step``          - Default increment (``1`` if not specified).
+* ``placeholder``   - Guide text for the front-end.
+* ``value``         - Current value (optional).
+* ``unit``          - Unit of measurement (e.g. "kg", "€").
 
-El validador ``_check_numeric_constraints`` asegura coherencia entre las
-cotas y el valor.
-
-Ejemplo de uso
---------------
->>> from mlschema.strategies.domain.number_field import NumberField
->>> NumberField(title="edad", min=0, max=120, value=30).model_dump()["value"]
-30
+The ``_check_numeric_constraints`` validator ensures consistency between
+bounds and value.
 """
 
 from __future__ import annotations
@@ -32,7 +26,7 @@ from mlschema.strategies.domain.field_types import FieldTypes
 
 
 class NumberField(BaseField):
-    """Schema Pydantic para un campo numérico."""
+    """Pydantic schema for a numeric field."""
 
     type: Literal[FieldTypes.NUMBER] = FieldTypes.NUMBER
     min: float | None = None
@@ -44,24 +38,24 @@ class NumberField(BaseField):
 
     @model_validator(mode="after")
     def _check_numeric_constraints(self) -> NumberField:
-        """Valida que *min* ≤ *value* ≤ *max*.
+        """Validates that *min* ≤ *value* ≤ *max*.
 
         Returns
         -------
         NumberField
-            Instancia validada.
+            Validated instance.
 
         Raises
         ------
         ValueError
-            Si las cotas no son coherentes.
+            If bounds are not consistent.
         """
         if self.min is not None and self.max is not None and self.min > self.max:
-            raise ValueError(f"min ({self.min}) debe ser ≤ max ({self.max})")
+            raise ValueError(f"min ({self.min}) must be ≤ max ({self.max})")
 
         if self.value is not None:
             if self.min is not None and self.value < self.min:
-                raise ValueError(f"value ({self.value}) debe ser ≥ min ({self.min})")
+                raise ValueError(f"value ({self.value}) must be ≥ min ({self.min})")
             if self.max is not None and self.value > self.max:
-                raise ValueError(f"value ({self.value}) debe ser ≤ max ({self.max})")
+                raise ValueError(f"value ({self.value}) must be ≤ max ({self.max})")
         return self

@@ -37,23 +37,23 @@ from mlschema.core.app import FieldService, FieldStrategy
 
 
 class MLSchema:
-    """Clase principal que encapsula el servicio de campos y su registro.
+    """Main class that encapsulates the field service and its registration.
 
-    Proporciona una interfaz para registrar, actualizar y desregistrar
-    estrategias de campo, así como para acceder al servicio de campos.
+    Provides an interface for registering, updating and unregistering
+    field strategies, as well as accessing the field service.
     """
 
     def __init__(self) -> None:
-        """Inicializa el servicio de campos."""
+        """Initialize the field service."""
         self.field_service = FieldService()
 
     def register(self, strategy: FieldStrategy | list[FieldStrategy]) -> None:
-        """Registra una nueva estrategia de campo.
+        """Register a new field strategy.
 
         Parameters
         ----------
         strategy:
-            Instancia de :class:`FieldStrategy` a registrar.
+            Instance of :class:`FieldStrategy` to register.
         """
         if isinstance(strategy, list):
             self.field_service.register_all(strategy)
@@ -61,38 +61,38 @@ class MLSchema:
             self.field_service.register(strategy)
 
     def unregister(self, strategy: FieldStrategy) -> None:
-        """Desregistra una estrategia previamente registrada.
+        """Unregister a previously registered strategy.
 
         Parameters
         ----------
         strategy:
-            Instancia de :class:`FieldStrategy` a desregistrar.
+            Instance of :class:`FieldStrategy` to unregister.
         """
         self.field_service.unregister(strategy)
 
     def update(self, strategy: FieldStrategy) -> None:
-        """Actualiza una estrategia ya registrada.
+        """Update an already registered strategy.
 
-        Si la estrategia no existe, se registra como nueva.
+        If the strategy doesn't exist, it's registered as new.
 
         Parameters
         ----------
         strategy:
-            Instancia de :class:`FieldStrategy` a actualizar.
+            Instance of :class:`FieldStrategy` to update.
         """
         self.field_service.update(strategy)
 
     def build(self, df: DataFrame) -> str:
-        """Devuelve el *payload* final listo para inyección en el front-end.
+        """Return the final payload ready for injection into the front-end.
 
         Parameters
         ----------
         df:
-            DataFrame de pandas con las columnas a procesar.
+            Pandas DataFrame with the columns to process.
 
         Returns
         -------
         str
-            JSON serializado del esquema generado.
+            JSON serialized schema generated.
         """
         return self.field_service.build(df)
