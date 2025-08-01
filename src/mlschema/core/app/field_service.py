@@ -39,8 +39,6 @@ Example of complete flow:
 
 from __future__ import annotations
 
-from json import dumps as json_dumps
-
 from pandas import DataFrame, Series
 
 from mlschema.core.app.field_registry import FieldRegistry
@@ -107,7 +105,7 @@ class FieldService:
     # ------------------------------------------------------------------ #
     # Internal helpers                                                   #
     # ------------------------------------------------------------------ #
-    def _field_payload(self, series: Series) -> str:
+    def _field_payload(self, series: Series) -> dict:
         """Generate the schema for a specific column.
 
         If the series dtype is not associated with any strategy,
@@ -120,8 +118,8 @@ class FieldService:
 
         Returns
         -------
-        str
-            JSON string with the column schema.
+        dict
+            Dictionary with the column schema.
 
         Raises
         ------
@@ -138,7 +136,7 @@ class FieldService:
     # ------------------------------------------------------------------ #
     # Public API                                                         #
     # ------------------------------------------------------------------ #
-    def _schema_payload(self, df: DataFrame) -> list[str]:
+    def _schema_payload(self, df: DataFrame) -> list[dict]:
         """Build the list of schemas for each column.
 
         Parameters
@@ -148,7 +146,7 @@ class FieldService:
 
         Returns
         -------
-        list[str]
+        list[dict]
             Ordered list of schemas.
 
         Raises
@@ -160,7 +158,7 @@ class FieldService:
             raise ValueError("DataFrame contains no columns.")
         return [self._field_payload(df.iloc[:, i]) for i, _ in enumerate(df.columns)]
 
-    def build(self, df: DataFrame) -> str:
+    def build(self, df: DataFrame) -> dict[str, list[dict]]:
         """Return the final payload ready for injection into the front-end.
 
         Parameters
@@ -170,14 +168,7 @@ class FieldService:
 
         Returns
         -------
-        str
-            JSON string ending in ';' conforming to the front-end contract.
+        dict[str, list[dict]]
+            JSON payload with the schema of each column.
         """
-        raw = json_dumps({"input": self._schema_payload(df)})
-        # Minimal cleanup to adapt to front-end (historical compatibility)
-        return (
-            raw.replace('\\"', '"')
-            .replace('"{', "{")
-            .replace('}"', "}")
-            .replace("null", "undefined")
-        )
+        return {"inputs": self._schema_payload(df), "outputs": []}

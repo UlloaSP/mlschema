@@ -82,7 +82,7 @@ class MLSchema:
         """
         self.field_service.update(strategy)
 
-    def build(self, df: DataFrame) -> str:
+    def build(self, df: DataFrame) -> dict:
         """Return the final payload ready for injection into the front-end.
 
         Parameters
@@ -92,7 +92,7 @@ class MLSchema:
 
         Returns
         -------
-        str
-            JSON serialized schema generated.
+        dict
+            Dictionary with the schema information, where keys are field names
         """
         return self.field_service.build(df)
