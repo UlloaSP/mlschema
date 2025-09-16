@@ -2,18 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - main
-      - docs
-      - develop
-      - config
-      - application
-      - domain
+    branches: [main, docs, develop, config, application, domain]
   pull_request:
-    branches:
-      - main
-      - develop
-      - 'release/*'
+    branches: [main, develop, 'release/*']
 
 jobs:
   pre-commit:
@@ -49,8 +40,9 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      - name: Install dev tools (locked)
-        run: uv sync --group dev
+      # Do NOT install the package itself here; only tools
+      - name: Install dev tools (locked, no-editable)
+        run: uv sync --group dev --no-editable
 
       - name: Run pre-commit hooks
         run: uv run pre-commit run --all-files
@@ -59,6 +51,9 @@ jobs:
     name: Build MkDocs site
     runs-on: ubuntu-latest
     needs: pre-commit
+    env:
+      # Allow mkdocstrings to resolve your package without installing it
+      PYTHONPATH: src
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -83,8 +78,9 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      - name: Install docs deps (locked)
-        run: uv sync --group docs
+      # Only docs deps; skip installing the package itself
+      - name: Install docs deps (locked, no-editable)
+        run: uv sync --group docs --no-editable
 
       - name: Build MkDocs (strict)
         run: uv run mkdocs build --strict
@@ -124,6 +120,7 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
+      # Here we DO install the project in editable mode (default) + test deps
       - name: Install test deps (locked)
         run: uv sync --group test
 
