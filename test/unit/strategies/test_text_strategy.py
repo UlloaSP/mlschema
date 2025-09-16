@@ -30,7 +30,7 @@ class TestTextStrategyInitialization:
     def test_initialization_calls_parent_constructor(self):
         """Test that TextStrategy properly calls parent class constructor."""
         with patch(
-            "mlschema.strategies.app.text_strategy.FieldStrategy.__init__"
+            "mlschema.strategies.app.text_strategy.Strategy.__init__"
         ) as mock_parent_init:
             mock_parent_init.return_value = None
 
@@ -106,11 +106,11 @@ class TestTextStrategyInheritance:
     """Test suite for inheritance and method delegation."""
 
     def test_inherits_from_field_strategy(self):
-        """Test that TextStrategy properly inherits from FieldStrategy."""
-        from mlschema.core.app.field_strategy import FieldStrategy
+        """Test that TextStrategy properly inherits from Strategy."""
+        from mlschema.core.app.strategy import Strategy
 
         strategy = TextStrategy()
-        assert isinstance(strategy, FieldStrategy)
+        assert isinstance(strategy, Strategy)
 
     def test_does_not_override_attributes_from_series(self):
         """Test that TextStrategy delegates to parent for attributes_from_series."""
@@ -434,7 +434,7 @@ class TestTextStrategyMocking:
     def test_initialization_parameters_are_correct(self):
         """Test that initialization passes correct parameters to parent."""
         with patch(
-            "mlschema.strategies.app.text_strategy.FieldStrategy.__init__"
+            "mlschema.strategies.app.text_strategy.Strategy.__init__"
         ) as mock_parent_init:
             mock_parent_init.return_value = None
 

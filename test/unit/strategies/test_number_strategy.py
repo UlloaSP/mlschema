@@ -32,7 +32,7 @@ class TestNumberStrategyInitialization:
     def test_initialization_calls_parent_constructor(self):
         """Test that NumberStrategy properly calls parent class constructor."""
         with patch(
-            "mlschema.strategies.app.number_strategy.FieldStrategy.__init__"
+            "mlschema.strategies.app.number_strategy.Strategy.__init__"
         ) as mock_parent_init:
             mock_parent_init.return_value = None
 
@@ -513,12 +513,12 @@ class TestNumberStrategyMocking:
             assert result == {"step": 1}
 
     def test_inheritance_chain_is_correct(self):
-        """Test that NumberStrategy properly inherits from FieldStrategy."""
-        from mlschema.core.app.field_strategy import FieldStrategy
+        """Test that NumberStrategy properly inherits from Strategy."""
+        from mlschema.core.app.strategy import Strategy
 
         strategy = NumberStrategy()
 
-        assert isinstance(strategy, FieldStrategy)
+        assert isinstance(strategy, Strategy)
         assert hasattr(strategy, "type_name")
         assert hasattr(strategy, "schema_cls")
         assert hasattr(strategy, "dtypes")
