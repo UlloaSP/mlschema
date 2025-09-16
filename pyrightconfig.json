@@ -1,0 +1,42 @@
+{
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "test",
+        "**/node_modules",
+        "**/__pycache__",
+        ".venv",
+        ".git"
+    ],
+    "venvPath": ".",
+    "venv": ".venv",
+    "pythonVersion": "3.13",
+    "pythonPlatform": "All",
+    "typeCheckingMode": "basic",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": false,
+    "reportGeneralTypeIssues": true,
+    "reportOptionalMemberAccess": true,
+    "reportOptionalCall": true,
+    "reportOptionalIterable": true,
+    "reportOptionalContextManager": true,
+    "reportOptionalOperand": true,
+    "reportUntypedFunctionDecorator": false,
+    "reportUnknownParameterType": false,
+    "reportUnknownArgumentType": false,
+    "reportUnknownLambdaType": false,
+    "reportUnknownVariableType": false,
+    "reportUnknownMemberType": false,
+    "reportMissingParameterType": false,
+    "reportMissingReturnType": false,
+    "reportCallInDefaultInitializer": false,
+    "reportUnnecessaryIsInstance": false,
+    "reportUnnecessaryCast": false,
+    "reportImplicitStringConcatenation": false,
+    "reportUnusedImport": true,
+    "reportUnusedClass": false,
+    "reportUnusedFunction": false,
+    "reportUnusedVariable": true,
+    "reportDuplicateImport": true
+}

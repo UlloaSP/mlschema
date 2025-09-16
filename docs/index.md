@@ -24,7 +24,7 @@ For green‑field projects or CI pipelines, a single command sets up MLSchema an
 uv add mlschema
 ```
 
-For other package managers, refer to the dedicated [Installation](docs/installation.md) guide.
+For other package managers, refer to the dedicated [Installation](installation.md) guide.
 
 ---
 
@@ -77,9 +77,9 @@ Outcome: a `JSON` that your UI layer can instantly translate into dynamic forms.
 
 ## 6. Further Reading
 
-* **[Detailed Installation](docs/installation.md)**
-* **[Usage Guide](docs/usage.md)**
-* **[API Reference](docs/reference.md)**
+* **[Detailed Installation](installation.md)**
+* **[Usage Guide](usage.md)**
+* **[API Reference](reference.md)**
 * **[GitHub](https://github.com/UlloaSP/mlschema)**
 
 > *Tradition meets innovation: MLSchema codifies time‑honoured form‑generation workflows while embracing Python’s latest language features.*

@@ -1,0 +1,165 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, docs, develop, config, application, domain]
+  pull_request:
+    branches: [main, develop, 'release/*']
+
+jobs:
+  pre-commit:
+    name: Run pre-commit hooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install UV CLI
+        run: pip install uv
+
+      - name: Create and activate virtual environment
+        run: |
+          uv venv
+          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
+          echo ".venv/bin" >> $GITHUB_PATH
+
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml', 'pyproject.toml', 'uv.lock') }}
+
+      - name: Cache UV
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
+
+      # Do NOT install the package itself here; only tools
+      - name: Install dev tools (locked, no-editable)
+        run: uv sync --group dev --no-editable
+
+      - name: Run pre-commit hooks
+        run: uv run pre-commit run --all-files
+
+  docs:
+    name: Build MkDocs site
+    runs-on: ubuntu-latest
+    needs: pre-commit
+    env:
+      # Allow mkdocstrings to resolve your package without installing it
+      PYTHONPATH: src
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install UV CLI
+        run: pip install uv
+
+      - name: Create and activate virtual environment
+        run: |
+          uv venv
+          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
+          echo ".venv/bin" >> $GITHUB_PATH
+
+      - name: Cache UV
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
+
+      # Only docs deps; skip installing the package itself
+      - name: Install docs deps (locked, no-editable)
+        run: uv sync --group docs --no-editable
+
+      - name: Build MkDocs (strict)
+        run: uv run mkdocs build --strict
+
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    needs: pre-commit
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install UV CLI
+        run: pip install uv
+
+      - name: Create and activate virtual environment
+        run: |
+          uv venv
+          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
+          echo ".venv/bin" >> $GITHUB_PATH
+
+      - name: Cache UV
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
+
+      # Here we DO install the project in editable mode (default) + test deps
+      - name: Install test deps (locked)
+        run: uv sync --group test
+
+      - name: Run tests with coverage
+        run: |
+          uv run pytest \
+            --maxfail=1 \
+            --disable-warnings \
+            --cov=src \
+            --cov-report=xml \
+            --cov-fail-under=80
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [pre-commit, tests, docs]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install UV CLI
+        run: pip install uv
+
+      - name: Build package (PEP 517)
+        run: uv build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

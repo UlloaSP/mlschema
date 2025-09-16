@@ -1,0 +1,78 @@
+site_name: MLSchema
+site_description: "Comprehensive schema documentation for ML models and pipelines"
+site_url: https://<tu-org>.github.io/mlschema
+repo_url: https://github.com/UlloaSP/mlschema
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  #logo: assets/images/logo.svg          # añade tu logo corporativo
+  #favicon: assets/images/favicon.ico    # favicon (opcional)
+  language: en
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.top
+    - search.highlight
+    - toc.integrate                    # integra TOC en la barra lateral
+    - content.code.copy                # botón “copy” en bloques de código
+    - content.tooltips                 # tooltips en anotaciones
+  palette:
+    - scheme: slate
+      primary: "#388E3C"
+      accent:  "#66BB6A"
+  # ——————— TIPOGRAFÍAS ———————
+  font:
+    text: Fira Code
+    code: "JetBrains Mono"
+plugins:
+  - search:
+      separator: "[\\s\\-]+"
+      lang: en
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_signature_annotations: true
+            heading_level: 2
+            merge_init_into_class: true
+  #- git-revision-date-localized:
+   #   locale: en
+    #  fallback_to_build_date: true
+  # - git-authors
+  #- macros
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+      linenums: true               # líneas numeradas
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.emoji
+  - pymdownx.tasklist
+  - pymdownx.details
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/your_org
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/company/your_org
+  copyright:
+    text: "© 2025 Your Organization. All rights reserved."
+
+nav:
+  - Home: index2.md
+  - Home2: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - API Reference: reference.md
+  - Changelog: changelog.md             # mantén un historial de versiones
+
+strict: true                             # detecta errores de configuración
