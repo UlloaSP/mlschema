@@ -2,18 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches:
-      - main
-      - docs
-      - develop
-      - config
-      - application
-      - domain
+    branches: [main, docs, develop, config, application, domain]
   pull_request:
-    branches:
-      - main
-      - develop
-      - 'release/*'
+    branches: [main, develop, 'release/*']
 
 jobs:
   pre-commit:
@@ -41,7 +32,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pre-commit
-          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml', 'pyproject.toml', 'uv.lock') }}
 
       - name: Cache UV
         uses: actions/cache@v4
@@ -49,8 +40,9 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      - name: Install dev dependencies
-        run: uv sync
+      # Do NOT install the package itself here; only tools
+      - name: Install dev tools (locked, no-editable)
+        run: uv sync --group dev --no-editable
 
       - name: Run pre-commit hooks
         run: uv run pre-commit run --all-files
@@ -59,6 +51,9 @@ jobs:
     name: Build MkDocs site
     runs-on: ubuntu-latest
     needs: pre-commit
+    env:
+      # Allow mkdocstrings to resolve your package without installing it
+      PYTHONPATH: src
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -83,12 +78,9 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      - name: Install docs dependencies
-        run: |
-          uv sync
-          uv pip install mkdocs
-          uv pip install mkdocstrings[python]
-          uv pip install mkdocs-material
+      # Only docs deps; skip installing the package itself
+      - name: Install docs deps (locked, no-editable)
+        run: uv sync --group docs --no-editable
 
       - name: Build MkDocs (strict)
         run: uv run mkdocs build --strict
@@ -99,6 +91,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
+
   tests:
     name: Run tests
     runs-on: ubuntu-latest
@@ -127,12 +120,9 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      - name: Install test dependencies
-        run: |
-          uv sync
-          uv pip install pytest
-          uv pip install pytest-mock
-          uv pip install pytest-cov
+      # Here we DO install the project in editable mode (default) + test deps
+      - name: Install test deps (locked)
+        run: uv sync --group test
 
       - name: Run tests with coverage
         run: |
@@ -166,7 +156,7 @@ jobs:
       - name: Install UV CLI
         run: pip install uv
 
-      - name: Build package
+      - name: Build package (PEP 517)
         run: uv build
 
       - name: Publish to PyPI
