@@ -128,7 +128,7 @@ class FieldStrategy:
         return {}
 
     # -------------------- complete payload factory ------------------- #
-    def build_dict(self, series: Series) -> str:
+    def build_dict(self, series: Series) -> dict:
         """Create the JSON representation of the schema.
 
         Combines standard attributes with those returned by
@@ -142,8 +142,8 @@ class FieldStrategy:
 
         Returns
         -------
-        str
-            JSON string with the field schema.
+        dict
+            JSON with the field schema.
         """
         base_attrs: dict = {
             "title": series.name,
@@ -155,4 +155,8 @@ class FieldStrategy:
         base_attrs.update(self.attributes_from_series(series))
 
         # Instantiate the Pydantic class and dump to JSON
-        return self._schema_cls(**base_attrs).model_dump_json()
+        return self._schema_cls(**base_attrs).model_dump(
+            mode="json",
+            exclude_unset=False,
+            exclude_none=True,
+        )
