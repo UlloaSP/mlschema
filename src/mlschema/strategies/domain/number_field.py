@@ -1,33 +1,15 @@
-"""mlschema.strategies.domain.number_field
-========================================
-Pydantic model for **numeric** fields (integers or floats).
-
-Based on :class:`mlschema.core.domain.BaseField`, adds the following
-attributes:
-
-* ``min`` / ``max`` - Lower and upper allowed bounds.
-* ``step``          - Default increment (``1`` if not specified).
-* ``placeholder``   - Guide text for the front-end.
-* ``value``         - Current value (optional).
-* ``unit``          - Unit of measurement (e.g. "kg", "€").
-
-The ``_check_numeric_constraints`` validator ensures consistency between
-bounds and value.
-"""
-
 from __future__ import annotations
 
 from typing import Literal
 
 from pydantic import model_validator
+from pydantic_core import PydanticCustomError
 
 from mlschema.core.domain import BaseField
 from mlschema.strategies.domain.field_types import FieldTypes
 
 
 class NumberField(BaseField):
-    """Pydantic schema for a numeric field."""
-
     type: Literal[FieldTypes.NUMBER] = FieldTypes.NUMBER
     min: float | None = None
     max: float | None = None
@@ -38,24 +20,24 @@ class NumberField(BaseField):
 
     @model_validator(mode="after")
     def _check_numeric_constraints(self) -> NumberField:
-        """Validates that *min* ≤ *value* ≤ *max*.
-
-        Returns
-        -------
-        NumberField
-            Validated instance.
-
-        Raises
-        ------
-        ValueError
-            If bounds are not consistent.
-        """
         if self.min is not None and self.max is not None and self.min > self.max:
-            raise ValueError(f"min ({self.min}) must be ≤ max ({self.max})")
+            raise PydanticCustomError(
+                "min_max_constraint",
+                "min ({min}) must be ≤ max ({max})",
+                {"min": self.min, "max": self.max},
+            )
 
         if self.value is not None:
             if self.min is not None and self.value < self.min:
-                raise ValueError(f"value ({self.value}) must be ≥ min ({self.min})")
+                raise PydanticCustomError(
+                    "value_min_constraint",
+                    "value ({value}) must be ≥ min ({min})",
+                    {"value": self.value, "min": self.min},
+                )
             if self.max is not None and self.value > self.max:
-                raise ValueError(f"value ({self.value}) must be ≤ max ({self.max})")
+                raise PydanticCustomError(
+                    "value_max_constraint",
+                    "value ({value}) must be ≤ max ({max})",
+                    {"value": self.value, "max": self.max},
+                )
         return self

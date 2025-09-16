@@ -1,28 +1,44 @@
-"""mlschema.strategies.app.number_strategy
-=========================================
-Inference strategy for **numeric** columns.
-
-Derives additional metadata suitable for number input fields.
-Specifically, calculates the ``step`` attribute that the front-end will use
-as the default increment in ``<input type="number">`` controls.
-
-Business rules
---------------
-* For ``float`` → ``step = 0.1``.
-* For ``int``   → ``step = 1``.
-
-"""
-
 from __future__ import annotations
 
 from pandas import Series, api
 
-from mlschema.core.app.field_strategy import FieldStrategy
+from mlschema.core import Strategy
 from mlschema.strategies.domain import FieldTypes, NumberField
 
 
-class NumberStrategy(FieldStrategy):
-    """Strategy for numeric columns."""
+class NumberStrategy(Strategy):
+    """Instance of Strategy for number fields.
+
+    Name:
+        `number`
+
+    Dtypes:
+        | Name     | Type              |
+        | -------- | ----------------- |
+        | int64    | `Int64Dtype`      |
+        | float64  | `Float64Dtype`    |
+        | int32    | `Int32Dtype`      |
+        | float32  | `Float32Dtype`    |
+
+    Model Attributes:
+        | Name        | Type                | Description                                |
+        | ----------- | ------------------- | ------------------------------------------ |
+        | type        | `Literal["number"]` | Fixed type for the strategy.               |
+        | value       | `int | float | None`| The current value of the field.            |
+        | step        | `float | int`       | Increment for numeric values.              |
+        | min         | `int | float | None`| Minimum allowed value.                     |
+        | max         | `int | float | None`| Maximum allowed value.                     |
+        | unit        | `str | None`        | Unit of measurement for the numeric value. |
+        | placeholder | `str | None`        | Placeholder text for the field.            |
+
+    Model Restrictions:
+        | Description           | Error Type            | Error Message                                     |
+        | --------------------- | --------------------- | ------------------------------------------------- |
+        | `min` ≤ `max`         | `PydanticCustomError` | `min {min} must be ≤ max {max}`                   |
+        | `value` ≥ `min`       | `PydanticCustomError` | `value {value} must be ≥ min {min}`               |
+        | `value` ≤ `max`       | `PydanticCustomError` | `value {value} must be ≤ max {max}`               |
+
+    """
 
     def __init__(self) -> None:
         super().__init__(
@@ -34,14 +50,10 @@ class NumberStrategy(FieldStrategy):
     def attributes_from_series(self, series: Series) -> dict:
         """Derives the ``step`` attribute from the ``dtype``.
 
-        Parameters
-        ----------
-        series:
-            Pandas series with numeric values.
+        Args:
+            series: Pandas series with numeric values.
 
-        Returns
-        -------
-        dict
+        Returns:
             Dictionary with the ``step`` key.
         """
         # Default step: 0.1 for floats, 1 for integers

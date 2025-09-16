@@ -37,6 +37,7 @@ plugins:
           options:
             docstring_style: google
             show_signature_annotations: true
+            heading_level: 2
             merge_init_into_class: true
   #- git-revision-date-localized:
    #   locale: en
@@ -67,7 +68,8 @@ extra:
     text: "© 2025 Your Organization. All rights reserved."
 
 nav:
-  - Home: index.md
+  - Home: index2.md
+  - Home2: index.md
   - Installation: installation.md
   - Usage: usage.md
   - API Reference: reference.md
