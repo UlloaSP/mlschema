@@ -31,7 +31,7 @@ class TestDateStrategyInitialization:
     def test_initialization_calls_parent_constructor(self):
         """Test that DateStrategy properly calls parent class constructor."""
         with patch(
-            "mlschema.strategies.app.date_strategy.FieldStrategy.__init__"
+            "mlschema.strategies.app.date_strategy.Strategy.__init__"
         ) as mock_parent_init:
             mock_parent_init.return_value = None
 
@@ -108,11 +108,11 @@ class TestDateStrategyInheritance:
     """Test suite for inheritance and method delegation."""
 
     def test_inherits_from_field_strategy(self):
-        """Test that DateStrategy properly inherits from FieldStrategy."""
-        from mlschema.core.app.field_strategy import FieldStrategy
+        """Test that DateStrategy properly inherits from Strategy."""
+        from mlschema.core.app.strategy import Strategy
 
         strategy = DateStrategy()
-        assert isinstance(strategy, FieldStrategy)
+        assert isinstance(strategy, Strategy)
 
     def test_does_not_override_attributes_from_series(self):
         """Test that DateStrategy delegates to parent for attributes_from_series."""
@@ -422,7 +422,7 @@ class TestDateStrategyMocking:
     def test_initialization_parameters_are_correct(self):
         """Test that initialization passes correct parameters to parent."""
         with patch(
-            "mlschema.strategies.app.date_strategy.FieldStrategy.__init__"
+            "mlschema.strategies.app.date_strategy.Strategy.__init__"
         ) as mock_parent_init:
             mock_parent_init.return_value = None
 

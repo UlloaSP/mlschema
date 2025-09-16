@@ -1,98 +1,68 @@
-"""MLSchema - A Python library for generating ML field schemas from pandas DataFrames.
-
-This module provides the main MLSchema class that serves as the primary interface
-for registering field strategies and building schemas from pandas DataFrames.
-
-Examples:
-    Basic usage of MLSchema:
-
-    ```python
-    from mlschema import MLSchema
-    from mlschema.core import FieldStrategy
-    import pandas as pd
-
-    # Create an MLSchema instance
-    ml_schema = MLSchema()
-
-    # Create a sample DataFrame
-    df = pd.DataFrame({
-        'name': ['Alice', 'Bob', 'Charlie'],
-        'age': [25, 30, 35],
-        'salary': [50000.0, 60000.0, 70000.0]
-    })
-
-    # Register custom field strategies if needed
-    # custom_strategy = CustomFieldStrategy()
-    # ml_schema.register(custom_strategy)
-
-    # Build the schema
-    schema_json = ml_schema.build(df)
-    print(schema_json)
-    ```
-"""
+from typing import Any
 
 from pandas import DataFrame
 
-from mlschema.core.app import FieldService, FieldStrategy
+from mlschema.core.app import Service, Strategy
 
 
 class MLSchema:
-    """Main class that encapsulates the field service and its registration.
+    """Facade that orchestrates strategy registration and schema generation.
 
-    Provides an interface for registering, updating and unregistering
-    field strategies, as well as accessing the field service.
+    The class wraps an internal :class:`mlschema.core.app.Service` instance and
+    surfaces a minimal, stable API for client code.  It is therefore the
+    canonical entry point when integrating **mlschema** into an application or
+    pipeline.
+
+    Attributes:
+        field_service: Internal service component that performs the heavy lifting (registry management and JSON payload generation).
     """
 
     def __init__(self) -> None:
-        """Initialize the field service."""
-        self.field_service = FieldService()
+        self.field_service = Service()
 
-    def register(self, strategy: FieldStrategy | list[FieldStrategy]) -> None:
-        """Register a new field strategy.
+    def register(self, strategy: Strategy) -> None:
+        """Register a **new** strategy.
 
-        Parameters
-        ----------
-        strategy:
-            Instance of :class:`FieldStrategy` to register.
+        Args:
+            strategy: Instance of a concrete :class:`mlschema.core.app.Strategy`.
+
+        Raises:
+            StrategyNameAlreadyRegisteredError: If a strategy with the same name is already registered.
+            StrategyDtypeAlreadyRegisteredError: If a strategy with the same dtype is already registered.
         """
-        if isinstance(strategy, list):
-            self.field_service.register_all(strategy)
-        else:
-            self.field_service.register(strategy)
+        self.field_service.register(strategy)
 
-    def unregister(self, strategy: FieldStrategy) -> None:
-        """Unregister a previously registered strategy.
+    def unregister(self, strategy: Strategy) -> None:
+        """Remove a **previously registered** strategy.
 
-        Parameters
-        ----------
-        strategy:
-            Instance of :class:`FieldStrategy` to unregister.
+        Args:
+            strategy: Strategy instance to be removed from the registry.
         """
         self.field_service.unregister(strategy)
 
-    def update(self, strategy: FieldStrategy) -> None:
-        """Update an already registered strategy.
+    def update(self, strategy: Strategy) -> None:
+        """Replace an existing strategy **in-place**.
 
-        If the strategy doesn't exist, it's registered as new.
+        If either the ``type_name`` or any of the advertised ``dtypes``
+        already exist, they are overwritten with the supplied strategy.
 
-        Parameters
-        ----------
-        strategy:
-            Instance of :class:`FieldStrategy` to update.
+        Args:
+            strategy: Instance of `Strategy` to update.
         """
         self.field_service.update(strategy)
 
-    def build(self, df: DataFrame) -> str:
-        """Return the final payload ready for injection into the front-end.
+    def build(self, df: DataFrame) -> dict[str, list[dict[str, Any]]]:
+        """Translate a DataFrame into a JSON-serialisable form schema
 
-        Parameters
-        ----------
-        df:
-            Pandas DataFrame with the columns to process.
+        Args:
+            df: Source data whose columns will be analysed and mapped to field definitions.
 
-        Returns
-        -------
-        str
-            JSON serialized schema generated.
+        Returns:
+            Dictionary with the schema information, where keys are field names
+
+        Raises:
+            EmptyDataFrameError: If the DataFrame is empty.
+            FallbackStrategyMissingError: If no fallback strategy is available for the DataFrame.
+            PydanticCustomError: If there are validation errors in the schema.
         """
-        return self.field_service.build(df)
+        return self.field_service.build_schema(df)

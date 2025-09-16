@@ -1,22 +1,38 @@
-"""mlschema.strategies.app.date_strategy
-=======================================
-Inference strategy for **date** columns.
-
-This concrete implementation of
-:class:`mlschema.core.app.field_strategy.FieldStrategy` covers the classic
-pandas/NumPy ``dtype`` ``"datetime64[ns]"`` and ``"datetime64"``.
-It does not add specific attributes; it simply delegates to the base class
-the construction of the standard *schema*.
-"""
-
 from __future__ import annotations
 
-from mlschema.core.app.field_strategy import FieldStrategy
+from mlschema.core import Strategy
 from mlschema.strategies.domain import DateField, FieldTypes
 
 
-class DateStrategy(FieldStrategy):
-    """Specific strategy for date fields."""
+class DateStrategy(Strategy):
+    """Instance of Strategy for date fields.
+
+    Name:
+        `date`
+
+    Dtypes:
+        | Name           | Type                |
+        | -------------- | ------------------- |
+        | datetime64[ns] | `DatetimeTZDtype`   |
+        | datetime64     | `DatetimeDtype`     |
+
+    Model Attributes:
+        | Name        | Type                | Description                                |
+        | ----------- | ------------------- | ------------------------------------------ |
+        | type        | `Literal["date"]`   | Fixed type for the strategy.               |
+        | value       | `date | None`       | The current value of the field.            |
+        | min         | `date | None`       | Minimum allowed date.                      |
+        | max         | `date | None`       | Maximum allowed date.                      |
+        | step        | `PositiveInt`       | Increment in days.                         |
+
+    Model Restrictions:
+        | Description           | Error Type            | Error Message                                     |
+        | --------------------- | --------------------- | ------------------------------------------------- |
+        | `min` ≤ `max`         | `PydanticCustomError` | `min {min} must be ≤ max {max}`                   |
+        | `value` ≥ `min`       | `PydanticCustomError` | `value {value} must be ≥ min {min}`               |
+        | `value` ≤ `max`       | `PydanticCustomError` | `value {value} must be ≤ max {max}`               |
+
+    """
 
     def __init__(self) -> None:
         super().__init__(

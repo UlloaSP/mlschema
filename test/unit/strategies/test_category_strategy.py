@@ -31,7 +31,7 @@ class TestCategoryStrategyInitialization:
     def test_initialization_calls_parent_constructor(self):
         """Test that CategoryStrategy properly calls parent class constructor."""
         with patch(
-            "mlschema.strategies.app.category_strategy.FieldStrategy.__init__"
+            "mlschema.strategies.app.category_strategy.Strategy.__init__"
         ) as mock_parent_init:
             mock_parent_init.return_value = None
 

@@ -1,20 +1,39 @@
-"""mlschema.strategies.app.text_strategy
-=======================================
-Inference strategy for **text** columns.
-
-Does not provide additional attributes to the schema: its purpose is solely
-to classify the field as ``"text"`` when the series ``dtype`` is
-``"object"`` or pandas' new ``"string"`` string.
-"""
-
 from __future__ import annotations
 
-from mlschema.core.app.field_strategy import FieldStrategy
+from mlschema.core import Strategy
 from mlschema.strategies.domain import FieldTypes, TextField
 
 
-class TextStrategy(FieldStrategy):
-    """Specific strategy for text fields."""
+class TextStrategy(Strategy):
+    """Instance of Strategy for text fields.
+
+    Name:
+        `text`
+
+    Dtypes:
+        | Name     | Type              |
+        | -------- | ----------------- |
+        | object   | `object`          |
+        | string   | `StringDtype`     |
+
+    Model Attributes:
+        | Name        | Type              | Description                                |
+        | ----------- | ----------------- | ------------------------------------------ |
+        | type        | `Literal["text"]` | Fixed type for the strategy.               |
+        | value       | `str | None`      | The current value of the field.            |
+        | placeholder | `str | None`      | Placeholder text for the field.            |
+        | min_length  | `int | None`      | Minimum length of the text.                |
+        | max_length  | `int | None`      | Maximum length of the text.                |
+        | pattern     | `str | None`      | Regular expression pattern for validation. |
+
+    Model Restrictions:
+        | Description                   | Error Type            | Error Message                                                 |
+        | ----------------------------- | --------------------- | ------------------------------------------------------------- |
+        | `min_length` ≤ `max_length`   | `PydanticCustomError` | `minLength {minLength} must be ≤ maxLength {maxLength}`       |
+        | `value` length ≥ `min_length` | `PydanticCustomError` | `value length {value_length} must be ≥ minLength {minLength}` |
+        | `value` length ≤ `max_length` | `PydanticCustomError` | `value length {value_length} must be ≤ maxLength {maxLength}` |
+
+    """
 
     def __init__(self) -> None:
         super().__init__(

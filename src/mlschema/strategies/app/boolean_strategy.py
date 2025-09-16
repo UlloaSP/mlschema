@@ -1,23 +1,28 @@
-"""mlschema.strategies.app.boolean_strategy
-==========================================
-Inference strategy for **boolean** columns.
-
-The :class:`BooleanStrategy` class is a concrete implementation of
-:class:`mlschema.core.app.field_strategy.FieldStrategy` that covers the
-pandas/NumPy ``dtype`` ``"bool"`` and ``"boolean"``. It does not require
-additional attributes, so it delegates to the base class the generation
-of the standard *schema*.
-
-"""
-
 from __future__ import annotations
 
-from mlschema.core.app.field_strategy import FieldStrategy
+from mlschema.core import Strategy
 from mlschema.strategies.domain import BooleanField, FieldTypes
 
 
-class BooleanStrategy(FieldStrategy):
-    """Specific strategy for boolean fields."""
+class BooleanStrategy(Strategy):
+    """Instance of Strategy for boolean fields.
+
+    Name:
+        `boolean`
+
+    Dtypes:
+        | Name     | Type              |
+        | -------- | ----------------- |
+        | bool     | `BooleanDtype`    |
+        | boolean  | `BooleanDtype`    |
+
+    Model Attributes:
+        | Name        | Type                 | Description                                |
+        | ----------- | -------------------- | ------------------------------------------ |
+        | type        | `Literal["boolean"]` | Fixed type for the strategy.               |
+        | value       | `bool | None`        | The current value of the field.            |
+
+    """
 
     def __init__(self) -> None:
         super().__init__(

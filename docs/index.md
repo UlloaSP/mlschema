@@ -1,18 +1,18 @@
 # MLSchema
 
-> *Automated schema inference for data‑driven organisations—grounded in proven design, built for tomorrow.*
+> *Automated schema inference for data‑driven organisations, grounded in proven design, built for tomorrow.*
 
 ---
 
 ## 1. Executive Summary
 
-**MLSchema** is a Python micro‑library that converts **pandas** data frames into fully‑validated, front‑end‑ready JSON schemas. The goal: eliminate hand‑rolled form definitions, accelerate prototype‑to‑production cycles, and enforce data‑contract governance across your analytics stack.
+**MLSchema** is a Python micro‑library that converts **pandas** dataframes into fully‑validated, front‑end‑ready JSON schemas. The goal: eliminate hand‑rolled form definitions, accelerate prototype‑to‑production cycles, and enforce data‑contract governance across your analytics stack.
 
 | Metric                  | Outcome                                                                  |
 | ----------------------- | ------------------------------------------------------------------------ |
 | **Time‑to‑schema**      | < 150 ms on 10 k columns / 1 M rows (benchmarked on x86‑64, Python 3.13) |
 | **Boilerplate reduced** | ≈ 90 % fewer lines of bespoke form code                                  |
-| **Extensibility**       | Plug‑in architecture—register or swap strategies at runtime              |
+| **Extensibility**       | Plug‑in architecture, register or swap strategies at runtime              |
 
 ---
 
@@ -32,7 +32,7 @@ For other package managers, refer to the dedicated [Installation](installation.m
 
 ```python
 import pandas as pd
-from mlschema.core import MLSchema
+from mlschema import MLSchema
 from mlschema.strategies import TextStrategy
 
 # 1️⃣  Source your data
@@ -44,7 +44,6 @@ ms.register(TextStrategy())
 
 # 3️⃣  Produces a JSON schema
 schema = ms.build(df)
-print(schema)
 ```
 
 Outcome: a `JSON` that your UI layer can instantly translate into dynamic forms.
@@ -55,8 +54,8 @@ Outcome: a `JSON` that your UI layer can instantly translate into dynamic forms.
 
 | Component                    | Role                                                 | Extensibility Point                      |
 | ---------------------------- | ---------------------------------------------------- | ---------------------------------------- |
-| **`mlschema.core.MLSchema`** | Strategy registry, validation pipeline, JSON emitter | `register()`, `update()`, `unregister()` |
-| **Field Strategies**         | Map pandas dtypes ⇒ form controls                    | Implement `FieldStrategy` subclasses     |
+| **`mlschema.MLSchema`**      | Strategy registry, validation pipeline, JSON emitter | `register()`, `update()`, `unregister()` |
+| **Field Strategies**         | Map pandas dtypes => form controls                   | Implement `Strategy` subclasses          |
 | **`BaseField`** (Pydantic)   | Canonical schema blueprint                           | Custom Pydantic models inherit from it   |
 
 ### Why a Strategy Pattern?
@@ -71,8 +70,8 @@ Outcome: a `JSON` that your UI layer can instantly translate into dynamic forms.
 
 1. **Zero‑configuration defaults**: Text fallback ensures graceful degradation.
 2. **Pydantic v2 validators**: Domain rules enforced at build time.
-3. **Runtime performance**: Vectorised dtype checks—no Python loops on critical paths.
-4. **Production readiness**: CI badge, semantic versioning, and zero open CVEs (July 2025).
+3. **Runtime performance**: Vectorised dtype checks, no Python loops on critical paths.
+4. **Production readiness**: CI badge, semantic versioning, and zero open CVEs (September 2025).
 
 ---
 

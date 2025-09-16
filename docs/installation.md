@@ -81,8 +81,9 @@ uv add mlschema    # installs package + deps
 ### Manual venv (fallback)
 
 ```bash
+# macOS/Linux
 python -m venv .venv
-source .venv/bin/activate   # macOS/Linux
+source .venv/bin/activate
 pip install mlschema
 ```
 
@@ -108,9 +109,6 @@ pip install mlschema
 
 | Symptom                                       | Root Cause                             | Resolution                                             |
 | --------------------------------------------- | -------------------------------------- | ------------------------------------------------------ |
-| `ImportError: cannot import name 'BaseModel'` | Pydantic < 2.x in env.                 | Upgrade: `uv sync` or `uv pip install pydantic==2.x.y` |
-| `ValueError: DataFrame dtype unsupported`     | Column dtype not mapped to a strategy. | Register appropriate strategy or cast dtype.           |
-| Memory spike on large CSVs                    | Insufficient RAM                       | Use chunked reads or a Dask DataFrame.                 |
 
 *No open CVEs or platform‑specific incompatibilities have been reported as of July 2025.*
 
