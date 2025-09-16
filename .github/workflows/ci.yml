@@ -40,7 +40,7 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      # Tools only; do not install the project here
+      # Do NOT install the package itself here; only tools
       - name: Install dev tools (locked, no-editable)
         run: uv sync --group dev --no-editable
 
@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre-commit
     env:
-      # Let mkdocstrings import from ./src without installing package
+      # Allow mkdocstrings to resolve your package without installing it
       PYTHONPATH: src
     steps:
       - name: Checkout code
@@ -78,6 +78,7 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
+      # Only docs deps; skip installing the package itself
       - name: Install docs deps (locked, no-editable)
         run: uv sync --group docs --no-editable
 
@@ -119,22 +120,7 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      # --- Symlink-safe: materialize README before editable install ---
-      - name: Ensure README (resolve symlink)
-        run: |
-          if [ -L README.md ]; then
-            tgt="$(readlink README.md)"
-            if [ -f "$tgt" ]; then
-              cp "$tgt" README.md
-            else
-              echo "README symlink target not found: $tgt" >&2
-              exit 1
-            fi
-          elif [ ! -f README.md ]; then
-            echo "# mlschema" > README.md
-          fi
-
-      # Editable install + test deps
+      # Here we DO install the project in editable mode (default) + test deps
       - name: Install test deps (locked)
         run: uv sync --group test
 
@@ -169,21 +155,6 @@ jobs:
 
       - name: Install UV CLI
         run: pip install uv
-
-      # --- Symlink-safe: materialize README before build ---
-      - name: Ensure README (resolve symlink)
-        run: |
-          if [ -L README.md ]; then
-            tgt="$(readlink README.md)"
-            if [ -f "$tgt" ]; then
-              cp "$tgt" README.md
-            else
-              echo "README symlink target not found: $tgt" >&2
-              exit 1
-            fi
-          elif [ ! -f README.md ]; then
-            echo "# mlschema" > README.md
-          fi
 
       - name: Build package (PEP 517)
         run: uv build
