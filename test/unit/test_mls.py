@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 from pandas import DataFrame
 
-from mlschema.core.app import FieldService, FieldStrategy
+from mlschema.core.app import Service, Strategy
 from mlschema.mls import MLSchema
 
 
@@ -21,22 +21,22 @@ class TestMLSchemaInitialization:
     """Test suite for MLSchema initialization."""
 
     def test_initialization_creates_field_service(self):
-        """Test that MLSchema initializes with a FieldService instance."""
+        """Test that MLSchema initializes with a Service instance."""
         ml_schema = MLSchema()
 
         assert hasattr(ml_schema, "field_service")
-        assert isinstance(ml_schema.field_service, FieldService)
+        assert isinstance(ml_schema.field_service, Service)
 
     def test_each_instance_has_separate_field_service(self):
-        """Test that each MLSchema instance has its own FieldService."""
+        """Test that each MLSchema instance has its own Service."""
         ml_schema1 = MLSchema()
         ml_schema2 = MLSchema()
 
         assert ml_schema1.field_service is not ml_schema2.field_service
 
-    @patch("mlschema.mls.FieldService")
+    @patch("mlschema.mls.Service")
     def test_initialization_calls_field_service_constructor(self, mock_field_service):
-        """Test that MLSchema initialization calls FieldService constructor."""
+        """Test that MLSchema initialization calls Service constructor."""
         mock_instance = Mock()
         mock_field_service.return_value = mock_instance
 
@@ -52,53 +52,20 @@ class TestMLSchemaRegister:
     def test_register_single_strategy(self):
         """Test registering a single field strategy."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         with patch.object(ml_schema.field_service, "register") as mock_register:
             ml_schema.register(mock_strategy)
 
             mock_register.assert_called_once_with(mock_strategy)
 
-    def test_register_list_of_strategies(self):
-        """Test registering a list of field strategies."""
-        ml_schema = MLSchema()
-        mock_strategy1 = Mock(spec=FieldStrategy)
-        mock_strategy2 = Mock(spec=FieldStrategy)
-        strategies: list[FieldStrategy] = [mock_strategy1, mock_strategy2]
-
-        with patch.object(ml_schema.field_service, "register_all") as mock_register_all:
-            ml_schema.register(strategies)
-
-            mock_register_all.assert_called_once_with(strategies)
-
-    def test_register_empty_list(self):
-        """Test registering an empty list of strategies."""
-        ml_schema = MLSchema()
-        empty_list: list[FieldStrategy] = []
-
-        with patch.object(ml_schema.field_service, "register_all") as mock_register_all:
-            ml_schema.register(empty_list)
-
-            mock_register_all.assert_called_once_with(empty_list)
-
-    def test_register_single_strategy_in_list(self):
-        """Test registering a list with a single strategy."""
-        ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
-        single_strategy_list: list[FieldStrategy] = [mock_strategy]
-
-        with patch.object(ml_schema.field_service, "register_all") as mock_register_all:
-            ml_schema.register(single_strategy_list)
-
-            mock_register_all.assert_called_once_with(single_strategy_list)
-
     def test_register_delegates_to_field_service(self):
         """Test that register method properly delegates to field service."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         # Mock the field service to verify delegation
-        ml_schema.field_service = Mock(spec=FieldService)
+        ml_schema.field_service = Mock(spec=Service)
 
         ml_schema.register(mock_strategy)
 
@@ -108,21 +75,15 @@ class TestMLSchemaRegister:
         """Test the type checking behavior in register method."""
         ml_schema = MLSchema()
 
-        # Test with actual FieldStrategy mock
-        strategy = Mock(spec=FieldStrategy)
-        strategy_list: list[FieldStrategy] = [strategy]
+        # Test with actual Strategy mock
+        strategy = Mock(spec=Strategy)
 
         with (
             patch.object(ml_schema.field_service, "register") as mock_register,
-            patch.object(ml_schema.field_service, "register_all") as mock_register_all,
         ):
             # Single strategy should call register
             ml_schema.register(strategy)
             mock_register.assert_called_once_with(strategy)
-
-            # List should call register_all
-            ml_schema.register(strategy_list)
-            mock_register_all.assert_called_once_with(strategy_list)
 
 
 class TestMLSchemaUnregister:
@@ -131,7 +92,7 @@ class TestMLSchemaUnregister:
     def test_unregister_strategy(self):
         """Test unregistering a field strategy."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         with patch.object(ml_schema.field_service, "unregister") as mock_unregister:
             ml_schema.unregister(mock_strategy)
@@ -141,10 +102,10 @@ class TestMLSchemaUnregister:
     def test_unregister_delegates_to_field_service(self):
         """Test that unregister method properly delegates to field service."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         # Mock the field service to verify delegation
-        ml_schema.field_service = Mock(spec=FieldService)
+        ml_schema.field_service = Mock(spec=Service)
 
         ml_schema.unregister(mock_strategy)
 
@@ -162,7 +123,7 @@ class TestMLSchemaUnregister:
     def test_unregister_nonexistent_strategy(self):
         """Test unregistering a strategy that was never registered."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         # This should delegate to field service without error
         with patch.object(ml_schema.field_service, "unregister") as mock_unregister:
@@ -177,7 +138,7 @@ class TestMLSchemaUpdate:
     def test_update_strategy(self):
         """Test updating a field strategy."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         with patch.object(ml_schema.field_service, "update") as mock_update:
             ml_schema.update(mock_strategy)
@@ -187,10 +148,10 @@ class TestMLSchemaUpdate:
     def test_update_delegates_to_field_service(self):
         """Test that update method properly delegates to field service."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         # Mock the field service to verify delegation
-        ml_schema.field_service = Mock(spec=FieldService)
+        ml_schema.field_service = Mock(spec=Service)
 
         ml_schema.update(mock_strategy)
 
@@ -208,7 +169,7 @@ class TestMLSchemaUpdate:
     def test_update_new_strategy(self):
         """Test updating a strategy that doesn't exist (should register as new)."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         # According to docstring, if strategy doesn't exist, it should be registered as new
         with patch.object(ml_schema.field_service, "update") as mock_update:
@@ -227,7 +188,7 @@ class TestMLSchemaBuild:
         expected_json = '{"schema": "data"}'
 
         with patch.object(
-            ml_schema.field_service, "build", return_value=expected_json
+            ml_schema.field_service, "build_schema", return_value=expected_json
         ) as mock_build:
             result = ml_schema.build(df)
 
@@ -240,12 +201,12 @@ class TestMLSchemaBuild:
         df = DataFrame({"test": [1, 2, 3]})
 
         # Mock the field service to verify delegation
-        ml_schema.field_service = Mock(spec=FieldService)
-        ml_schema.field_service.build.return_value = '{"test": "json"}'
+        ml_schema.field_service = Mock(spec=Service)
+        ml_schema.field_service.build_schema.return_value = '{"test": "json"}'
 
         result = ml_schema.build(df)
 
-        ml_schema.field_service.build.assert_called_once_with(df)
+        ml_schema.field_service.build_schema.assert_called_once_with(df)
         assert result == '{"test": "json"}'
 
     def test_build_with_empty_dataframe(self):
@@ -255,7 +216,7 @@ class TestMLSchemaBuild:
         expected_json = '{"fields": []}'
 
         with patch.object(
-            ml_schema.field_service, "build", return_value=expected_json
+            ml_schema.field_service, "build_schema", return_value=expected_json
         ) as mock_build:
             result = ml_schema.build(empty_df)
 
@@ -268,7 +229,7 @@ class TestMLSchemaBuild:
         df = DataFrame({"test": [1, 2, 3]})
 
         with patch.object(
-            ml_schema.field_service, "build", return_value='{"json": "string"}'
+            ml_schema.field_service, "build_schema", return_value='{"json": "string"}'
         ):
             result = ml_schema.build(df)
 
@@ -289,7 +250,7 @@ class TestMLSchemaBuild:
         expected_json = '{"complex": "schema"}'
 
         with patch.object(
-            ml_schema.field_service, "build", return_value=expected_json
+            ml_schema.field_service, "build_schema", return_value=expected_json
         ) as mock_build:
             result = ml_schema.build(df)
 
@@ -303,13 +264,15 @@ class TestMLSchemaIntegration:
     def test_register_then_build_workflow(self):
         """Test the complete workflow of registering strategies and building schema."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
         df = DataFrame({"test": [1, 2, 3]})
 
         with (
             patch.object(ml_schema.field_service, "register") as mock_register,
             patch.object(
-                ml_schema.field_service, "build", return_value='{"test": "schema"}'
+                ml_schema.field_service,
+                "build_schema",
+                return_value='{"test": "schema"}',
             ) as mock_build,
         ):
             # Register strategy
@@ -326,7 +289,7 @@ class TestMLSchemaIntegration:
     def test_register_update_unregister_workflow(self):
         """Test registering, updating, and unregistering strategies."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         with (
             patch.object(ml_schema.field_service, "register") as mock_register,
@@ -350,31 +313,25 @@ class TestMLSchemaIntegration:
     def test_multiple_strategies_registration(self):
         """Test registering multiple strategies in different ways."""
         ml_schema = MLSchema()
-        strategy1 = Mock(spec=FieldStrategy)
-        strategy2 = Mock(spec=FieldStrategy)
-        strategy3 = Mock(spec=FieldStrategy)
+        strategy1 = Mock(spec=Strategy)
+        strategy2 = Mock(spec=Strategy)
 
         with (
             patch.object(ml_schema.field_service, "register") as mock_register,
-            patch.object(ml_schema.field_service, "register_all") as mock_register_all,
         ):
             # Register single strategies
             ml_schema.register(strategy1)
             ml_schema.register(strategy2)
 
-            # Register list of strategies
-            ml_schema.register([strategy3])
-
             # Verify calls
             assert mock_register.call_count == 2
-            mock_register_all.assert_called_once_with([strategy3])
 
 
 class TestMLSchemaErrorHandling:
     """Test suite for error handling and edge cases."""
 
     def test_register_with_invalid_type(self):
-        """Test registering with invalid type (not FieldStrategy or list)."""
+        """Test registering with invalid type (not Strategy or list)."""
         ml_schema = MLSchema()
 
         # This should still delegate to field service, which will handle the error
@@ -387,7 +344,7 @@ class TestMLSchemaErrorHandling:
         """Test building schema with None DataFrame."""
         ml_schema = MLSchema()
 
-        with patch.object(ml_schema.field_service, "build") as mock_build:
+        with patch.object(ml_schema.field_service, "build_schema") as mock_build:
             ml_schema.build(None)  # type: ignore[arg-type]
 
             mock_build.assert_called_once_with(None)
@@ -395,7 +352,7 @@ class TestMLSchemaErrorHandling:
     def test_field_service_exceptions_propagate(self):
         """Test that exceptions from field service are properly propagated."""
         ml_schema = MLSchema()
-        mock_strategy = Mock(spec=FieldStrategy)
+        mock_strategy = Mock(spec=Strategy)
 
         # Mock field service to raise an exception
         with patch.object(
@@ -411,7 +368,9 @@ class TestMLSchemaErrorHandling:
 
         # Mock field service to raise an exception during build
         with patch.object(
-            ml_schema.field_service, "build", side_effect=RuntimeError("Build error")
+            ml_schema.field_service,
+            "build_schema",
+            side_effect=RuntimeError("Build error"),
         ):
             with pytest.raises(RuntimeError, match="Build error"):
                 ml_schema.build(df)
@@ -437,7 +396,9 @@ class TestMLSchemaDocumentationCompliance:
         # Mock the build method to return example JSON
         expected_json = '{"fields": [{"name": "name", "type": "text"}, {"name": "age", "type": "number"}]}'
 
-        with patch.object(ml_schema.field_service, "build", return_value=expected_json):
+        with patch.object(
+            ml_schema.field_service, "build_schema", return_value=expected_json
+        ):
             result = ml_schema.build(df)
 
             assert isinstance(result, str)
@@ -447,29 +408,20 @@ class TestMLSchemaDocumentationCompliance:
         """Test that register method behavior matches documentation."""
         ml_schema = MLSchema()
 
-        # Documentation says it accepts FieldStrategy or list[FieldStrategy]
-        single_strategy = Mock(spec=FieldStrategy)
-        strategy_list: list[FieldStrategy] = [
-            Mock(spec=FieldStrategy),
-            Mock(spec=FieldStrategy),
-        ]
+        # Documentation says it accepts Strategy or list[Strategy]
+        single_strategy = Mock(spec=Strategy)
 
         with (
             patch.object(ml_schema.field_service, "register") as mock_register,
-            patch.object(ml_schema.field_service, "register_all") as mock_register_all,
         ):
             # Single strategy
             ml_schema.register(single_strategy)
             mock_register.assert_called_with(single_strategy)
 
-            # List of strategies
-            ml_schema.register(strategy_list)
-            mock_register_all.assert_called_with(strategy_list)
-
     def test_update_method_documentation(self):
         """Test that update method behavior matches documentation."""
         ml_schema = MLSchema()
-        strategy = Mock(spec=FieldStrategy)
+        strategy = Mock(spec=Strategy)
 
         # Documentation says: "If the strategy doesn't exist, it's registered as new"
         with patch.object(ml_schema.field_service, "update") as mock_update:
@@ -484,7 +436,9 @@ class TestMLSchemaDocumentationCompliance:
 
         # Documentation says it returns "JSON serialized schema"
         with patch.object(
-            ml_schema.field_service, "build", return_value='{"serialized": "json"}'
+            ml_schema.field_service,
+            "build_schema",
+            return_value='{"serialized": "json"}',
         ):
             result = ml_schema.build(df)
 
@@ -501,8 +455,8 @@ class TestMLSchemaStateManagement:
         ml_schema1 = MLSchema()
         ml_schema2 = MLSchema()
 
-        strategy1 = Mock(spec=FieldStrategy)
-        strategy2 = Mock(spec=FieldStrategy)
+        strategy1 = Mock(spec=Strategy)
+        strategy2 = Mock(spec=Strategy)
 
         # Mock field services independently
         with (
@@ -521,13 +475,13 @@ class TestMLSchemaStateManagement:
         ml_schema = MLSchema()
         original_service = ml_schema.field_service
 
-        strategy = Mock(spec=FieldStrategy)
+        strategy = Mock(spec=Strategy)
         df = DataFrame({"test": [1, 2, 3]})
 
         # Perform multiple operations
         with (
             patch.object(ml_schema.field_service, "register"),
-            patch.object(ml_schema.field_service, "build", return_value="{}"),
+            patch.object(ml_schema.field_service, "build_schema", return_value="{}"),
         ):
             ml_schema.register(strategy)
             ml_schema.build(df)
@@ -538,7 +492,7 @@ class TestMLSchemaStateManagement:
     def test_method_chaining_compatibility(self):
         """Test that methods could potentially support chaining (return self)."""
         ml_schema = MLSchema()
-        strategy = Mock(spec=FieldStrategy)
+        strategy = Mock(spec=Strategy)
 
         # Current implementation doesn't return self, but test that methods complete
         with (

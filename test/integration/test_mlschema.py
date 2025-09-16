@@ -7,16 +7,22 @@ and field strategies.
 
 from __future__ import annotations
 
-import json
-
 import numpy as np
 import pandas as pd
 import pytest
 from pandas import DataFrame, Series
 
-from mlschema.core.app.field_registry import FieldRegistry
-from mlschema.core.app.field_strategy import FieldStrategy
+from mlschema.core.app.strategy import Strategy
 from mlschema.core.domain.base_field import BaseField
+from mlschema.core.exceptions.registry import (
+    StrategyDtypeAlreadyRegisteredError,
+    StrategyNameAlreadyRegisteredError,
+)
+from mlschema.core.exceptions.service import (
+    EmptyDataFrameError,
+    FallbackStrategyMissingError,
+)
+from mlschema.core.util.dtypes import normalize_dtype
 from mlschema.mls import MLSchema
 from mlschema.strategies.app import (
     BooleanStrategy,
@@ -25,13 +31,6 @@ from mlschema.strategies.app import (
     NumberStrategy,
     TextStrategy,
 )
-
-
-def parse_mlschema_json(json_string: str) -> dict:
-    """Parse MLSchema JSON output which uses 'undefined' instead of 'null'."""
-    # Replace 'undefined' with 'null' to make it valid JSON
-    valid_json = json_string.replace("undefined", "null")
-    return json.loads(valid_json)
 
 
 # Custom test strategy for integration testing
@@ -45,7 +44,7 @@ class CustomField(BaseField):
     max_seconds: int | None = None
 
 
-class CustomStrategy(FieldStrategy):
+class CustomStrategy(Strategy):
     """Custom strategy for testing purposes."""
 
     def __init__(self) -> None:
@@ -77,7 +76,7 @@ class AdvancedNumberField(BaseField):
     modified: bool | None = None
 
 
-class AdvancedNumberStrategy(FieldStrategy):
+class AdvancedNumberStrategy(Strategy):
     """Advanced number strategy with additional validation."""
 
     def __init__(self) -> None:
@@ -118,15 +117,11 @@ class TestMLSchemaIntegrationBasics:
         ml_schema = MLSchema()
 
         # Register all built-in strategies
-        ml_schema.register(
-            [
-                BooleanStrategy(),
-                NumberStrategy(),
-                TextStrategy(),
-                DateStrategy(),
-                CategoryStrategy(),
-            ]
-        )
+        ml_schema.register(BooleanStrategy())
+        ml_schema.register(NumberStrategy())
+        ml_schema.register(TextStrategy())
+        ml_schema.register(DateStrategy())
+        ml_schema.register(CategoryStrategy())
 
         # Create test DataFrame with various data types
         df = DataFrame(
@@ -143,11 +138,9 @@ class TestMLSchemaIntegrationBasics:
         result = ml_schema.build(df)
 
         # Verify result is valid JSON
-        assert isinstance(result, str)
-        # Should contain JSON data (will end with semicolon from field_service)
-        json_data = parse_mlschema_json(result.rstrip(";"))
-        assert "input" in json_data
-        assert len(json_data["input"]) == 6  # 6 columns
+        assert isinstance(result, dict)
+        assert "inputs" in result
+        assert len(result["inputs"]) == 6  # 6 columns
 
 
 class TestMLSchemaCustomStrategies:
@@ -166,8 +159,7 @@ class TestMLSchemaCustomStrategies:
         result = ml_schema.build(df)
 
         # Verify custom strategy was used
-        json_data = parse_mlschema_json(result.rstrip(";"))
-        field_schema = json_data["input"][0]
+        field_schema = result["inputs"][0]
 
         assert field_schema["type"] == "custom"
         assert field_schema["unit"] == "seconds"
@@ -179,13 +171,9 @@ class TestMLSchemaCustomStrategies:
         """Test registering multiple custom strategies."""
         ml_schema = MLSchema()
 
-        strategies = [
-            CustomStrategy(),
-            AdvancedNumberStrategy(),
-            TextStrategy(),  # Built-in strategy
-        ]
-
-        ml_schema.register(strategies)
+        ml_schema.register(CustomStrategy())
+        ml_schema.register(AdvancedNumberStrategy())
+        ml_schema.register(TextStrategy())
 
         # Create DataFrame that uses multiple strategies
         df = DataFrame(
@@ -197,14 +185,13 @@ class TestMLSchemaCustomStrategies:
         )
 
         result = ml_schema.build(df)
-        json_data = parse_mlschema_json(result.rstrip(";"))
 
-        assert len(json_data["input"]) == 3
+        assert len(result["inputs"]) == 3
 
         # Check each field type
-        duration_schema = json_data["input"][0]
-        score_schema = json_data["input"][1]
-        comment_schema = json_data["input"][2]
+        duration_schema = result["inputs"][0]
+        score_schema = result["inputs"][1]
+        comment_schema = result["inputs"][2]
 
         assert duration_schema["type"] == "custom"
         assert score_schema["type"] == "advanced_number"
@@ -226,7 +213,7 @@ class TestMLSchemaCustomStrategies:
             step: float | None = None
             modified: bool | None = None
 
-        class ModifiedNumberStrategy(FieldStrategy):
+        class ModifiedNumberStrategy(Strategy):
             def __init__(self) -> None:
                 super().__init__(
                     type_name="advanced_number",  # Same type name
@@ -243,8 +230,7 @@ class TestMLSchemaCustomStrategies:
         df = DataFrame({"score": [1.5, 2.7, 3.9]})
         result = ml_schema.build(df)
 
-        json_data = parse_mlschema_json(result.rstrip(";"))
-        field_schema = json_data["input"][0]
+        field_schema = result["inputs"][0]
 
         # Should use updated strategy
         assert field_schema["step"] == 1.0
@@ -255,14 +241,11 @@ class TestMLSchemaCustomStrategies:
         """Test unregistering a strategy."""
         ml_schema = MLSchema()
 
-        # Register strategies
-        custom_strategy = CustomStrategy()
-        text_strategy = TextStrategy()
-
-        ml_schema.register([custom_strategy, text_strategy])
+        ml_schema.register(CustomStrategy())
+        ml_schema.register(TextStrategy())
 
         # Unregister custom strategy
-        ml_schema.unregister(custom_strategy)
+        ml_schema.unregister(CustomStrategy())
 
         # Create DataFrame that would use custom strategy
         df = DataFrame(
@@ -273,12 +256,11 @@ class TestMLSchemaCustomStrategies:
         )
 
         result = ml_schema.build(df)
-        json_data = parse_mlschema_json(result.rstrip(";"))
 
         # Duration should fall back to text strategy (if available)
         # or raise an error if no fallback
-        duration_schema = json_data["input"][0]
-        comment_schema = json_data["input"][1]
+        duration_schema = result["inputs"][0]
+        comment_schema = result["inputs"][1]
 
         # Custom strategy should no longer be used
         assert duration_schema["type"] == "text"  # Fallback
@@ -293,15 +275,11 @@ class TestMLSchemaComplexDataFrames:
         ml_schema = MLSchema()
 
         # Register all strategies
-        ml_schema.register(
-            [
-                BooleanStrategy(),
-                NumberStrategy(),
-                TextStrategy(),
-                DateStrategy(),
-                CategoryStrategy(),
-            ]
-        )
+        ml_schema.register(BooleanStrategy())
+        ml_schema.register(NumberStrategy())
+        ml_schema.register(TextStrategy())
+        ml_schema.register(DateStrategy())
+        ml_schema.register(CategoryStrategy())
 
         # Create complex DataFrame
         df = DataFrame(
@@ -318,12 +296,11 @@ class TestMLSchemaComplexDataFrames:
         )
 
         result = ml_schema.build(df)
-        json_data = parse_mlschema_json(result.rstrip(";"))
 
-        assert len(json_data["input"]) == 8
+        assert len(result["inputs"]) == 8
 
         # Verify each field type
-        schemas = json_data["input"]
+        schemas = result["inputs"]
         types = [schema["type"] for schema in schemas]
 
         expected_types = [
@@ -346,24 +323,24 @@ class TestMLSchemaComplexDataFrames:
         # Empty DataFrame with columns
         df = DataFrame(columns=["name", "age"])
 
-        with pytest.raises(ValueError):
+        with pytest.raises(EmptyDataFrameError):
             ml_schema.build(df)
 
     def test_dataframe_with_all_null_columns(self):
         """Test with DataFrame containing columns with all null values."""
         ml_schema = MLSchema()
-        ml_schema.register([NumberStrategy(), TextStrategy()])
+        ml_schema.register(NumberStrategy())
+        ml_schema.register(TextStrategy())
 
         df = DataFrame(
             {"null_numbers": [None, None, None], "null_text": [None, None, None]}
         )
 
         result = ml_schema.build(df)
-        json_data = parse_mlschema_json(result.rstrip(";"))
 
         # Should still generate schemas
-        assert len(json_data["input"]) == 2
-        schemas = json_data["input"]
+        assert len(result["inputs"]) == 2
+        schemas = result["inputs"]
 
         # All should be marked as not required
         for schema in schemas:
@@ -372,7 +349,9 @@ class TestMLSchemaComplexDataFrames:
     def test_large_dataframe(self):
         """Test with large DataFrame."""
         ml_schema = MLSchema()
-        ml_schema.register([NumberStrategy(), TextStrategy(), BooleanStrategy()])
+        ml_schema.register(NumberStrategy())
+        ml_schema.register(TextStrategy())
+        ml_schema.register(BooleanStrategy())
 
         # Create large DataFrame
         size = 10000
@@ -386,12 +365,11 @@ class TestMLSchemaComplexDataFrames:
         )
 
         result = ml_schema.build(df)
-        json_data = parse_mlschema_json(result.rstrip(";"))
 
-        assert len(json_data["input"]) == 4
+        assert len(result["inputs"]) == 4
 
         # Verify performance - should complete without timeout
-        schemas = json_data["input"]
+        schemas = result["inputs"]
         assert all("type" in schema for schema in schemas)
 
 
@@ -408,7 +386,7 @@ class TestMLSchemaEdgeCases:
 
             type: str = "alternative_text"
 
-        class AlternativeTextStrategy(FieldStrategy):
+        class AlternativeTextStrategy(Strategy):
             def __init__(self) -> None:
                 super().__init__(
                     type_name="alternative_text",
@@ -427,8 +405,7 @@ class TestMLSchemaEdgeCases:
         df = DataFrame({"text_col": ["a", "b", "c"]})
         result = ml_schema.build(df)
 
-        json_data = parse_mlschema_json(result.rstrip(";"))
-        schema = json_data["input"][0]
+        schema = result["inputs"][0]
 
         # Should use the last registered strategy
         assert schema["type"] == "alternative_text"
@@ -447,11 +424,29 @@ class TestMLSchemaEdgeCases:
         )
 
         result = ml_schema.build(df)
-        json_data = parse_mlschema_json(result.rstrip(";"))
 
         # Both should fall back to text strategy
-        schemas = json_data["input"]
+        schemas = result["inputs"]
         assert all(schema["type"] == "text" for schema in schemas)
+
+    def test_strategy_unregistration(self):
+        """Test unregistration of a strategy."""
+        ml_schema = MLSchema()
+        custom_strategy = CustomStrategy()
+
+        ml_schema.register(custom_strategy)
+
+        # Create DataFrame that uses custom strategy
+        df = DataFrame({"duration": pd.timedelta_range("1 day", periods=3, freq="D")})
+
+        result = ml_schema.build(df)
+
+        # Verify custom strategy was used
+        field_schema = result["inputs"][0]
+        assert field_schema["type"] == "custom"
+
+        # Unregister the custom strategy
+        ml_schema.unregister(TextStrategy())
 
     def test_strategy_registration_order_independence(self):
         """Test that strategy registration order doesn't affect final schema."""
@@ -459,10 +454,13 @@ class TestMLSchemaEdgeCases:
         ml_schema1 = MLSchema()
         ml_schema2 = MLSchema()
 
-        strategies = [NumberStrategy(), TextStrategy(), BooleanStrategy()]
+        ml_schema1.register(NumberStrategy())
+        ml_schema1.register(TextStrategy())
+        ml_schema1.register(BooleanStrategy())
 
-        ml_schema1.register(strategies)
-        ml_schema2.register(list(reversed(strategies)))
+        ml_schema2.register(BooleanStrategy())
+        ml_schema2.register(TextStrategy())
+        ml_schema2.register(NumberStrategy())
 
         df = DataFrame(
             {"num": [1, 2, 3], "text": ["a", "b", "c"], "bool": [True, False, True]}
@@ -477,7 +475,8 @@ class TestMLSchemaEdgeCases:
     def test_series_with_mixed_types_in_object_column(self):
         """Test handling of object columns with mixed types."""
         ml_schema = MLSchema()
-        ml_schema.register([NumberStrategy(), TextStrategy()])
+        ml_schema.register(NumberStrategy())
+        ml_schema.register(TextStrategy())
 
         df = DataFrame(
             {
@@ -486,8 +485,7 @@ class TestMLSchemaEdgeCases:
         )
 
         result = ml_schema.build(df)
-        json_data = parse_mlschema_json(result.rstrip(";"))
-        schema = json_data["input"][0]
+        schema = result["inputs"][0]
 
         # Should be classified as text (object dtype)
         assert schema["type"] == "text"
@@ -503,7 +501,7 @@ class TestMLSchemaIntegrationErrorHandling:
         df = DataFrame({"col1": [1, 2, 3]})
 
         # Should raise error when no strategies are available
-        with pytest.raises(RuntimeError):
+        with pytest.raises(FallbackStrategyMissingError):
             ml_schema.build(df)
 
     def test_invalid_custom_strategy_registration(self):
@@ -517,7 +515,7 @@ class TestMLSchemaIntegrationErrorHandling:
     def test_strategy_that_raises_exception(self):
         """Test handling of strategies that raise exceptions."""
 
-        class BuggyStrategy(FieldStrategy):
+        class BuggyStrategy(Strategy):
             def __init__(self) -> None:
                 super().__init__(
                     type_name="buggy",
@@ -546,7 +544,7 @@ class TestMLSchemaIntegrationErrorHandling:
         ml_schema.register(first_strategy)
 
         # Create another strategy with same type_name
-        class DuplicateNumberStrategy(FieldStrategy):
+        class DuplicateNumberStrategy(Strategy):
             def __init__(self) -> None:
                 super().__init__(
                     type_name="number",  # Same as NumberStrategy
@@ -557,7 +555,7 @@ class TestMLSchemaIntegrationErrorHandling:
         duplicate_strategy = DuplicateNumberStrategy()
 
         # Should raise ValueError when trying to register duplicate type_name
-        with pytest.raises(ValueError, match="Strategy 'number' already exists"):
+        with pytest.raises(StrategyNameAlreadyRegisteredError):
             ml_schema.register(duplicate_strategy)
 
     def test_duplicate_dtype_registration(self):
@@ -569,7 +567,7 @@ class TestMLSchemaIntegrationErrorHandling:
         ml_schema.register(first_strategy)
 
         # Create another strategy with overlapping dtype
-        class OverlappingStrategy(FieldStrategy):
+        class OverlappingStrategy(Strategy):
             def __init__(self) -> None:
                 super().__init__(
                     type_name="overlapping_number",
@@ -580,9 +578,7 @@ class TestMLSchemaIntegrationErrorHandling:
         overlapping_strategy = OverlappingStrategy()
 
         # Should raise ValueError when trying to register duplicate dtype
-        with pytest.raises(
-            ValueError, match="dtype 'int64' already linked to another strategy."
-        ):
+        with pytest.raises(StrategyDtypeAlreadyRegisteredError):
             ml_schema.register(overlapping_strategy)
 
 
@@ -592,15 +588,11 @@ class TestMLSchemaRealWorldScenarios:
     def test_customer_data_scenario(self):
         """Test with realistic customer data."""
         ml_schema = MLSchema()
-        ml_schema.register(
-            [
-                NumberStrategy(),
-                TextStrategy(),
-                BooleanStrategy(),
-                DateStrategy(),
-                CategoryStrategy(),
-            ]
-        )
+        ml_schema.register(NumberStrategy())
+        ml_schema.register(TextStrategy())
+        ml_schema.register(BooleanStrategy())
+        ml_schema.register(DateStrategy())
+        ml_schema.register(CategoryStrategy())
 
         # Realistic customer dataset
         df = DataFrame(
@@ -675,12 +667,11 @@ class TestMLSchemaRealWorldScenarios:
         )
 
         result = ml_schema.build(df)
-        json_data = parse_mlschema_json(result.rstrip(";"))
 
-        assert len(json_data["input"]) == 9
+        assert len(result["inputs"]) == 9
 
         # Verify realistic field types
-        schemas = json_data["input"]
+        schemas = result["inputs"]
         field_types = {schema["title"]: schema["type"] for schema in schemas}
 
         expected_types = {
@@ -700,13 +691,9 @@ class TestMLSchemaRealWorldScenarios:
     def test_time_series_data_scenario(self):
         """Test with time series data."""
         ml_schema = MLSchema()
-        ml_schema.register(
-            [
-                DateStrategy(),
-                NumberStrategy(),
-                TextStrategy(),
-            ]
-        )
+        ml_schema.register(DateStrategy())
+        ml_schema.register(NumberStrategy())
+        ml_schema.register(TextStrategy())
 
         # Time series dataset
         dates = pd.date_range("2023-01-01", periods=100, freq="D")
@@ -720,12 +707,11 @@ class TestMLSchemaRealWorldScenarios:
         )
 
         result = ml_schema.build(df)
-        json_data = parse_mlschema_json(result.rstrip(";"))
 
-        assert len(json_data["input"]) == 4
+        assert len(result["inputs"]) == 4
 
         # Check time series specific attributes
-        schemas = json_data["input"]
+        schemas = result["inputs"]
         temp_schema = next(s for s in schemas if s["title"] == "temperature")
 
         # Should have numeric step attribute
@@ -739,18 +725,18 @@ class TestMLSchemaRealWorldScenarios:
 
         # Register different strategies to each instance
         ml_schema1.register(NumberStrategy())
-        ml_schema2.register([NumberStrategy(), TextStrategy()])
+        ml_schema2.register(NumberStrategy())
+        ml_schema2.register(TextStrategy())
 
         df = DataFrame({"num_col": [1, 2, 3], "text_col": ["a", "b", "c"]})
 
         # ml_schema1 should fail on text column (no text strategy)
-        with pytest.raises(RuntimeError):
+        with pytest.raises(FallbackStrategyMissingError):
             ml_schema1.build(df)
 
         # ml_schema2 should succeed
         result2 = ml_schema2.build(df)
-        json_data2 = parse_mlschema_json(result2.rstrip(";"))
-        assert len(json_data2["input"]) == 2
+        assert len(result2["inputs"]) == 2
 
 
 class TestFieldRegistryNormalizeDtype:
@@ -758,7 +744,6 @@ class TestFieldRegistryNormalizeDtype:
 
     def test_normalize_dtype_with_numpy_dtype(self):
         """Test _normalize_dtype with numpy dtype objects."""
-        registry = FieldRegistry()
 
         # Test with various numpy dtypes
         int_dtype = np.dtype("int64")
@@ -767,66 +752,59 @@ class TestFieldRegistryNormalizeDtype:
         object_dtype = np.dtype("object")
 
         # Should return dtype.name for numpy dtypes
-        assert registry._normalize_dtype(int_dtype) == "int64"
-        assert registry._normalize_dtype(float_dtype) == "float64"
-        assert registry._normalize_dtype(bool_dtype) == "bool"
-        assert registry._normalize_dtype(object_dtype) == "object"
+        assert normalize_dtype(int_dtype) == "int64"
+        assert normalize_dtype(float_dtype) == "float64"
+        assert normalize_dtype(bool_dtype) == "bool"
+        assert normalize_dtype(object_dtype) == "object"
 
     def test_normalize_dtype_with_pandas_extension_dtype(self):
         """Test _normalize_dtype with pandas extension dtypes."""
-        registry = FieldRegistry()
 
         # Test with pandas extension dtypes
         categorical_dtype = pd.CategoricalDtype(["A", "B", "C"])
+        string_dtype = pd.StringDtype()
 
         # Should return dtype.name for extension dtypes
-        assert registry._normalize_dtype(categorical_dtype) == "category"
-
-        # Test with other extension dtypes if available
-        if hasattr(pd, "StringDtype"):
-            string_dtype = pd.StringDtype()
-            assert registry._normalize_dtype(string_dtype) == "string"
+        assert normalize_dtype(categorical_dtype) == "category"
+        assert normalize_dtype(string_dtype) == "string"
 
     def test_normalize_dtype_with_string(self):
         """Test _normalize_dtype with string inputs."""
-        registry = FieldRegistry()
 
         # Test with string dtype names
-        assert registry._normalize_dtype("int64") == "int64"
-        assert registry._normalize_dtype("float64") == "float64"
-        assert registry._normalize_dtype("object") == "object"
-        assert registry._normalize_dtype("bool") == "bool"
-        assert registry._normalize_dtype("datetime64[ns]") == "datetime64[ns]"
-        assert registry._normalize_dtype("timedelta64[ns]") == "timedelta64[ns]"
+        assert normalize_dtype("int64") == "int64"
+        assert normalize_dtype("float64") == "float64"
+        assert normalize_dtype("object") == "object"
+        assert normalize_dtype("bool") == "bool"
+        assert normalize_dtype("datetime64[ns]") == "datetime64[ns]"
+        assert normalize_dtype("timedelta64[ns]") == "timedelta64[ns]"
 
     def test_normalize_dtype_with_other_types(self):
         """Test _normalize_dtype with other non-dtype types."""
-        registry = FieldRegistry()
 
         # Test with other types that should be converted to string
-        assert registry._normalize_dtype(42) == "42"
-        assert registry._normalize_dtype(3.14) == "3.14"
-        assert registry._normalize_dtype(True) == "True"
-        assert registry._normalize_dtype(["list"]) == "['list']"
-        assert registry._normalize_dtype({"dict": "value"}) == "{'dict': 'value'}"
+        assert normalize_dtype(42) == "42"
+        assert normalize_dtype(3.14) == "3.14"
+        assert normalize_dtype(True) == "True"
+        assert normalize_dtype(["list"]) == "['list']"
+        assert normalize_dtype({"dict": "value"}) == "{'dict': 'value'}"
 
     def test_normalize_dtype_edge_cases(self):
         """Test _normalize_dtype with edge cases."""
-        registry = FieldRegistry()
 
         # Test with None (should convert to string)
-        assert registry._normalize_dtype(None) == "None"
+        assert normalize_dtype(None) == "None"
 
         # Test with empty string
-        assert registry._normalize_dtype("") == ""
+        assert normalize_dtype("") == ""
 
         # Test with complex numpy dtypes
         complex_dtype = np.dtype("complex128")
-        assert registry._normalize_dtype(complex_dtype) == "complex128"
+        assert normalize_dtype(complex_dtype) == "complex128"
 
         # Test with structured numpy dtype (has .names that is not None)
         structured_dtype = np.dtype([("x", "f4"), ("y", "i4")])
-        result = registry._normalize_dtype(structured_dtype)
+        result = normalize_dtype(structured_dtype)
         assert isinstance(result, str)
         assert "x" in result and "y" in result
 
@@ -837,7 +815,7 @@ class TestFieldRegistryNormalizeDtype:
                 self.names = None  # This is the edge case
 
         mock_dtype = MockDtypeWithNullNames()
-        assert registry._normalize_dtype(mock_dtype) == "mock_dtype"
+        assert normalize_dtype(mock_dtype) == "mock_dtype"
 
         # Test edge case: object with .name but no .names attribute
         class MockDtypeWithoutNames:
@@ -845,4 +823,4 @@ class TestFieldRegistryNormalizeDtype:
                 self.name = "mock_dtype_no_names"
 
         mock_dtype_no_names = MockDtypeWithoutNames()
-        assert registry._normalize_dtype(mock_dtype_no_names) == "mock_dtype_no_names"
+        assert normalize_dtype(mock_dtype_no_names) == "mock_dtype_no_names"

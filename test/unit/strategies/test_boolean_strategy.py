@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 import pytest
 from pandas import Series
 
-from mlschema.strategies.app.boolean_strategy import BooleanStrategy
+from mlschema.strategies import BooleanStrategy
 from mlschema.strategies.domain import BooleanField, FieldTypes
 
 
@@ -29,7 +29,7 @@ class TestBooleanStrategyInitialization:
     def test_initialization_calls_parent_constructor(self):
         """Test that BooleanStrategy properly calls parent class constructor."""
         with patch(
-            "mlschema.strategies.app.boolean_strategy.FieldStrategy.__init__"
+            "mlschema.strategies.app.boolean_strategy.Strategy.__init__"
         ) as mock_parent_init:
             mock_parent_init.return_value = None
 
@@ -100,11 +100,11 @@ class TestBooleanStrategyInheritance:
     """Test suite for inheritance and method delegation."""
 
     def test_inherits_from_field_strategy(self):
-        """Test that BooleanStrategy properly inherits from FieldStrategy."""
-        from mlschema.core.app.field_strategy import FieldStrategy
+        """Test that BooleanStrategy properly inherits from Strategy."""
+        from mlschema.core.app import Strategy
 
         strategy = BooleanStrategy()
-        assert isinstance(strategy, FieldStrategy)
+        assert isinstance(strategy, Strategy)
 
     def test_does_not_override_attributes_from_series(self):
         """Test that BooleanStrategy delegates to parent for attributes_from_series."""

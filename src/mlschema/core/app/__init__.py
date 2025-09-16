@@ -1,5 +1,5 @@
-from .field_registry import FieldRegistry
-from .field_service import FieldService
-from .field_strategy import FieldStrategy
+from .registry import Registry
+from .service import Service
+from .strategy import Strategy
 
-__all__ = ["FieldStrategy", "FieldRegistry", "FieldService"]
+__all__ = ["Strategy", "Registry", "Service"]

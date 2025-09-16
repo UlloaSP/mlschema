@@ -12,7 +12,7 @@
 * **Built‑in strategies**: `TextStrategy`, `NumberStrategy`, `CategoryStrategy`, `BooleanStrategy`, and `DateStrategy`—covering 90 % of common DataFrame dtypes.
 * **JSON schema generation** through `MLSchema.build(df)`, producing front‑end‑ready dictionaries.
 * **Fallback mechanism**: unmapped dtypes default to `TextStrategy` when registered.
-* **Custom extension API** based on `BaseField` (Pydantic) and `FieldStrategy`, allowing domain‑specific controls.
+* **Custom extension API** based on `BaseField` (Pydantic) and `Strategy`, allowing domain‑specific controls.
 * **Pydantic v2 validation hooks** for runtime integrity checks.
 * **Documentation**: comprehensive *Home*, *Installation*, *Usage*, and *API Reference* sections.
 
