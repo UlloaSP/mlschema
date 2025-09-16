@@ -41,7 +41,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pre-commit
-          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml', 'pyproject.toml', 'uv.lock') }}
 
       - name: Cache UV
         uses: actions/cache@v4
@@ -49,8 +49,8 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      - name: Install dev dependencies
-        run: uv sync
+      - name: Install dev tools (locked)
+        run: uv sync --group dev
 
       - name: Run pre-commit hooks
         run: uv run pre-commit run --all-files
@@ -83,12 +83,8 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      - name: Install docs dependencies
-        run: |
-          uv sync
-          uv pip install mkdocs
-          uv pip install mkdocstrings[python]
-          uv pip install mkdocs-material
+      - name: Install docs deps (locked)
+        run: uv sync --group docs
 
       - name: Build MkDocs (strict)
         run: uv run mkdocs build --strict
@@ -99,6 +95,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
+
   tests:
     name: Run tests
     runs-on: ubuntu-latest
@@ -127,12 +124,8 @@ jobs:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
 
-      - name: Install test dependencies
-        run: |
-          uv sync
-          uv pip install pytest
-          uv pip install pytest-mock
-          uv pip install pytest-cov
+      - name: Install test deps (locked)
+        run: uv sync --group test
 
       - name: Run tests with coverage
         run: |
@@ -166,7 +159,7 @@ jobs:
       - name: Install UV CLI
         run: pip install uv
 
-      - name: Build package
+      - name: Build package (PEP 517)
         run: uv build
 
       - name: Publish to PyPI
