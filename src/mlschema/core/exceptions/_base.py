@@ -12,7 +12,7 @@ class MLSchemaError(Exception):
     ```python
     try:
         schema = ms.build(df)
-    except MLSchemaError as exc:          # catch-all
+    except MLSchemaError as exc:  # catch-all
         logger.error("Schema failure: %s", exc, exc_info=True)
         raise HTTPException(422, detail=str(exc)) from exc
     ```

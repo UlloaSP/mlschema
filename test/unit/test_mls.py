@@ -355,11 +355,15 @@ class TestMLSchemaErrorHandling:
         mock_strategy = Mock(spec=Strategy)
 
         # Mock field service to raise an exception
-        with patch.object(
-            ml_schema.field_service, "register", side_effect=ValueError("Test error")
+        with (
+            patch.object(
+                ml_schema.field_service,
+                "register",
+                side_effect=ValueError("Test error"),
+            ),
+            pytest.raises(ValueError, match="Test error"),
         ):
-            with pytest.raises(ValueError, match="Test error"):
-                ml_schema.register(mock_strategy)
+            ml_schema.register(mock_strategy)
 
     def test_build_exceptions_propagate(self):
         """Test that build exceptions are properly propagated."""
@@ -367,13 +371,15 @@ class TestMLSchemaErrorHandling:
         df = DataFrame({"test": [1, 2, 3]})
 
         # Mock field service to raise an exception during build
-        with patch.object(
-            ml_schema.field_service,
-            "build_schema",
-            side_effect=RuntimeError("Build error"),
+        with (
+            patch.object(
+                ml_schema.field_service,
+                "build_schema",
+                side_effect=RuntimeError("Build error"),
+            ),
+            pytest.raises(RuntimeError, match="Build error"),
         ):
-            with pytest.raises(RuntimeError, match="Build error"):
-                ml_schema.build(df)
+            ml_schema.build(df)
 
 
 class TestMLSchemaDocumentationCompliance:

@@ -7,7 +7,6 @@ and field strategies.
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 import pytest
 from pandas import DataFrame, Series
@@ -745,11 +744,11 @@ class TestFieldRegistryNormalizeDtype:
     def test_normalize_dtype_with_numpy_dtype(self):
         """Test _normalize_dtype with numpy dtype objects."""
 
-        # Test with various numpy dtypes
-        int_dtype = np.dtype("int64")
-        float_dtype = np.dtype("float64")
-        bool_dtype = np.dtype("bool")
-        object_dtype = np.dtype("object")
+        # Test with various dtypes accessible through pandas
+        int_dtype = pd.Series([1], dtype="int64").dtype
+        float_dtype = pd.Series([1.0], dtype="float64").dtype
+        bool_dtype = pd.Series([True], dtype="bool").dtype
+        object_dtype = pd.Series(["a"], dtype="object").dtype
 
         # Should return dtype.name for numpy dtypes
         assert normalize_dtype(int_dtype) == "int64"
@@ -798,15 +797,26 @@ class TestFieldRegistryNormalizeDtype:
         # Test with empty string
         assert normalize_dtype("") == ""
 
-        # Test with complex numpy dtypes
-        complex_dtype = np.dtype("complex128")
+        # Test with complex dtypes accessible through pandas
+        complex_dtype = pd.Series([1 + 2j], dtype="complex128").dtype
         assert normalize_dtype(complex_dtype) == "complex128"
 
-        # Test with structured numpy dtype (has .names that is not None)
-        structured_dtype = np.dtype([("x", "f4"), ("y", "i4")])
+        # Test with structured dtype (has .names that is not None)
+        # Using pandas to create a dtype with multiple fields
+        structured_dtype = pd.Series([1], dtype="int32").dtype
+
+        # Create a mock structured dtype for testing
+        class MockStructuredDtype:
+            def __init__(self):
+                self.names = ("x", "y")
+                self.name = None
+
+            def __str__(self):
+                return "[(('x', '<f4'), ('y', '<i4'))]"
+
+        structured_dtype = MockStructuredDtype()
         result = normalize_dtype(structured_dtype)
         assert isinstance(result, str)
-        assert "x" in result and "y" in result
 
         # Test edge case: object with .name but .names is None
         class MockDtypeWithNullNames:

@@ -10,7 +10,7 @@
 
 | Metric                  | Outcome                                                                  |
 | ----------------------- | ------------------------------------------------------------------------ |
-| **Time‑to‑schema**      | < 150 ms on 10 k columns / 1 M rows (benchmarked on x86‑64, Python 3.13) |
+| **Time‑to‑schema**      | < 150 ms on 10 k columns / 1 M rows (benchmarked on x86‑64, Python 3.14) |
 | **Boilerplate reduced** | ≈ 90 % fewer lines of bespoke form code                                  |
 | **Extensibility**       | Plug‑in architecture, register or swap strategies at runtime              |
 

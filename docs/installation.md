@@ -8,7 +8,7 @@ This section provides a *battle‑tested* playbook for deploying **mlschema** in
 
 | Runtime               | Version                                             |
 | --------------------- | --------------------------------------------------- |
-| **Python**            | `>= 3.13`                                           |
+| **Python**            | `>= 3.14`                                           |
 | **Operating Systems** | Windows 11                                          |
 
 ---
@@ -65,7 +65,7 @@ All transitive dependencies are resolved automatically by your package manager. 
 | **numpy**    | `>= 2.3.0`      |
 
 > **Notice**
-> `mlschema` leverages Python 3.13’s **zero‑cost structural pattern matching** and **buffer protocol optimisations**—downgrades are not supported.
+> `mlschema` leverages Python 3.14’s **zero‑cost structural pattern matching** and **buffer protocol optimisations**—downgrades are not supported.
 
 ---
 

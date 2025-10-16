@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from unittest.mock import Mock, patch
 
-import numpy as np
 import pytest
 from pandas import Series
 from pydantic import ValidationError
@@ -171,9 +170,11 @@ class TestNumberStrategyAttributesFromSeries:
 
     def test_handles_series_with_nulls(self, strategy):
         """Test behavior with series containing null values."""
-        int_with_nulls = Series([1, None, 3, np.nan], dtype="float64", name="int_nulls")
+        int_with_nulls = Series(
+            [1, None, 3, float("nan")], dtype="float64", name="int_nulls"
+        )
         float_with_nulls = Series(
-            [1.5, None, 3.7, np.nan], dtype="float64", name="float_nulls"
+            [1.5, None, 3.7, float("nan")], dtype="float64", name="float_nulls"
         )
 
         int_result = strategy.attributes_from_series(int_with_nulls)
@@ -194,8 +195,9 @@ class TestNumberStrategyEdgeCases:
 
     def test_handles_large_integer_values(self, strategy):
         """Test handling of large integer values."""
+        # Using literal values for int64 limits: max = 2^63 - 1, min = -2^63
         large_ints = Series(
-            [np.iinfo(np.int64).max, np.iinfo(np.int64).min, 0],
+            [9223372036854775807, -9223372036854775808, 0],
             dtype="int64",
             name="large_ints",
         )
@@ -206,12 +208,13 @@ class TestNumberStrategyEdgeCases:
 
     def test_handles_extreme_float_values(self, strategy):
         """Test handling of extreme float values."""
+        # Using literal values for float64 limits
         extreme_floats = Series(
             [
-                np.finfo(np.float64).max,
-                np.finfo(np.float64).min,
-                np.finfo(np.float64).eps,
-                -np.finfo(np.float64).max,
+                1.7976931348623157e308,  # max
+                2.2250738585072014e-308,  # min
+                2.220446049250313e-16,  # eps
+                -1.7976931348623157e308,  # -max
             ],
             dtype="float64",
             name="extreme_floats",
@@ -263,7 +266,9 @@ class TestNumberStrategyEdgeCases:
 
     def test_handles_inf_and_negative_inf(self, strategy):
         """Test handling of infinity values."""
-        inf_series = Series([np.inf, -np.inf, 1.0], dtype="float64", name="inf_values")
+        inf_series = Series(
+            [float("inf"), float("-inf"), 1.0], dtype="float64", name="inf_values"
+        )
 
         result = strategy.attributes_from_series(inf_series)
 
@@ -425,10 +430,10 @@ class TestNumberStrategyErrorHandling:
         """Test that attributes_from_series method is robust against edge cases."""
         test_cases = [
             Series([], dtype="int64", name="empty"),
-            Series([np.nan], dtype="float64", name="only_nan"),
-            Series([np.inf, -np.inf], dtype="float64", name="only_inf"),
+            Series([float("nan")], dtype="float64", name="only_nan"),
+            Series([float("inf"), float("-inf")], dtype="float64", name="only_inf"),
             Series([0], dtype="int32", name="zero"),
-            Series([np.iinfo(np.int64).max], dtype="int64", name="max_int"),
+            Series([9223372036854775807], dtype="int64", name="max_int"),
         ]
 
         for series in test_cases:

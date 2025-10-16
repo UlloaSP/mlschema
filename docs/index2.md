@@ -78,7 +78,7 @@ Pair the resulting JSON with **mlform** to render an HTML form instantly.
 
 | Dependency | Minimum Version | Tested On |
 |------------|-----------------|-----------|
-| Python     | 3.9             | 3.9 – 3.13|
+| Python     | 3.9             | 3.9 – 3.14|
 | pandas     | 2.0             | 2.0 – 2.2 |
 | pydantic   | 2.4             | 2.4 – 2.7 |
 

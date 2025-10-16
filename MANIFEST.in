@@ -1,0 +1,45 @@
+# MANIFEST.in
+# This file specifies additional files to include in the source distribution
+
+# Include all documentation and license files
+include LICENSE
+include README.md
+include CHANGELOG.md
+include CONTRIBUTING.md
+include SECURITY.md
+include AUTHORS.md
+include THIRD_PARTY_LICENSES.md
+
+# Include configuration files
+include pyproject.toml
+include pyrightconfig.json
+include .pre-commit-config.yaml
+include mkdocs.yml
+
+# Include type information
+include src/mlschema/py.typed
+
+# Include documentation
+recursive-include docs *.md *.yml *.yaml
+
+# Include tests (for source distributions)
+recursive-include test *.py
+
+# Exclude build artifacts and caches
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *$py.class
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude *.egg-info
+
+# Exclude development files
+exclude .gitignore
+exclude .coverage
+exclude .python-version
+prune .github
+prune .venv
+prune .pytest_cache
+prune .ruff_cache
+prune htmlcov
+prune site
