@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
-from numpy import dtype as np_dtype
 from pandas import Series
 
 from mlschema.core.domain import BaseField
@@ -31,7 +31,7 @@ class Strategy:
         *,
         type_name: str,
         schema_cls: type[BaseField],
-        dtypes: Sequence[str | np_dtype],
+        dtypes: Sequence[str | Any],
     ) -> None:
         """
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from numpy import dtype as np_dtype
+from typing import Any
 
 from mlschema.core.app.strategy import Strategy
 from mlschema.core.exceptions import (
@@ -84,11 +84,11 @@ class Registry:
         """
         return self._by_name.get(type_name)
 
-    def strategy_for_dtype(self, dtype: str | np_dtype) -> Strategy | None:
+    def strategy_for_dtype(self, dtype: str | Any) -> Strategy | None:
         """Return the strategy capable of handling ``dtype`` or ``None``.
 
         Args:
-            dtype: NumPy dtype string or dtype object to look up.
+            dtype: Pandas dtype string or dtype object to look up.
 
         Returns:
             Strategy instance that handles the given dtype, or None if not found.

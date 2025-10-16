@@ -1,6 +1,113 @@
 # MLSchema
 
-> *Automated schema inference for data‑driven organisations, grounded in proven design, built for tomorrow.*
+> *Automated schema inference for data‑driven organisations, gr## 6. Further Reading
+
+* **[Detailed Installation](docs/installation.md)**
+* **[Usage Guide](docs/usage.md)**
+* **[API Reference](docs/reference.md)**
+* **[Changelog](CHANGELOG.md)**
+* **[GitHub](https://github.com/UlloaSP/mlschema)**
+
+> *Tradition meets innovation: MLSchema codifies time‑honoured form‑generation workflows while embracing Python's latest language features.*
+
+---
+
+## 7. Contributing
+
+We welcome contributions! MLSchema is an open-source project that thrives on community input.
+
+### How to Contribute
+
+1. **Read the guidelines**: See [CONTRIBUTING.md](CONTRIBUTING.md)
+2. **Pick an issue**: Check [Good First Issues](https://github.com/UlloaSP/mlschema/labels/good%20first%20issue)
+3. **Submit a PR**: Follow our pull request template
+4. **Join discussions**: Participate in [GitHub Discussions](https://github.com/UlloaSP/mlschema/discussions)
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/UlloaSP/mlschema.git
+cd mlschema
+
+# Install dependencies
+uv sync
+
+# Install pre-commit hooks
+uv run pre-commit install
+
+# Run tests
+uv run pytest
+```
+
+For detailed development instructions, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## 8. License
+
+MLSchema is released under the **MIT License**. See [LICENSE](LICENSE) for the full text.
+
+### Third-Party Licenses
+
+MLSchema depends on:
+
+* **pandas** (BSD 3-Clause)
+* **Pydantic** (MIT)
+
+For complete license information of all dependencies, see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+
+---
+
+## 9. Security
+
+We take security seriously. If you discover a security vulnerability:
+
+* **Do NOT** open a public issue
+* **Email us** at: <pablo.ulloa.santin@udc.es>
+* Include details following our [Security Policy](SECURITY.md)
+
+See [SECURITY.md](SECURITY.md) for our complete security policy and disclosure process.
+
+---
+
+## 10. Citation
+
+If you use MLSchema in your research or project, please cite:
+
+```bibtex
+@software{mlschema2025,
+  author = {Ulloa Santín, Pablo},
+  title = {MLSchema: Automated Schema Inference for pandas DataFrames},
+  year = {2025},
+  url = {https://github.com/UlloaSP/mlschema},
+  version = {0.1.0}
+}
+```
+
+---
+
+## 11. Acknowledgments
+
+MLSchema is built on top of excellent open-source projects:
+
+* **pandas**: The foundational data analysis library
+* **Pydantic**: Data validation using Python type annotations
+
+See [AUTHORS.md](AUTHORS.md) for contributor recognition and [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for full attribution.
+
+---
+
+## 12. Support
+
+* **📖 Documentation**: [https://ulloasp.github.io/mlschema/](https://ulloasp.github.io/mlschema/)
+* **🐛 Bug Reports**: [GitHub Issues](https://github.com/UlloaSP/mlschema/issues)
+* **💬 Discussions**: [GitHub Discussions](https://github.com/UlloaSP/mlschema/discussions)
+* **📧 Contact**: <pablo.ulloa.santin@udc.es>
+
+---
+
+**Made with ❤️ by [Pablo Ulloa Santín](https://github.com/UlloaSP)**n proven design, built for tomorrow.*
 
 ---
 
@@ -10,7 +117,7 @@
 
 | Metric                  | Outcome                                                                  |
 | ----------------------- | ------------------------------------------------------------------------ |
-| **Time‑to‑schema**      | < 150 ms on 10 k columns / 1 M rows (benchmarked on x86‑64, Python 3.13) |
+| **Time‑to‑schema**      | < 150 ms on 10 k columns / 1 M rows (benchmarked on x86‑64, Python 3.14) |
 | **Boilerplate reduced** | ≈ 90 % fewer lines of bespoke form code                                  |
 | **Extensibility**       | Plug‑in architecture, register or swap strategies at runtime              |
 

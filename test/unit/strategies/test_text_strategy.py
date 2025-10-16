@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from unittest.mock import Mock, patch
 
-import numpy as np
+import pandas as pd
 import pytest
 from pandas import Series
 
@@ -173,7 +173,7 @@ class TestTextStrategyWithRealTextSeries:
     def test_handles_series_with_null_values(self, strategy):
         """Test behavior with text series containing null values."""
         text_with_nulls = Series(
-            ["text", None, "more text", np.nan], name="nullable_text"
+            ["text", None, "more text", pd.NA], name="nullable_text"
         )
 
         result = strategy.attributes_from_series(text_with_nulls)
@@ -188,7 +188,7 @@ class TestTextStrategyWithRealTextSeries:
 
     def test_handles_all_null_text_series(self, strategy):
         """Test behavior with series containing only null values."""
-        all_null_series = Series([None, np.nan, None], name="all_nulls")
+        all_null_series = Series([None, pd.NA, None], name="all_nulls")
 
         result = strategy.attributes_from_series(all_null_series)
         assert isinstance(result, dict)
@@ -351,11 +351,35 @@ class TestTextStrategyIntegration:
         strategy = TextStrategy()
 
         # Try to create a field with minLength > maxLength
-        with pytest.raises(ValueError, match="minLength .* must be ≤ maxLength"):
+        with pytest.raises(ValueError, match=r"minLength .* must be ≤ maxLength"):
             strategy.schema_cls(
                 title="invalid_text",
                 minLength=20,
                 maxLength=10,  # max < min
+            )
+
+    def test_text_field_validation_fails_when_value_too_short(self):
+        """Test that TextField validation fails when value length < minLength."""
+        strategy = TextStrategy()
+
+        # Try to create a field with value shorter than minLength
+        with pytest.raises(ValueError, match=r"value length .* must be ≥ minLength"):
+            strategy.schema_cls(
+                title="short_text",
+                value="ab",  # Only 2 characters
+                minLength=5,
+            )
+
+    def test_text_field_validation_fails_when_value_too_long(self):
+        """Test that TextField validation fails when value length > maxLength."""
+        strategy = TextStrategy()
+
+        # Try to create a field with value longer than maxLength
+        with pytest.raises(ValueError, match=r"value length .* must be ≤ maxLength"):
+            strategy.schema_cls(
+                title="long_text",
+                value="this is a very long text",  # 24 characters
+                maxLength=10,
             )
 
 
@@ -401,7 +425,7 @@ class TestTextStrategyErrorHandling:
     def test_handles_series_with_none_and_nan_mix(self, strategy):
         """Test handling of series with mixed None and NaN values."""
         mixed_nulls = Series(
-            ["text", None, np.nan, "more text", None], name="mixed_nulls"
+            ["text", None, pd.NA, "more text", None], name="mixed_nulls"
         )
 
         result = strategy.attributes_from_series(mixed_nulls)

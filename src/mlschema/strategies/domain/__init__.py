@@ -7,9 +7,9 @@ from .text_field import TextField
 
 __all__ = [
     "BooleanField",
-    "DateField",
-    "NumberField",
     "CategoryField",
-    "TextField",
+    "DateField",
     "FieldTypes",
+    "NumberField",
+    "TextField",
 ]

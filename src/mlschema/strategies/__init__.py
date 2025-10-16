@@ -34,8 +34,8 @@ from .app import (
 
 __all__ = [
     "BooleanStrategy",
-    "DateStrategy",
-    "TextStrategy",
-    "NumberStrategy",
     "CategoryStrategy",
+    "DateStrategy",
+    "NumberStrategy",
+    "TextStrategy",
 ]

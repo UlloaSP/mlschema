@@ -6,8 +6,8 @@ from .text_strategy import TextStrategy
 
 __all__ = [
     "BooleanStrategy",
-    "DateStrategy",
-    "TextStrategy",
-    "NumberStrategy",
     "CategoryStrategy",
+    "DateStrategy",
+    "NumberStrategy",
+    "TextStrategy",
 ]
