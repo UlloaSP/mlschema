@@ -11,12 +11,12 @@ from mlschema.core.exceptions.service import (
 )
 
 __all__ = [
-    "MLSchemaError",
-    "InvalidValueError",
-    "FieldRegistryError",
-    "FieldServiceError",
-    "StrategyNameAlreadyRegisteredError",
-    "StrategyDtypeAlreadyRegisteredError",
     "EmptyDataFrameError",
     "FallbackStrategyMissingError",
+    "FieldRegistryError",
+    "FieldServiceError",
+    "InvalidValueError",
+    "MLSchemaError",
+    "StrategyDtypeAlreadyRegisteredError",
+    "StrategyNameAlreadyRegisteredError",
 ]

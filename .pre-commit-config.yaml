@@ -10,7 +10,7 @@ repos:
       - id: check-merge-conflict
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.7
+    rev: v0.14.1
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -20,4 +20,4 @@ repos:
     rev: v1.1.402
     hooks:
       - id: pyright
-        additional_dependencies: [numpy>=2.3.0, pandas>=2.3.0, pydantic>=2.11.4]
+        additional_dependencies: [pandas>=2.3.3, pydantic>=2.12.0]
