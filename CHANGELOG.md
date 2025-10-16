@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed explicit NumPy dependency (now accessed through pandas)
 - Updated all tests to use pandas APIs instead of NumPy
 
-## [0.1.0] - 2025-10-08
+## [0.1.1] - 2025-10-08
 
 ### Added
 
@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Release Notes
 
-### Version 0.1.0 Highlights
+### Version 0.1.1 Highlights
 
 This is the first public release of MLSchema, a micro-library for converting pandas DataFrames into JSON schemas.
 

@@ -329,7 +329,7 @@ What actually happens
 ## Environment
 - OS: [e.g., Windows 11, macOS 14]
 - Python version: [e.g., 3.14.0]
-- MLSchema version: [e.g., 0.1.0]
+- MLSchema version: [e.g., 0.1.1]
 - pandas version: [e.g., 2.3.0]
 
 ## Additional Context

@@ -156,7 +156,7 @@ If you use MLSchema in your research or project, please cite:
   title = {MLSchema: Automated Schema Inference for pandas DataFrames},
   year = {2025},
   url = {https://github.com/UlloaSP/mlschema},
-  version = {0.1.0}
+  version = {0.1.1}
 }
 ```
 

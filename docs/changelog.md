@@ -4,7 +4,7 @@
 
 ---
 
-## \[0.1.0] – *Upcoming*
+## \[0.1.1] – *Upcoming*
 
 ### Added
 
