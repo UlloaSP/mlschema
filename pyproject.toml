@@ -86,6 +86,7 @@ Funding = "https://github.com/sponsors/UlloaSP"
 # Development dependencies
 dev = [
     "mlschema[test,docs,lint]",
+    "pre-commit>=4.3.0",
 ]
 
 # Testing dependencies
@@ -108,7 +109,6 @@ docs = [
 
 # Linting and formatting dependencies
 lint = [
-    "pre-commit>=4.3.0",
     "pyright>=1.1.402",
     "ruff>=0.14.1",
 ]
