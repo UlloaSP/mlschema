@@ -85,12 +85,13 @@ jobs:
       - name: Build MkDocs (strict)
         run: uv run mkdocs build --strict
 
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload built docs artifact
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site
+          name: mkdocs-site
+          path: ./site
+          if-no-files-found: error
+          retention-days: 7
 
   tests:
     name: Run tests
