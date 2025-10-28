@@ -80,7 +80,7 @@ Outcome: a `JSON` that your UI layer can instantly translate into dynamic forms.
 * **[Detailed Installation](docs/installation.md)**
 * **[Usage Guide](docs/usage.md)**
 * **[API Reference](docs/reference.md)**
-* **[Changelog](CHANGELOG.md)**
+* **[Changelog](docs/changelog.md)**
 * **[GitHub](https://github.com/UlloaSP/mlschema)**
 
 > *Tradition meets innovation: MLSchema codifies time‑honoured form‑generation workflows while embracing Python's latest language features.*

@@ -4,7 +4,7 @@
 # Include all documentation and license files
 include LICENSE
 include README.md
-include CHANGELOG.md
+include docs/changelog.md
 include CONTRIBUTING.md
 include SECURITY.md
 include AUTHORS.md

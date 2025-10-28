@@ -6,7 +6,7 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
-  #logo: assets/images/logo.svg          # añade tu logo corporativo
+  #logo: docs/assets/logo.svg          # añade tu logo corporativo
   #favicon: assets/images/favicon.ico    # favicon (opcional)
   language: en
   icon:
@@ -39,11 +39,6 @@ plugins:
             show_signature_annotations: true
             heading_level: 2
             merge_init_into_class: true
-  #- git-revision-date-localized:
-   #   locale: en
-    #  fallback_to_build_date: true
-  # - git-authors
-  #- macros
 
 markdown_extensions:
   - admonition
@@ -68,8 +63,7 @@ extra:
     text: "© 2025 Your Organization. All rights reserved."
 
 nav:
-  - Home: index2.md
-  - Home2: index.md
+  - Home: index.md
   - Installation: installation.md
   - Usage: usage.md
   - API Reference: reference.md

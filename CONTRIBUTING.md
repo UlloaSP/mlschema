@@ -255,7 +255,7 @@ def build_schema(dataframe: DataFrame, *, strict: bool = True) -> str:
 
    ```bash
    uv run pre-commit run --all-files
-   uv run pytest --cov=src --cov-fail-under=80
+   uv run pytest --cov=src --cov-fail-under=100
    ```
 
 3. **Push to your fork**:
@@ -327,10 +327,10 @@ What should happen
 What actually happens
 
 ## Environment
-- OS: [e.g., Windows 11, macOS 14]
+- OS: [OS independent]
 - Python version: [e.g., 3.14.0]
 - MLSchema version: [e.g., 0.1.1]
-- pandas version: [e.g., 2.3.0]
+- pandas version: [e.g., 2.3.3]
 
 ## Additional Context
 Screenshots, error messages, stack traces, etc.

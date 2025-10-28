@@ -1,18 +1,23 @@
 # MLSchema
 
-> *Automated schema inference for data‑driven organisations, grounded in proven design, built for tomorrow.*
+> *Lightweight SDK for turning **pandas** dataframes into front-end-ready JSON schemas, designed to integrate seamlessly with the [mlform](https://ulloasp.github.io/mlform/) library, yet fully usable on its own.*
 
 ---
 
 ## 1. Executive Summary
 
-**MLSchema** is a Python micro‑library that converts **pandas** dataframes into fully‑validated, front‑end‑ready JSON schemas. The goal: eliminate hand‑rolled form definitions, accelerate prototype‑to‑production cycles, and enforce data‑contract governance across your analytics stack.
+**MLSchema** is a Python micro‑library that converts **pandas** dataframes into fully‑validated JSON Schemas. The goal: eliminate hand‑rolled form definitions, accelerate prototype‑to‑production cycles, and enforce data‑contract governance across your analytics stack.
 
 | Metric                  | Outcome                                                                  |
 | ----------------------- | ------------------------------------------------------------------------ |
 | **Time‑to‑schema**      | < 150 ms on 10 k columns / 1 M rows (benchmarked on x86‑64, Python 3.14) |
-| **Boilerplate reduced** | ≈ 90 % fewer lines of bespoke form code                                  |
-| **Extensibility**       | Plug‑in architecture, register or swap strategies at runtime              |
+| **Boilerplate reduced** | ≈ 90 % fewer lines of bespoke form code
+
+| Value Driver            | Detail                                                          |
+| ----------------------- | --------------------------------------------------------------- |
+| **Contract enforcement**| Pydantic v2 validation guarantees column–to–field fidelity.     |
+| **Extensible**          | Register or swap strategies at runtime—no consumer refactor.    |
+| **Zero friction**       | Sensible defaults; no configuration required for common dtypes. |
 
 ---
 
@@ -46,7 +51,7 @@ ms.register(TextStrategy())
 schema = ms.build(df)
 ```
 
-Outcome: a `JSON` that your UI layer can instantly translate into dynamic forms.
+> Pair the resulting JSON with **mlform** to render an HTML form instantly.
 
 ---
 
@@ -62,16 +67,16 @@ Outcome: a `JSON` that your UI layer can instantly translate into dynamic forms.
 
 * **Single‑responsibility**: Each strategy owns one field type.
 * **Hot‑swap**: Swap implementations without touching consumer code.
-* **Forward compatibility**: Introduce domain‑specific controls (e.g., geospatial pickers) with near‑zero refactor.
+* **Forward compatibility**: Introduce domain‑specific controls as geospatial, IoT or custom widgets as needed.
 
 ---
 
 ## 5. Feature Highlights
 
-1. **Zero‑configuration defaults**: Text fallback ensures graceful degradation.
-2. **Pydantic v2 validators**: Domain rules enforced at build time.
-3. **Runtime performance**: Vectorised dtype checks, no Python loops on critical paths.
-4. **Production readiness**: CI badge, semantic versioning, and zero open CVEs (September 2025).
+1. **Automatic schema inference** – text, numeric, categorical, boolean and date handled out of the box.
+2. **Pydantic v2 validators** – schema is fully typed and runtime-safe.
+3. **No external services** – all processing is in-process; suitable for air-gapped environments.
+4. **Typed returns** – JSON schema is delivered as a Pydantic model for IDE autocompletion.
 
 ---
 
@@ -81,5 +86,6 @@ Outcome: a `JSON` that your UI layer can instantly translate into dynamic forms.
 * **[Usage Guide](usage.md)**
 * **[API Reference](reference.md)**
 * **[GitHub](https://github.com/UlloaSP/mlschema)**
+* **[mlform](https://github.com/UlloaSP/mlform)**
 
-> *Tradition meets innovation: MLSchema codifies time‑honoured form‑generation workflows while embracing Python’s latest language features.*
+> *Respecting proven patterns, built for tomorrow’s stack.*

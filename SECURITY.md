@@ -136,8 +136,8 @@ MLSchema depends on:
 
 ### Runtime Dependencies
 
-- **pandas** (>=2.3.0): Well-maintained, security advisories tracked
-- **Pydantic** (>=2.11.4): Strong security record, actively maintained
+- **pandas** (>=2.3.3): Well-maintained, security advisories tracked
+- **Pydantic** (>=2.12.3): Strong security record, actively maintained
 
 ### Monitoring
 
@@ -160,7 +160,7 @@ We aim to:
 Our development process includes:
 
 - **Code Review**: All changes reviewed before merging
-- **Automated Testing**: Comprehensive test suite (279 tests, 80%+ coverage)
+- **Automated Testing**: Comprehensive test suite (281 tests, 100% coverage)
 - **Static Analysis**: Pyright for type checking, Ruff for linting
 - **Pre-commit Hooks**: Automated checks before commits
 - **Continuous Integration**: Tests run on all PRs
@@ -219,4 +219,4 @@ Thank you for helping keep MLSchema and its users safe! 🔒
 
 ---
 
-**Last Updated**: October 8, 2025
+**Last Updated**: October 28, 2025

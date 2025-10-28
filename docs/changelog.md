@@ -1,45 +1,60 @@
 # Changelog
 
-> This project adheres to [Semantic Versioning](https://semver.org/) and the principles defined in [Keep a Changelog](https://keepachangelog.com/).
+All notable changes to MLSchema will be documented in this file.
 
----
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## \[0.1.1] – *Upcoming*
+## [0.1.1] - 2025-10-08
 
 ### Added
 
-* **Schema orchestration** via `mlschema.core.MLSchema`, enabling registration, hot‑swap, and removal of field strategies.
-* **Built‑in strategies**: `TextStrategy`, `NumberStrategy`, `CategoryStrategy`, `BooleanStrategy`, and `DateStrategy`—covering 90 % of common DataFrame dtypes.
-* **JSON schema generation** through `MLSchema.build(df)`, producing front‑end‑ready dictionaries.
-* **Fallback mechanism**: unmapped dtypes default to `TextStrategy` when registered.
-* **Custom extension API** based on `BaseField` (Pydantic) and `Strategy`, allowing domain‑specific controls.
-* **Pydantic v2 validation hooks** for runtime integrity checks.
-* **Documentation**: comprehensive *Home*, *Installation*, *Usage*, and *API Reference* sections.
+- Initial release of MLSchema
+- Core `MLSchema` class with register, unregister, update, and build methods
+- Strategy pattern architecture for extensible field type handling
+- Built-in strategies:
+  - `NumberStrategy`: Handles int32, int64, float32, float64
+  - `TextStrategy`: Handles object and string types
+  - `BooleanStrategy`: Handles bool and boolean types
+  - `DateStrategy`: Handles datetime64[ns] types
+  - `CategoryStrategy`: Handles categorical types
+- Pydantic-based schema validation
+- Comprehensive test suite (281 tests, 100% coverage)
+- Full type hints with Pyright strict mode
+- Documentation with MkDocs
+- Pre-commit hooks for code quality
 
 ### Changed
 
-* N/A
+N/A
 
 ### Deprecated
 
-* N/A
+N/A
 
 ### Removed
 
-* N/A
+N/A
 
 ### Fixed
 
-* N/A
+N/A
+
+### Security
+
+N/A
 
 ---
 
-## Legend
+**Legend:**
 
-* **Added** for new features.
-* **Changed** for backward‑compatible enhancements.
-* **Deprecated** for soon‑to‑be removed features.
-* **Removed** for breaking changes that eliminate functionality.
-* **Fixed** for any bug fixes.
+- 🎉 **Added**: New features
+- 🔄 **Changed**: Changes in existing functionality
+- 🗑️ **Deprecated**: Soon-to-be removed features
+- ❌ **Removed**: Now removed features
+- 🐛 **Fixed**: Bug fixes
+- 🔒 **Security**: Security improvements
 
-> *All dates will be added upon tagged releases.*
+---
+
+**Last Updated**: October 28, 2025
