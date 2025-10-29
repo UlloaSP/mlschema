@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 """Integration tests for mlschema.mls.
 
 This module provides comprehensive integration tests for the MLSchema class,

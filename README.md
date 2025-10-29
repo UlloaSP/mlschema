@@ -1,185 +1,213 @@
 # MLSchema
 
-> *Automated schema inference for data‑driven organisations, grn proven design, built for tomorrow.*
+[![PyPI - Version](https://img.shields.io/pypi/v/mlschema.svg)](https://pypi.org/project/mlschema/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/mlschema.svg)](https://pypi.org/project/mlschema/)
+[![CI](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/UlloaSP/mlschema.svg)](https://github.com/UlloaSP/mlschema/blob/main/LICENSE)
 
----
+> Lightweight orchestration layer that turns pandas DataFrames into front-end-ready JSON schemas, engineered to pair seamlessly with [mlform](https://github.com/UlloaSP/mlform).
 
-## 1. Executive Summary
+## Contents
 
-**MLSchema** is a Python micro‑library that converts **pandas** dataframes into fully‑validated, front‑end‑ready JSON schemas. The goal: eliminate hand‑rolled form definitions, accelerate prototype‑to‑production cycles, and enforce data‑contract governance across your analytics stack.
+- [MLSchema](#mlschema)
+  - [Contents](#contents)
+  - [Overview](#overview)
+  - [Key Features](#key-features)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [Quick Start](#quick-start)
+  - [Schema Output](#schema-output)
+  - [How It Works](#how-it-works)
+  - [Built-in Strategies](#built-in-strategies)
+  - [Extending MLSchema](#extending-mlschema)
+  - [Validation \& Error Handling](#validation--error-handling)
+  - [Tooling \& Quality](#tooling--quality)
+  - [Resources](#resources)
+  - [Contributing](#contributing)
+  - [Security](#security)
+  - [License](#license)
 
-| Metric                  | Outcome                                                                  |
-| ----------------------- | ------------------------------------------------------------------------ |
-| **Time‑to‑schema**      | < 150 ms on 10 k columns / 1 M rows (benchmarked on x86‑64, Python 3.14) |
-| **Boilerplate reduced** | ≈ 90 % fewer lines of bespoke form code                                  |
-| **Extensibility**       | Plug‑in architecture, register or swap strategies at runtime             |
+## Overview
 
----
+`mlschema` accelerates form and contract generation by automatically deriving JSON field definitions from tabular data. The library applies a strategy-driven pipeline on top of pandas, validating every payload with Pydantic before it reaches your UI tier or downstream services.
 
-## 2. Quick Installation
+- Converts analytics data into stable JSON schemas in a few lines of code.
+- Keeps inference logic server-side; no external services or background workers required.
+- Ships with production-tested strategies for text, numeric, categorical, boolean, and temporal data.
+- Designed for synchronous use alongside [mlform](https://ulloasp.github.io/mlform/), yet fully usable on its own.
 
-For green‑field projects or CI pipelines, a single command sets up MLSchema and its dependency graph using **[uv](https://docs.astral.sh/uv/)**:
+## Key Features
+
+- Strategy registry that lets you opt into only the field types you want to expose.
+- Pydantic v2 models guarantee structural validity and embed domain-specific constraints.
+- Normalized dtype matching covers both pandas extension types and NumPy dtypes.
+- Deterministic JSON output (`inputs` / `outputs`) suitable for form engines and low-code tooling.
+- Fully typed public API with strict static analysis (Pyright) and comprehensive tests.
+
+## Requirements
+
+- Python `>= 3.14, < 3.15`
+- pandas `>= 2.3.3, < 3.0.0`
+- pydantic `>= 2.12.3, < 3.0.0`
+
+All transitive dependencies are resolved automatically by your package manager.
+
+## Installation
 
 ```bash
 uv add mlschema
 ```
 
-For other package managers, refer to the dedicated [Installation](docs/installation.md) guide.
+Alternative package managers:
 
----
+- `pip install mlschema`
+- `poetry add mlschema`
+- `conda install -c conda-forge mlschema`
+- `pipenv install mlschema`
 
-## 3. 90‑Second Onboarding
+Pin a version (for example `mlschema==0.1.2`) when you need deterministic environments.
+
+## Quick Start
 
 ```python
 import pandas as pd
 from mlschema import MLSchema
-from mlschema.strategies import TextStrategy
+from mlschema.strategies import TextStrategy, NumberStrategy, CategoryStrategy
 
-# 1️⃣  Source your data
-df = pd.read_csv("data.csv")
+df = pd.DataFrame(
+  {
+    "name": ["Ada", "Linus", "Grace"],
+    "score": [98.5, 86.0, 91.0],
+    "role": pd.Categorical(["engineer", "engineer", "scientist"]),
+  }
+)
 
-# 2️⃣  Spin up the orchestrator and register baseline strategies
-ms = MLSchema()
-ms.register(TextStrategy())
+builder = MLSchema()
+builder.register(TextStrategy())      # fallback for unsupported dtypes
+builder.register(NumberStrategy())
+builder.register(CategoryStrategy())
 
-# 3️⃣  Produces a JSON schema
-schema = ms.build(df)
+schema = builder.build(df)
 ```
 
-Outcome: a `JSON` that your UI layer can instantly translate into dynamic forms.
+## Schema Output
 
----
+The payload is ready to serialise to JSON and inject into your UI or downstream service:
 
-## 4. Architectural Building Blocks
-
-| Component                    | Role                                                 | Extensibility Point                      |
-| ---------------------------- | ---------------------------------------------------- | ---------------------------------------- |
-| **`mlschema.MLSchema`**      | Strategy registry, validation pipeline, JSON emitter | `register()`, `update()`, `unregister()` |
-| **Field Strategies**         | Map pandas dtypes => form controls                   | Implement `Strategy` subclasses          |
-| **`BaseField`** (Pydantic)   | Canonical schema blueprint                           | Custom Pydantic models inherit from it   |
-
-### Why a Strategy Pattern?
-
-* **Single‑responsibility**: Each strategy owns one field type.
-* **Hot‑swap**: Swap implementations without touching consumer code.
-* **Forward compatibility**: Introduce domain‑specific controls (e.g., geospatial pickers) with near‑zero refactor.
-
----
-
-## 5. Feature Highlights
-
-1. **Zero‑configuration defaults**: Text fallback ensures graceful degradation.
-2. **Pydantic v2 validators**: Domain rules enforced at build time.
-3. **Runtime performance**: Vectorised dtype checks, no Python loops on critical paths.
-4. **Production readiness**: CI badge, semantic versioning, and zero open CVEs (September 2025).
-
----
-
-## 6. Further Reading
-
-* **[Detailed Installation](docs/installation.md)**
-* **[Usage Guide](docs/usage.md)**
-* **[API Reference](docs/reference.md)**
-* **[Changelog](docs/changelog.md)**
-* **[GitHub](https://github.com/UlloaSP/mlschema)**
-
-> *Tradition meets innovation: MLSchema codifies time‑honoured form‑generation workflows while embracing Python's latest language features.*
-
----
-
-## 7. Contributing
-
-We welcome contributions! MLSchema is an open-source project that thrives on community input.
-
-### How to Contribute
-
-1. **Read the guidelines**: See [CONTRIBUTING.md](CONTRIBUTING.md)
-2. **Pick an issue**: Check [Good First Issues](https://github.com/UlloaSP/mlschema/labels/good%20first%20issue)
-3. **Submit a PR**: Follow our pull request template
-4. **Join discussions**: Participate in [GitHub Discussions](https://github.com/UlloaSP/mlschema/discussions)
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/UlloaSP/mlschema.git
-cd mlschema
-
-# Install dependencies
-uv sync
-
-# Install pre-commit hooks
-uv run pre-commit install
-
-# Run tests
-uv run pytest
-```
-
-For detailed development instructions, see [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
-
-## 8. License
-
-MLSchema is released under the **MIT License**. See [LICENSE](LICENSE) for the full text.
-
-### Third-Party Licenses
-
-MLSchema depends on:
-
-* **pandas** (BSD 3-Clause)
-* **Pydantic** (MIT)
-
-For complete license information of all dependencies, see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
-
----
-
-## 9. Security
-
-We take security seriously. If you discover a security vulnerability:
-
-* **Do NOT** open a public issue
-* **Email us** at: <pablo.ulloa.santin@udc.es>
-* Include details following our [Security Policy](SECURITY.md)
-
-See [SECURITY.md](SECURITY.md) for our complete security policy and disclosure process.
-
----
-
-## 10. Citation
-
-If you use MLSchema in your research or project, please cite:
-
-```bibtex
-@software{mlschema2025,
-  author = {Ulloa Santín, Pablo},
-  title = {MLSchema: Automated Schema Inference for pandas DataFrames},
-  year = {2025},
-  url = {https://github.com/UlloaSP/mlschema},
-  version = {0.1.1}
+```json
+{
+  "inputs": [
+  {"title": "name", "required": true, "type": "text"},
+  {"title": "score", "required": true, "type": "number", "step": 0.1},
+  {"title": "role", "required": true, "type": "category", "options": ["engineer", "scientist"]}
+  ],
+  "outputs": []
 }
 ```
 
+`TextStrategy` acts as the default fallback. Make sure it is registered when you want unsupported columns to degrade gracefully.
+
+## How It Works
+
+1. **Registry orchestration** – `MLSchema` keeps an in-memory registry of field strategies, keyed by a logical `type_name` and one or more pandas dtypes.
+2. **Inference pipeline** – each DataFrame column is normalised, matched against the registry, and dispatched to the first compatible strategy.
+3. **Schema materialisation** – strategies merge required metadata (title, type, required) with data-driven attributes, then dump the result through a Pydantic model.
+4. **Structured output** – the service returns the canonical `{"inputs": [...], "outputs": []}` payload that feeds [mlform](https://ulloasp.github.io/mlform/) or any form rendering layer.
+
+## Built-in Strategies
+
+| Strategy class | `type` name | Supported pandas dtypes | Additional attributes |
+| -------------- | ----------- | ----------------------- | --------------------- |
+| `TextStrategy` | `text`      | `object`, `string`      | `minLength`, `maxLength`, `pattern`, `value`, `placeholder` |
+| `NumberStrategy` | `number`  | `int64`, `int32`, `float64`, `float32` | `min`, `max`, `step`, `value`, `unit`, `placeholder` |
+| `CategoryStrategy` | `category` | `category` | `options`, `value` |
+| `BooleanStrategy` | `boolean` | `bool`, `boolean` | `value` |
+| `DateStrategy` | `date` | `datetime64[ns]`, `datetime64` | `min`, `max`, `value`, `step` |
+
+Register only the strategies you need. Duplicate registrations raise explicit errors; use `MLSchema.update()` to swap implementations at runtime.
+
+## Extending MLSchema
+
+Create bespoke field types by pairing a custom Pydantic model with a strategy implementation:
+
+```python
+from typing import Literal
+from pandas import Series
+from mlschema.core import BaseField, Strategy
+
+
+class RatingField(BaseField):
+  type: Literal["rating"] = "rating"
+  min: int | None = None
+  max: int | None = None
+  precision: float = 0.5
+
+
+class RatingStrategy(Strategy):
+  def __init__(self) -> None:
+    super().__init__(
+      type_name="rating",
+      schema_cls=RatingField,
+      dtypes=("float64",),
+    )
+
+  def attributes_from_series(self, series: Series) -> dict:
+    return {
+      "min": float(series.min()),
+      "max": float(series.max()),
+    }
+```
+
+- Use `Strategy.dtypes` to advertise the pandas dtypes your strategy understands.
+- Avoid mutating the incoming `Series`; treat it as read-only.
+- Reserved keys (`title`, `type`, `required`, `description`) are populated by the base class.
+
+Reference the full guide at [https://ulloasp.github.io/mlschema/usage/](https://ulloasp.github.io/mlschema/usage/) for end-to-end patterns.
+
+## Validation & Error Handling
+
+- `EmptyDataFrameError` – raised when the DataFrame has no rows or columns.
+- `FallbackStrategyMissingError` – triggered if an unsupported dtype is encountered without a registered fallback.
+- `StrategyNameAlreadyRegisteredError` / `StrategyDtypeAlreadyRegisteredError` – guard against duplicate registrations.
+- Pydantic `ValidationError` / `PydanticCustomError` – surface invalid field constraints early (`min`/`max`, regex patterns, date ranges, etc.).
+
+All exceptions derive from `mlschema.core.MLSchemaError`, making it straightforward to trap library-level failures.
+
+## Tooling & Quality
+
+- Distributed as an MIT-licensed wheel and sdist built with Hatchling.
+- Strict typing (`pyright`) and linting (`ruff`) shipped with the repo.
+- Test suite powered by `pytest` and `pytest-cov`; coverage reports live alongside the source tree.
+- `py.typed` marker ensures type information propagates to downstream projects.
+
+## Resources
+
+- Documentation portal: [https://ulloasp.github.io/mlschema/](https://ulloasp.github.io/mlschema/)
+- API reference: [https://ulloasp.github.io/mlschema/reference/](https://ulloasp.github.io/mlschema/reference/)
+- Changelog: [https://ulloasp.github.io/mlschema/changelog/](https://ulloasp.github.io/mlschema/changelog/)
+- Issue tracker: [https://github.com/UlloaSP/mlschema/issues](https://github.com/UlloaSP/mlschema/issues)
+- Discussions: [https://github.com/UlloaSP/mlschema/discussions](https://github.com/UlloaSP/mlschema/discussions)
+- mlform (optional form renderer): [https://github.com/UlloaSP/mlform](https://github.com/UlloaSP/mlform)
+
+## Contributing
+
+Community contributions are welcome. Review the guidelines and pick an issue to get started:
+
+- Contribution guide: [https://github.com/UlloaSP/mlschema/blob/main/CONTRIBUTING.md](https://github.com/UlloaSP/mlschema/blob/main/CONTRIBUTING.md)
+- Good first issues: [https://github.com/UlloaSP/mlschema/labels/good%20first%20issue](https://github.com/UlloaSP/mlschema/labels/good%20first%20issue)
+- Development workflow: `uv sync`, `uv run pre-commit install`, `uv run pytest`
+
+## Security
+
+Please report security concerns privately by emailing `pablo.ulloa.santin@udc.es`. The coordinated disclosure process is documented at [https://github.com/UlloaSP/mlschema/blob/main/SECURITY.md](https://github.com/UlloaSP/mlschema/blob/main/SECURITY.md).
+
+## License
+
+Released under the MIT License. Complete terms and third-party attributions are available at:
+
+- License: [https://github.com/UlloaSP/mlschema/blob/main/LICENSE](https://github.com/UlloaSP/mlschema/blob/main/LICENSE)
+- Third-party notices: [https://github.com/UlloaSP/mlschema/blob/main/THIRD_PARTY_LICENSES.md](https://github.com/UlloaSP/mlschema/blob/main/THIRD_PARTY_LICENSES.md)
+
 ---
 
-## 11. Acknowledgments
-
-MLSchema is built on top of excellent open-source projects:
-
-* **pandas**: The foundational data analysis library
-* **Pydantic**: Data validation using Python type annotations
-
-See [AUTHORS.md](AUTHORS.md) for contributor recognition and [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for full attribution.
-
----
-
-## 12. Support
-
-* **📖 Documentation**: [https://ulloasp.github.io/mlschema/](https://ulloasp.github.io/mlschema/)
-* **🐛 Bug Reports**: [GitHub Issues](https://github.com/UlloaSP/mlschema/issues)
-* **💬 Discussions**: [GitHub Discussions](https://github.com/UlloaSP/mlschema/discussions)
-* **📧 Contact**: <pablo.ulloa.santin@udc.es>
-
----
-
-**Made with ❤️ by [Pablo Ulloa Santín](https://github.com/UlloaSP)**
+Made by [Pablo Ulloa Santin](https://github.com/UlloaSP) and the MLSchema community.

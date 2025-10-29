@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 """Tests for mlschema.mls.
 
 This module provides comprehensive test coverage for the MLSchema class,

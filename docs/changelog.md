@@ -45,6 +45,33 @@ N/A
 N/A
 
 ---
+## [0.1.2] - 2025-10-29
+
+### Added
+
+- Open Software License Headers
+
+### Changed
+
+- Readme
+
+### Deprecated
+
+N/A
+
+### Removed
+
+N/A
+
+### Fixed
+
+N/A
+
+### Security
+
+N/A
+
+---
 
 **Legend:**
 
@@ -57,4 +84,4 @@ N/A
 
 ---
 
-**Last Updated**: October 28, 2025
+**Last Updated**: October 29, 2025

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 from mlschema.core.exceptions._base import InvalidValueError, MLSchemaError
 from mlschema.core.exceptions.registry import (
     FieldRegistryError,
