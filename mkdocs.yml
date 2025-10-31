@@ -66,6 +66,7 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Usage: usage.md
+  - Schema Standard: schema-standard.md
   - API Reference: reference.md
   - Changelog: changelog.md             # mantén un historial de versiones
 
