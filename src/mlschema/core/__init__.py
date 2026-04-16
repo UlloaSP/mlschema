@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 """Core abstractions and error contracts for **MLSchema**.
 
 This module defines the *extension surface* on which all custom behaviour

@@ -103,4 +103,4 @@ All contributors are expected to follow our Code of Conduct (see [CONTRIBUTING.m
 
 *This list is maintained manually. If you've contributed and don't see your name, please open an issue or PR!*
 
-**Last Updated**: October 8, 2025
+**Last Updated**: October 28, 2025

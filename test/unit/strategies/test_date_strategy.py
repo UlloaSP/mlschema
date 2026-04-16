@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 """Tests for mlschema.strategies.app.date_strategy.
 
 This module provides comprehensive test coverage for the DateStrategy class,

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 """Tests for mlschema.strategies.app.category_strategy.
 
 This module provides comprehensive test coverage for the CategoryStrategy class,

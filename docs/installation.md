@@ -9,7 +9,7 @@ This section provides a *battle‑tested* playbook for deploying **mlschema** in
 | Runtime               | Version                                             |
 | --------------------- | --------------------------------------------------- |
 | **Python**            | `>= 3.14`                                           |
-| **Operating Systems** | Windows 11                                          |
+| **Operating Systems** | OS Independent                                      |
 
 ---
 
@@ -60,9 +60,8 @@ All transitive dependencies are resolved automatically by your package manager. 
 
 | Package      | Minimal Version |
 | ------------ | --------------- |
-| **pydantic** | `>= 2.11.4`     |
-| **pandas**   | `>= 2.3.0`      |
-| **numpy**    | `>= 2.3.0`      |
+| **pydantic** | `>= 2.12.3`     |
+| **pandas**   | `>= 2.3.3`      |
 
 > **Notice**
 > `mlschema` leverages Python 3.14’s **zero‑cost structural pattern matching** and **buffer protocol optimisations**—downgrades are not supported.
@@ -102,6 +101,8 @@ pip install mlschema
 
 ![PyPI version](https://badge.fury.io/py/mlschema.svg)
 [![CI](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/UlloaSP/mlschema?style=for-the-badge)](https://github.com/UlloaSP/mlschema/blob/main/LICENSE)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/mlschema?style=for-the-badge)](https://pypi.org/project/mlschema/)
 
 ---
 

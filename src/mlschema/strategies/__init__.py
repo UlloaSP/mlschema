@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 """Strategies sub-package for **MLSchema**
 
 This namespace aggregates the concrete `Strategy` implementations that map

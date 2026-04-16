@@ -8,12 +8,12 @@ MLSchema depends on the following open-source libraries. We are grateful to thei
 
 ### pandas (BSD 3-Clause License)
 
-**Version:** >=2.3.0
+**Version:** >=2.3.3
 **License:** BSD 3-Clause
 **Project URL:** <https://pandas.pydata.org/>
 **License URL:** <https://github.com/pandas-dev/pandas/blob/main/LICENSE>
 
-```
+```plain
 BSD 3-Clause License
 
 Copyright (c) 2008-2011, AQR Capital Management, LLC, Lambda Foundry, Inc. and PyData Development Team
@@ -51,7 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### Pydantic (MIT License)
 
-**Version:** >=2.11.4
+**Version:** >=2.12.3
 **License:** MIT
 **Project URL:** <https://pydantic.dev/>
 **License URL:** <https://github.com/pydantic/pydantic/blob/main/LICENSE>
@@ -86,7 +86,7 @@ SOFTWARE.
 
 ### pytest (MIT License)
 
-**Version:** >=8.3.5
+**Version:** >=8.4.2
 **License:** MIT
 **Project URL:** <https://pytest.org/>
 **License URL:** <https://github.com/pytest-dev/pytest/blob/main/LICENSE>
@@ -97,7 +97,7 @@ Copyright (c) 2004 Holger Krekel and contributors
 
 ### pytest-cov (MIT License)
 
-**Version:** >=6.1.1
+**Version:** >=7.0.0
 **License:** MIT
 **Project URL:** <https://pytest-cov.readthedocs.io/>
 **License URL:** <https://github.com/pytest-dev/pytest-cov/blob/master/LICENSE>
@@ -108,7 +108,7 @@ Copyright (c) pytest-cov contributors
 
 ### pytest-mock (MIT License)
 
-**Version:** >=3.14.0
+**Version:** >=3.15.1
 **License:** MIT
 **Project URL:** <https://github.com/pytest-dev/pytest-mock/>
 **License URL:** <https://github.com/pytest-dev/pytest-mock/blob/main/LICENSE>
@@ -119,7 +119,7 @@ Copyright (c) Bruno Oliveira
 
 ### Ruff (MIT License)
 
-**Version:** >=0.11.7
+**Version:** >=0.14.2
 **License:** MIT
 **Project URL:** <https://docs.astral.sh/ruff/>
 **License URL:** <https://github.com/astral-sh/ruff/blob/main/LICENSE>
@@ -130,7 +130,7 @@ Copyright (c) 2022 Charlie Marsh
 
 ### Pyright (MIT License)
 
-**Version:** >=1.1.402
+**Version:** >=1.1.407
 **License:** MIT
 **Project URL:** <https://github.com/microsoft/pyright>
 **License URL:** <https://github.com/microsoft/pyright/blob/main/LICENSE.txt>
@@ -141,7 +141,7 @@ Copyright (c) Microsoft Corporation. All rights reserved.
 
 ### pre-commit (MIT License)
 
-**Version:** >=4.2.0
+**Version:** >=4.3.0
 **License:** MIT
 **Project URL:** <https://pre-commit.com/>
 **License URL:** <https://github.com/pre-commit/pre-commit/blob/main/LICENSE>
@@ -165,7 +165,7 @@ Copyright © 2014-present, Tom Christie. All rights reserved.
 
 ### MkDocs Material (MIT License)
 
-**Version:** >=9.6.14
+**Version:** >=9.6.22
 **License:** MIT
 **Project URL:** <https://squidfunk.github.io/mkdocs-material/>
 **License URL:** <https://github.com/squidfunk/mkdocs-material/blob/master/LICENSE>
@@ -176,31 +176,12 @@ Copyright (c) 2016-2025 Martin Donath
 
 ### mkdocstrings (ISC License)
 
-**Version:** >=0.29.1
+**Version:** >=0.30.1
 **License:** ISC
 **Project URL:** <https://mkdocstrings.github.io/>
 **License URL:** <https://github.com/mkdocstrings/mkdocstrings/blob/master/LICENSE>
 
 Copyright (c) 2019, Timothée Mazzucotelli
-
----
-
-## Transitive Dependencies
-
-MLSchema also indirectly depends on:
-
-- **NumPy** (BSD 3-Clause) - via pandas
-- **python-dateutil** (Apache 2.0 / BSD 3-Clause) - via pandas
-- **pytz** (MIT) - via pandas
-- **pydantic-core** (MIT) - via pydantic
-- **typing-extensions** (PSF) - via pydantic
-
-For a complete list of all transitive dependencies and their licenses, please run:
-
-```bash
-pip install pip-licenses
-pip-licenses --format=markdown --with-urls
-```
 
 ---
 
@@ -226,4 +207,4 @@ If you believe any license information is incorrect or outdated, please open an 
 
 ---
 
-**Last Updated:** October 8, 2025
+**Last Updated:** October 28, 2025

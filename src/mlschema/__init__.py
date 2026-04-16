@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 """Production-grade orchestration for translating **pandas** DataFrames into
 validated JSON field schemas.
 
@@ -30,5 +32,5 @@ Example:
 
 from .mls import MLSchema
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 __all__ = ["MLSchema"]

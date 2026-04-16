@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 from .boolean_strategy import BooleanStrategy
 from .category_strategy import CategoryStrategy
 from .date_strategy import DateStrategy

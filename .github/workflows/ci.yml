@@ -170,11 +170,26 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Package version: $VERSION"
 
+      - name: Check if version already published
+        id: check_version
+        env:
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          if curl --silent --fail https://pypi.org/pypi/mlschema/${VERSION}/json > /dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "PyPI already has version ${VERSION}; skipping publish."
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "PyPI does not have version ${VERSION}; proceeding with publish."
+          fi
+
       - name: Build package (PEP 517)
+        if: steps.check_version.outputs.exists == 'false'
         run: uv build
 
       - name: Publish to PyPI
         id: publish
+        if: steps.check_version.outputs.exists == 'false'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
@@ -196,7 +211,7 @@ jobs:
             - **Docs**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
 
             ### 📝 Changes
-            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+            See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/docs/changelog.md) for details.
           files: |
             dist/*.tar.gz
             dist/*.whl
@@ -207,8 +222,8 @@ jobs:
   deploy-docs:
     name: Deploy documentation to GitHub Pages
     runs-on: ubuntu-latest
-    needs: publish
-    if: needs.publish.outputs.published == 'true'
+    needs: docs
+    if: success()
     permissions:
       contents: read
       pages: write
