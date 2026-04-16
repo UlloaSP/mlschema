@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 """Tests for mlschema.strategies.app.category_strategy.
 
 This module provides comprehensive test coverage for the CategoryStrategy class,
@@ -9,7 +11,7 @@ from __future__ import annotations
 
 from unittest.mock import Mock, patch
 
-import numpy as np
+import pandas as pd
 import pytest
 from pandas import CategoricalDtype, Series
 
@@ -31,7 +33,7 @@ class TestCategoryStrategyInitialization:
     def test_initialization_calls_parent_constructor(self):
         """Test that CategoryStrategy properly calls parent class constructor."""
         with patch(
-            "mlschema.strategies.app.category_strategy.FieldStrategy.__init__"
+            "mlschema.strategies.app.category_strategy.Strategy.__init__"
         ) as mock_parent_init:
             mock_parent_init.return_value = None
 
@@ -122,7 +124,7 @@ class TestCategoryStrategyAttributesFromSeries:
 
     def test_handles_series_with_null_values(self, strategy):
         """Test that null values are properly excluded from options."""
-        series = Series(["A", None, "B", np.nan, "C", "A"], name="test_nulls")
+        series = Series(["A", None, "B", pd.NA, "C", "A"], name="test_nulls")
 
         result = strategy.attributes_from_series(series)
 
@@ -130,7 +132,8 @@ class TestCategoryStrategyAttributesFromSeries:
         assert set(result["options"]) == set(expected_options)
         assert len(result["options"]) == 3
         assert None not in result["options"]
-        assert np.nan not in result["options"]
+        # Check that NaN-like values are not in options
+        assert all(opt == opt for opt in result["options"])  # NaN != NaN
 
     def test_handles_empty_series(self, strategy):
         """Test behavior with empty series."""
@@ -143,7 +146,7 @@ class TestCategoryStrategyAttributesFromSeries:
 
     def test_handles_all_null_series(self, strategy):
         """Test behavior with series containing only null values."""
-        all_null_series = Series([None, np.nan, None], name="all_nulls")
+        all_null_series = Series([None, pd.NA, None], name="all_nulls")
 
         result = strategy.attributes_from_series(all_null_series)
 
@@ -351,7 +354,7 @@ class TestCategoryStrategyErrorHandling:
 
     def test_handles_categorical_with_nan_category(self):
         """Test handling of categorical dtype that includes NaN as a category."""
-        categories = ["A", "B", np.nan]
+        categories = ["A", "B", pd.NA]
 
         with pytest.raises(ValueError, match="Categorical categories cannot be null"):
             CategoricalDtype(categories=categories)
@@ -388,7 +391,7 @@ class TestCategoryStrategyMocking:
         mock_series = Mock(spec=Series)
         mock_series.dtype = "category"
         mock_dropna = Mock()
-        mock_dropna.unique.return_value = np.array(["X", "Y", "Z"])
+        mock_dropna.unique.return_value = pd.array(["X", "Y", "Z"], dtype="object")
         mock_series.dropna.return_value = mock_dropna
 
         with patch(

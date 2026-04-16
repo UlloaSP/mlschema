@@ -8,8 +8,8 @@ This section provides a *battle‑tested* playbook for deploying **mlschema** in
 
 | Runtime               | Version                                             |
 | --------------------- | --------------------------------------------------- |
-| **Python**            | `>= 3.13`                                           |
-| **Operating Systems** | Windows 11                                          |
+| **Python**            | `>= 3.14`                                           |
+| **Operating Systems** | OS Independent                                      |
 
 ---
 
@@ -60,12 +60,11 @@ All transitive dependencies are resolved automatically by your package manager. 
 
 | Package      | Minimal Version |
 | ------------ | --------------- |
-| **pydantic** | `>= 2.11.4`     |
-| **pandas**   | `>= 2.3.0`      |
-| **numpy**    | `>= 2.3.0`      |
+| **pydantic** | `>= 2.12.3`     |
+| **pandas**   | `>= 2.3.3`      |
 
 > **Notice**
-> `mlschema` leverages Python 3.13’s **zero‑cost structural pattern matching** and **buffer protocol optimisations**—downgrades are not supported.
+> `mlschema` leverages Python 3.14’s **zero‑cost structural pattern matching** and **buffer protocol optimisations**—downgrades are not supported.
 
 ---
 
@@ -81,8 +80,9 @@ uv add mlschema    # installs package + deps
 ### Manual venv (fallback)
 
 ```bash
+# macOS/Linux
 python -m venv .venv
-source .venv/bin/activate   # macOS/Linux
+source .venv/bin/activate
 pip install mlschema
 ```
 
@@ -101,6 +101,8 @@ pip install mlschema
 
 ![PyPI version](https://badge.fury.io/py/mlschema.svg)
 [![CI](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/UlloaSP/mlschema?style=for-the-badge)](https://github.com/UlloaSP/mlschema/blob/main/LICENSE)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/mlschema?style=for-the-badge)](https://pypi.org/project/mlschema/)
 
 ---
 
@@ -108,9 +110,6 @@ pip install mlschema
 
 | Symptom                                       | Root Cause                             | Resolution                                             |
 | --------------------------------------------- | -------------------------------------- | ------------------------------------------------------ |
-| `ImportError: cannot import name 'BaseModel'` | Pydantic < 2.x in env.                 | Upgrade: `uv sync` or `uv pip install pydantic==2.x.y` |
-| `ValueError: DataFrame dtype unsupported`     | Column dtype not mapped to a strategy. | Register appropriate strategy or cast dtype.           |
-| Memory spike on large CSVs                    | Insufficient RAM                       | Use chunked reads or a Dask DataFrame.                 |
 
 *No open CVEs or platform‑specific incompatibilities have been reported as of July 2025.*
 

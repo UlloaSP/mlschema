@@ -1,34 +1,45 @@
 # Usage
 
-This section presents a concise, end‑to‑end guide for adopting **mlschema** in production environments. The library is intentionally segmented into two logical namespaces—`core` and `strategies`—to uphold the single‑responsibility principle while giving architects full control over extension points.
+This section delivers a concise, end-to-end blueprint for adopting **mlschema** in production. The library is deliberately divided into two namespaces, ``core`` and ``strategies``, upholding the single-responsibility principle and granting solution architects full autonomy over extension points.
 
 ---
 
-## 1. Core Module
+## 1. Canonical Entry Point
 
-Import the core abstractions to orchestrate schema generation:
+The sanctioned, future-proof gateway is the ``mlform`` package.
 
 ```python
-from mlschema.core import MLSchema, BaseField, FieldStrategy
+from mlschema import MLSchema
 ```
 
 | Class               | Responsibility                                                                                                                   |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **`MLSchema`**      | Central coordinator. Maintains the registry of field strategies and owns the `build()` pipeline.                                 |
-| **`BaseField`**     | Pydantic base model with the common contract. Extend it when you introduce new field types.                                      |
-| **`FieldStrategy`** | Abstract base class for all strategies. Implement this to map DataFrame dtypes to concrete form controls.                        |
 
 Instantiate the orchestrator:
 
 ```python
-ms = MLSchema()
+mls = MLSchema()
 ```
+
+## 2. Core Module
+
+Import the core abstractions to orchestrate schema generation:
+
+```python
+from mlschema.core import BaseField, Strategy
+```
+
+| Class               | Responsibility                                                                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **`BaseField`**     | Pydantic base model with the common contract. Extend it when you introduce new field types.                                      |
+| **`Strategy`**      | Abstract base class for all strategies. Implement this to map DataFrame dtypes to concrete form controls.                        |
 
 ---
 
-## 2. Strategies Module
+## 3. Strategies Module
 
-`mlschema.strategies` ships with a curated set of ready‑made strategies that cover 90 % of mainstream use cases:
+`mlschema.strategies` ships with a curated set of ready‑made strategies that cover **85%** of mainstream use cases:
 
 ```python
 from mlschema.strategies import (
@@ -50,30 +61,30 @@ from mlschema.strategies import (
 
 > **Note**
 > No strategy is auto‑enabled. You decide which ones to register, ensuring a deliberate, transparent schema.
+> If you rely on treating unsuported types, remember to register ``TextStrategy`` as it is the default fallback.
 
 ---
 
-## 3. Strategy Lifecycle Management
+## 4. Strategy Lifecycle Management
 
 `MLSchema` exposes three symmetrical operations. All of them use the strategy’s `type_name` as the primary key—avoid duplicates.
 
 ```python
 # Register new strategies
-ms.register(TextStrategy())
-ms.register([NumberStrategy(), BooleanStrategy()])
+mls.register(TextStrategy())
 
 # Replace an existing implementation in‑place
-ms.update(TextStrategy())
+mls.update(TextStrategy())
 
 # Remove a registered strategy
-ms.unregister(TextStrategy())
+mls.unregister(TextStrategy())
 ```
 
 *Registration is idempotent.* Calling `register()` with an already‑registered `type_name` raises an error; use `update()` instead.
 
 ---
 
-## 4. Building a Form Schema
+## 5. Building a Form Schema
 
 After curating your registry, translate a `pandas.DataFrame` into a front‑end‑ready JSON specification:
 
@@ -84,8 +95,7 @@ import pandas as pd
 df = pd.read_csv("data.csv")
 
 # Generate JSON schema
-form_schema = ms.build(df)
-print(form_schema)  # → JSON ready for your UI layer
+form_schema = mls.build(df)
 ```
 
 The `build()` method scans each column, delegates to the first compatible strategy, and returns a validated and well-formed JSON.
@@ -95,15 +105,15 @@ The `build()` method scans each column, delegates to the first compatible strate
 
 ---
 
-## 5. Advanced: Creating a Custom Strategy
+## 6. Advanced: Creating a Custom Strategy
 
-When domain‑specific requirements emerge, extend the contract by pairing a bespoke `BaseField` with a `FieldStrategy` implementation.
+When domain‑specific requirements emerge, extend the contract by pairing a bespoke `BaseField` with a `Strategy` implementation.
 
 ```python
 from typing import Literal
 from pandas import Series, api
 from pydantic import model_validator
-from mlschema.core import BaseField, FieldStrategy
+from mlschema.core import BaseField, Strategy
 
 # 1️⃣  Define the Pydantic schema
 class CustomField(BaseField):
@@ -112,19 +122,8 @@ class CustomField(BaseField):
     max: float | None = None
     value: float | None = None
 
-    @model_validator(mode="after")
-    def _constraints(self) -> "CustomField":
-        if self.min and self.max and self.min > self.max:
-            raise ValueError("min must be ≤ max")
-        if self.value is not None:
-            if self.min is not None and self.value < self.min:
-                raise ValueError("value below min")
-            if self.max is not None and self.value > self.max:
-                raise ValueError("value above max")
-        return self
-
-# 2️⃣  Map DataFrame dtypes to the field
-class CustomStrategy(FieldStrategy):
+# 2️⃣  Define the Strategy
+class CustomStrategy(Strategy):
     def __init__(self) -> None:
         super().__init__(
             type_name="custom",
@@ -146,7 +145,7 @@ Register the strategy as usual and it integrates seamlessly with the `build()` p
 
 ---
 
-## 6. Best‑Practice Checklist
+## 7. Best‑Practice Checklist
 
 1. **Plan your registry**: Register only the strategies you intend to expose.
 2. **Avoid silent overwrites**: Use `update()` instead of `register()` for hot‑swaps.
@@ -154,8 +153,8 @@ Register the strategy as usual and it integrates seamlessly with the `build()` p
 4. **Leverage Pydantic**: Embed robust validators in your custom `BaseField` models to enforce domain rules at build time.
 5. **Version intelligently**: Because `type` is the primary key, apply semantic versioning to avoid collisions between major changes.
 
----****
+---
 
-## 7. Next Steps
+## 8. Next Steps
 
 Refer to the [API Reference](reference.md) for exhaustive method signatures, extension hooks, and advanced configuration scenarios.

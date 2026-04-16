@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Pablo Ulloa Santin
 from .boolean_field import BooleanField
 from .category_field import CategoryField
 from .date_field import DateField
@@ -7,9 +9,9 @@ from .text_field import TextField
 
 __all__ = [
     "BooleanField",
-    "DateField",
-    "NumberField",
     "CategoryField",
-    "TextField",
+    "DateField",
     "FieldTypes",
+    "NumberField",
+    "TextField",
 ]
