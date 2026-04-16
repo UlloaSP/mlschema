@@ -71,6 +71,33 @@ N/A
 
 N/A
 
+## [0.1.3] - 2026-04-16
+
+### Added
+
+- `SeriesStrategy`: content-based strategy for two-axis columns. Each cell must be a 2-element tuple, list, or dict. Sub-field schemas are auto-inferred from element dtypes via the registered strategy registry.
+- `SeriesField`: Pydantic model for series fields with `field1`, `field2`, `min_points`, and `max_points` attributes.
+  - `field1` / `field2` accept any registered sub-field type; nesting `SeriesField` inside itself is explicitly rejected.
+  - `min_points` / `max_points` enforce cardinality constraints (`PositiveInt`; `min_points ≤ max_points`).
+- `add_series_sub_field(cls)`: public helper to register custom `BaseField` subclasses as valid sub-fields inside `SeriesField`.
+- `content_probe(series)` hook on `Strategy` base class (default `False`). Strategies that override this are matched **before** dtype-based lookup, enabling non-dtype detection patterns.
+- `set_registry(registry)` hook on `Strategy` base class (no-op default). Called by `Service.register()` after registration. `SeriesStrategy` uses it to access the registry for sub-field dtype resolution.
+- `Registry.strategy_for_content(series)`: iterates registered strategies and returns the first whose `content_probe()` returns `True`.
+
+### Changed
+
+- `Service._field_payload()`: content-probe lookup now takes priority over dtype and fallback lookups.
+- `FieldTypes` enum: added `SERIES = "series"`.
+- `strategies` public API: `SeriesStrategy` and `add_series_sub_field` now exported at package level.
+
+### Fixed
+
+N/A
+
+### Security
+
+N/A
+
 ---
 
 **Legend:**
@@ -84,4 +111,4 @@ N/A
 
 ---
 
-**Last Updated**: October 29, 2025
+**Last Updated**: April 16, 2026
