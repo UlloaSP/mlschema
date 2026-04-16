@@ -8,13 +8,14 @@ pandas dtypes to **validated JSON field definitions**.  All classes inherit from
 explicit `MLSchema.register()` call.
 
 Strategies Available:
-    | Class               | Description                                        |
-    |---------------------|----------------------------------------------------|
-    | BooleanStrategy     | Strategy for handling boolean data types.          |
-    | CategoryStrategy    | Strategy for handling categorical data types.      |
-    | DateStrategy        | Strategy for handling date and datetime data types.|
-    | NumberStrategy      | Strategy for handling numeric data types.          |
-    | TextStrategy        | Strategy for handling text and string data types.  |
+    | Class               | Description                                                          |
+    |---------------------|----------------------------------------------------------------------|
+    | BooleanStrategy     | Strategy for handling boolean data types.                            |
+    | CategoryStrategy    | Strategy for handling categorical data types.                        |
+    | DateStrategy        | Strategy for handling date and datetime data types.                  |
+    | NumberStrategy      | Strategy for handling numeric data types.                            |
+    | SeriesStrategy      | Strategy for handling two-axis series columns (compound cell values).|
+    | TextStrategy        | Strategy for handling text and string data types.                    |
 
 Design notes
 ------------
@@ -31,6 +32,7 @@ from .app import (
     CategoryStrategy,
     DateStrategy,
     NumberStrategy,
+    SeriesStrategy,
     TextStrategy,
 )
 
@@ -39,5 +41,6 @@ __all__ = [
     "CategoryStrategy",
     "DateStrategy",
     "NumberStrategy",
+    "SeriesStrategy",
     "TextStrategy",
 ]

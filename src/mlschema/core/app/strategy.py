@@ -63,6 +63,31 @@ class Strategy:
         """Tuple of supported ``dtype`` names."""
         return self._dtypes
 
+    def set_registry(self, registry: Any) -> None:
+        """Hook called by Service after registration.
+
+        Override in subclasses that need access to the registry at inference time
+        (e.g. to route sub-column dtypes through registered strategies).
+
+        Args:
+            registry: The :class:`Registry` instance managing all active strategies.
+        """
+
+    def content_probe(self, series: Series) -> bool:
+        """Content-based detection hook.
+
+        Override to opt in to content-based strategy selection. When dtype lookup
+        yields no match, the Service iterates registered strategies and selects the
+        first whose ``content_probe`` returns ``True``.
+
+        Args:
+            series: DataFrame column to inspect.
+
+        Returns:
+            ``True`` if this strategy can handle the column based on its values.
+        """
+        return False
+
     def attributes_from_series(self, series: Series) -> dict:
         """Calculate field-specific attributes.
 
