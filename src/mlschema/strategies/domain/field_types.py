@@ -9,3 +9,4 @@ class FieldTypes(str, Enum):
     BOOLEAN = "boolean"
     CATEGORY = "category"
     DATE = "date"
+    SERIES = "series"

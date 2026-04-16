@@ -44,6 +44,7 @@ class Service:
         """
 
         self._registry.register(strategy)
+        strategy.set_registry(self._registry)
 
     def unregister(self, strategy: Strategy) -> None:
         """Unregister a previously registered strategy.
@@ -82,9 +83,11 @@ class Service:
             FallbackStrategyMissingError: If no fallback strategy exists.
         """
         dtype = normalize_dtype(series.dtype)
-        strat = self._registry.strategy_for_dtype(
-            dtype
-        ) or self._registry.strategy_for_name("text")
+        strat = (
+            self._registry.strategy_for_content(series)
+            or self._registry.strategy_for_dtype(dtype)
+            or self._registry.strategy_for_name("text")
+        )
         if strat is None:
             raise FallbackStrategyMissingError(dtype)
         return strat.build_dict(series)
