@@ -86,6 +86,23 @@ class Registry:
         """
         return self._by_name.get(type_name)
 
+    def strategy_for_content(self, series: Any) -> Strategy | None:
+        """Return the first strategy whose :meth:`content_probe` claims *series*.
+
+        Strategies are checked in insertion order. Use this as a secondary probe
+        when dtype-based lookup yields no match.
+
+        Args:
+            series: Pandas Series to inspect.
+
+        Returns:
+            First matching Strategy, or ``None`` if none claim the series.
+        """
+        for strat in self._by_name.values():
+            if strat.content_probe(series):
+                return strat
+        return None
+
     def strategy_for_dtype(self, dtype: str | Any) -> Strategy | None:
         """Return the strategy capable of handling ``dtype`` or ``None``.
 

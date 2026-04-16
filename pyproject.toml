@@ -1,6 +1,6 @@
 [project]
 name = "mlschema"
-version = "0.1.2"
+version = "0.1.3"
 description = "Lightweight orchestration layer that turns pandas DataFrames into front-end-ready JSON schemas, engineered to pair seamlessly with [mlform](https://github.com/UlloaSP/mlform)."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { text = "MIT" }
