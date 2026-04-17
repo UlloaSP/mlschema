@@ -21,8 +21,8 @@ class BooleanStrategy(Strategy):
     Model Attributes:
         | Name        | Type                 | Description                                |
         | ----------- | -------------------- | ------------------------------------------ |
-        | type        | `Literal["boolean"]` | Fixed type for the strategy.               |
-        | value       | `bool | None`        | The current value of the field.            |
+        | kind        | `Literal["boolean"]` | Fixed type for the strategy.               |
+        | defaultValue| `bool | None`        | Initial value of the field.                |
 
     """
 

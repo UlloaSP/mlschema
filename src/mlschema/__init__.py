@@ -32,5 +32,5 @@ Example:
 
 from .mls import MLSchema
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __all__ = ["MLSchema"]

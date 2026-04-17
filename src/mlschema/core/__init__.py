@@ -9,7 +9,7 @@ exceptions to maintain deterministic error handling across the pipeline.
 """
 
 from mlschema.core.app import Strategy
-from mlschema.core.domain import BaseField
+from mlschema.core.domain import BaseField, BaseReport
 from mlschema.core.exceptions import (
     EmptyDataFrameError,
     FallbackStrategyMissingError,
@@ -23,6 +23,7 @@ from mlschema.core.exceptions import (
 
 __all__ = [
     "BaseField",
+    "BaseReport",
     "EmptyDataFrameError",
     "FallbackStrategyMissingError",
     "FieldRegistryError",

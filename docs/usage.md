@@ -201,7 +201,7 @@ class CustomField(BaseField):
     type: Literal["custom"] = "custom"  # Required: must be a Literal string, cannot be None
     min: float | None = None
     max: float | None = None
-    value: float | None = None
+    defaultValue: float | None = None
 
 # 2️⃣  Define the Strategy
 class CustomStrategy(Strategy):
@@ -213,13 +213,18 @@ class CustomStrategy(Strategy):
         )
 
     def attributes_from_series(self, series: Series) -> dict:
-        # Note: No need to set the 'type', 'title' and 'required' attributes - it's automatically handled by the parent class
+        # Note: No need to set the 'kind', 'label' and 'required' attributes - it's automatically handled by the parent class
         # You can set a description to the field by the 'description' attribute which is optional and must be a string between 1 and 500 characters
         description = "Custom Strategy Description"
         min = series.min()
         max = series.max()
-        value = series.mean()
-        return {"description": description, "min": min, "max": max, "value": value}
+        default_value = series.mean()
+        return {
+            "description": description,
+            "min": min,
+            "max": max,
+            "defaultValue": default_value,
+        }
 ```
 
 Register the strategy as usual and it integrates seamlessly with the `build()` pipeline.

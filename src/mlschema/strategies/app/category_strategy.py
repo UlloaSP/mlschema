@@ -22,14 +22,14 @@ class CategoryStrategy(Strategy):
     Model Attributes:
         | Name    | Type                  | Description                      |
         | ------- | --------------------- | -------------------------------- |
-        | type    | `Literal["category"]` | Fixed type for the strategy.     |
+        | kind    | `Literal["category"]` | Fixed type for the strategy.     |
         | options | `list[str]`           | List of allowed categories.      |
-        | value   | `str | None`          | Current value of the field.      |
+        | defaultValue | `str | None`     | Initial value of the field.      |
 
     Model Restrictions:
         | Description           | Error Type            | Error Message                                     |
         | --------------------- | --------------------- | ------------------------------------------------- |
-        | `value` in `options`  | `PydanticCustomError` | `value {value} must be in options {options}`      |
+        | `defaultValue` in `options`  | `PydanticCustomError` | `defaultValue must be in options`      |
 
     """
 

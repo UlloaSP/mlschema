@@ -268,50 +268,56 @@ class TestCategoryStrategyIntegration:
         attributes = strategy.attributes_from_series(series)
 
         # Verify the schema class can be instantiated with extracted attributes
-        field_instance = strategy.schema_cls(title="test_category", **attributes)
+        field_instance = strategy.schema_cls(label="test_category", **attributes)
 
         assert isinstance(field_instance, CategoryField)
-        assert field_instance.type == FieldTypes.CATEGORY
-        assert field_instance.title == "test_category"
+        assert field_instance.kind == FieldTypes.CATEGORY
+        assert field_instance.label == "test_category"
         assert field_instance.options == ["A", "B", "C"]
 
     def test_strategy_type_matches_field_type(self):
         """Test that strategy type name matches the field type."""
         strategy = CategoryStrategy()
-        field_instance = strategy.schema_cls(title="test", options=["A", "B"])
+        field_instance = strategy.schema_cls(label="test", options=["A", "B"])
 
-        assert strategy.type_name == field_instance.type
+        assert strategy.type_name == field_instance.kind
 
-    def test_extracted_options_validate_in_category_field(self):
-        """Test that extracted options work with CategoryField validation."""
+    def test_extracted_options_validate_default_value_in_category_field(self):
+        """Test that extracted options validate defaultValue in CategoryField."""
         strategy = CategoryStrategy()
         series = Series(["Red", "Green", "Blue"], name="colors")
 
         attributes = strategy.attributes_from_series(series)
         field = strategy.schema_cls(
-            title="color",
-            value="Red",  # Valid value from options
+            label="color",
+            defaultValue="Red",
             **attributes,
         )
 
-        assert field.value == "Red"
+        assert field.defaultValue == "Red"
         assert "Red" in field.options
+        assert "Green" in field.options
+        assert "Blue" in field.options
 
-    def test_extracted_options_fail_validation_for_invalid_value(self):
-        """Test that CategoryField validation fails for values not in extracted options."""
+    def test_category_field_rejects_default_value_outside_options(self):
+        """Test that CategoryField rejects defaultValue outside options."""
         strategy = CategoryStrategy()
-        series = Series(["Red", "Green", "Blue"], name="colors")
-
-        attributes = strategy.attributes_from_series(series)
 
         with pytest.raises(
-            ValueError, match="Value must match one of the allowed options"
+            ValueError, match="defaultValue must match one of the allowed options"
         ):
             strategy.schema_cls(
-                title="color",
-                value="Yellow",  # Invalid value not in options
-                **attributes,
+                label="invalid",
+                defaultValue="Yellow",
+                options=["Red", "Green", "Blue"],
             )
+
+    def test_category_field_requires_at_least_one_option(self):
+        """Test that CategoryField requires a non-empty options list."""
+        strategy = CategoryStrategy()
+
+        with pytest.raises(ValueError):
+            strategy.schema_cls(label="empty", options=[])
 
     def test_dtypes_consistency(self):
         """Test that dtypes tuple is immutable and consistent."""

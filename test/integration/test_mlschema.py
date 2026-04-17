@@ -38,7 +38,7 @@ from mlschema.strategies.app import (
 class CustomField(BaseField):
     """Custom field type for testing."""
 
-    type: str = "custom"
+    kind: str = "custom"
     unit: str | None = None
     custom_attr: str | None = None
     min_seconds: int | None = None
@@ -68,7 +68,7 @@ class CustomStrategy(Strategy):
 class AdvancedNumberField(BaseField):
     """Advanced number field with additional attributes."""
 
-    type: str = "advanced_number"
+    kind: str = "advanced_number"
     step: float | None = None
     mean: float | None = None
     std: float | None = None
@@ -162,7 +162,7 @@ class TestMLSchemaCustomStrategies:
         # Verify custom strategy was used
         field_schema = result["inputs"][0]
 
-        assert field_schema["type"] == "custom"
+        assert field_schema["kind"] == "custom"
         assert field_schema["unit"] == "seconds"
         assert field_schema["custom_attr"] == "test_value"
         assert "min_seconds" in field_schema
@@ -194,9 +194,9 @@ class TestMLSchemaCustomStrategies:
         score_schema = result["inputs"][1]
         comment_schema = result["inputs"][2]
 
-        assert duration_schema["type"] == "custom"
-        assert score_schema["type"] == "advanced_number"
-        assert comment_schema["type"] == "text"
+        assert duration_schema["kind"] == "custom"
+        assert score_schema["kind"] == "advanced_number"
+        assert comment_schema["kind"] == "text"
 
     def test_update_strategy(self):
         """Test updating an existing strategy."""
@@ -210,7 +210,7 @@ class TestMLSchemaCustomStrategies:
         class ModifiedNumberField(BaseField):
             """Modified number field for testing."""
 
-            type: str = "advanced_number"
+            kind: str = "advanced_number"
             step: float | None = None
             modified: bool | None = None
 
@@ -234,6 +234,7 @@ class TestMLSchemaCustomStrategies:
         field_schema = result["inputs"][0]
 
         # Should use updated strategy
+        assert field_schema["kind"] == "advanced_number"
         assert field_schema["step"] == 1.0
         assert field_schema["modified"] is True
         assert "mean" not in field_schema  # Old attribute removed
@@ -264,8 +265,8 @@ class TestMLSchemaCustomStrategies:
         comment_schema = result["inputs"][1]
 
         # Custom strategy should no longer be used
-        assert duration_schema["type"] == "text"  # Fallback
-        assert comment_schema["type"] == "text"
+        assert duration_schema["kind"] == "text"  # Fallback
+        assert comment_schema["kind"] == "text"
 
 
 class TestMLSchemaComplexDataFrames:
@@ -302,7 +303,7 @@ class TestMLSchemaComplexDataFrames:
 
         # Verify each field type
         schemas = result["inputs"]
-        types = [schema["type"] for schema in schemas]
+        types = [schema["kind"] for schema in schemas]
 
         expected_types = [
             "number",
@@ -371,7 +372,7 @@ class TestMLSchemaComplexDataFrames:
 
         # Verify performance - should complete without timeout
         schemas = result["inputs"]
-        assert all("type" in schema for schema in schemas)
+        assert all("kind" in schema for schema in schemas)
 
 
 class TestMLSchemaEdgeCases:
@@ -385,7 +386,7 @@ class TestMLSchemaEdgeCases:
         class AlternativeTextField(BaseField):
             """Alternative text field for testing."""
 
-            type: str = "alternative_text"
+            kind: str = "alternative_text"
 
         class AlternativeTextStrategy(Strategy):
             def __init__(self) -> None:
@@ -409,7 +410,7 @@ class TestMLSchemaEdgeCases:
         schema = result["inputs"][0]
 
         # Should use the last registered strategy
-        assert schema["type"] == "alternative_text"
+        assert schema["kind"] == "alternative_text"
 
     def test_unsupported_dtype_fallback(self):
         """Test fallback behavior for unsupported dtypes."""
@@ -428,7 +429,7 @@ class TestMLSchemaEdgeCases:
 
         # Both should fall back to text strategy
         schemas = result["inputs"]
-        assert all(schema["type"] == "text" for schema in schemas)
+        assert all(schema["kind"] == "text" for schema in schemas)
 
     def test_strategy_unregistration(self):
         """Test unregistration of a strategy."""
@@ -444,7 +445,7 @@ class TestMLSchemaEdgeCases:
 
         # Verify custom strategy was used
         field_schema = result["inputs"][0]
-        assert field_schema["type"] == "custom"
+        assert field_schema["kind"] == "custom"
 
         # Unregister the custom strategy
         ml_schema.unregister(TextStrategy())
@@ -489,7 +490,7 @@ class TestMLSchemaEdgeCases:
         schema = result["inputs"][0]
 
         # Should be classified as text (object dtype)
-        assert schema["type"] == "text"
+        assert schema["kind"] == "text"
 
 
 class TestMLSchemaIntegrationErrorHandling:
@@ -673,7 +674,7 @@ class TestMLSchemaRealWorldScenarios:
 
         # Verify realistic field types
         schemas = result["inputs"]
-        field_types = {schema["title"]: schema["type"] for schema in schemas}
+        field_types = {schema["label"]: schema["kind"] for schema in schemas}
 
         expected_types = {
             "customer_id": "number",
@@ -713,11 +714,11 @@ class TestMLSchemaRealWorldScenarios:
 
         # Check time series specific attributes
         schemas = result["inputs"]
-        temp_schema = next(s for s in schemas if s["title"] == "temperature")
+        temp_schema = next(s for s in schemas if s["label"] == "temperature")
 
         # Should have numeric step attribute
         assert "step" in temp_schema
-        assert temp_schema["type"] == "number"
+        assert temp_schema["kind"] == "number"
 
     def test_multiple_instances_independence(self):
         """Test that multiple MLSchema instances are independent."""

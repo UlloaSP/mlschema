@@ -12,12 +12,12 @@ from mlschema.strategies.domain.field_types import FieldTypes
 
 
 class NumberField(BaseField):
-    type: Literal[FieldTypes.NUMBER] = FieldTypes.NUMBER
+    kind: Literal[FieldTypes.NUMBER] = FieldTypes.NUMBER
+    defaultValue: float | int | None = None
     min: float | None = None
     max: float | None = None
     step: float | None = 1
     placeholder: str | None = None
-    value: float | None = None
     unit: str | None = None
 
     @model_validator(mode="after")
@@ -29,17 +29,17 @@ class NumberField(BaseField):
                 {"min": self.min, "max": self.max},
             )
 
-        if self.value is not None:
-            if self.min is not None and self.value < self.min:
+        if self.defaultValue is not None:
+            if self.min is not None and self.defaultValue < self.min:
                 raise PydanticCustomError(
                     "value_min_constraint",
-                    "value ({value}) must be ≥ min ({min})",
-                    {"value": self.value, "min": self.min},
+                    "defaultValue ({value}) must be ≥ min ({min})",
+                    {"value": self.defaultValue, "min": self.min},
                 )
-            if self.max is not None and self.value > self.max:
+            if self.max is not None and self.defaultValue > self.max:
                 raise PydanticCustomError(
                     "value_max_constraint",
-                    "value ({value}) must be ≤ max ({max})",
-                    {"value": self.value, "max": self.max},
+                    "defaultValue ({value}) must be ≤ max ({max})",
+                    {"value": self.defaultValue, "max": self.max},
                 )
         return self

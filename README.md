@@ -162,11 +162,11 @@ schema = builder.build(df)
 
 | Strategy class | `type` name | Supported pandas dtypes | Additional attributes |
 | -------------- | ----------- | ----------------------- | --------------------- |
-| `TextStrategy` | `text`      | `object`, `string`      | `minLength`, `maxLength`, `pattern`, `value`, `placeholder` |
-| `NumberStrategy` | `number`  | `int64`, `int32`, `float64`, `float32` | `min`, `max`, `step`, `value`, `unit`, `placeholder` |
-| `CategoryStrategy` | `category` | `category` | `options`, `value` |
-| `BooleanStrategy` | `boolean` | `bool`, `boolean` | `value` |
-| `DateStrategy` | `date` | `datetime64[ns]`, `datetime64` | `min`, `max`, `value`, `step` |
+| `TextStrategy` | `text`      | `object`, `string`      | `defaultValue` (from `BaseField`), `minLength`, `maxLength`, `pattern`, `placeholder` |
+| `NumberStrategy` | `number`  | `int64`, `int32`, `float64`, `float32` | `defaultValue` (from `BaseField`), `min`, `max`, `step`, `unit`, `placeholder` |
+| `CategoryStrategy` | `category` | `category` | `defaultValue` (from `BaseField`), `options` |
+| `BooleanStrategy` | `boolean` | `bool`, `boolean` | `defaultValue` (from `BaseField`) |
+| `DateStrategy` | `date` | `datetime64[ns]`, `datetime64` | `defaultValue` (from `BaseField`), `min`, `max`, `step` |
 | `SeriesStrategy` | `series` | content-based (2-element cells) | `field1`, `field2`, `min_points`, `max_points` |
 
 Register only the strategies you need. Duplicate registrations raise explicit errors; use `MLSchema.update()` to swap implementations at runtime.

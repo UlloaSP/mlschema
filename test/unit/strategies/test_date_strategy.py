@@ -276,18 +276,18 @@ class TestDateStrategyIntegration:
         strategy = DateStrategy()
 
         # Verify the schema class can be instantiated
-        field_instance = strategy.schema_cls(title="test_date")
+        field_instance = strategy.schema_cls(label="test_date")
 
         assert isinstance(field_instance, DateField)
-        assert field_instance.type == FieldTypes.DATE
-        assert field_instance.title == "test_date"
+        assert field_instance.kind == FieldTypes.DATE
+        assert field_instance.label == "test_date"
 
     def test_strategy_type_matches_field_type(self):
         """Test that strategy type name matches the field type."""
         strategy = DateStrategy()
-        field_instance = strategy.schema_cls(title="test")
+        field_instance = strategy.schema_cls(label="test")
 
-        assert strategy.type_name == field_instance.type
+        assert strategy.type_name == field_instance.kind
 
     def test_dtypes_consistency(self):
         """Test that dtypes tuple is immutable and consistent."""
@@ -299,61 +299,63 @@ class TestDateStrategyIntegration:
         assert isinstance(strategy1.dtypes, tuple)  # Immutable
 
     def test_date_field_validation_with_extracted_data(self):
-        """Test that DateField validation works with data from DateStrategy."""
+        """Test that DateField validation works with ISO date strings."""
         strategy = DateStrategy()
 
-        # Create a date field with valid date constraints
         today = date.today()
+        year = today.year
         field = strategy.schema_cls(
-            title="event_date",
-            value=today,
-            min=date(today.year, 1, 1),
-            max=date(today.year, 12, 31),
+            label="event_date",
+            defaultValue=today.isoformat(),
+            min=f"{year}-01-01",
+            max=f"{year}-12-31",
         )
 
-        assert field.value == today
-        assert field.min.year == today.year
-        assert field.max.year == today.year
+        assert field.defaultValue == today.isoformat()
+        assert field.min.startswith(str(year))
+        assert field.max.startswith(str(year))
 
     def test_date_field_validation_fails_with_invalid_constraints(self):
         """Test that DateField validation fails with invalid date constraints."""
         strategy = DateStrategy()
 
-        # Try to create a field with min > max
+        # min > max (lexicographic ISO comparison)
         with pytest.raises(
             ValueError,
             match="Minimum date must be earlier than or equal to maximum date",
         ):
             strategy.schema_cls(
-                title="invalid_date",
-                min=date(2023, 12, 31),
-                max=date(2023, 1, 1),  # max < min
+                label="invalid_date",
+                min="2023-12-31",
+                max="2023-01-01",
             )
 
-    def test_date_field_validation_fails_with_invalid_value(self):
-        """Test that DateField validation fails with invalid date value."""
+    def test_date_field_validation_fails_with_default_value_before_min(self):
+        """Test that DateField rejects defaultValue before min."""
         strategy = DateStrategy()
 
-        # Try to create a field with min > value
         with pytest.raises(
             ValueError,
-            match="Date must be later than or equal to minimum date",
+            match="defaultValue must be later than or equal to minimum date",
         ):
             strategy.schema_cls(
-                title="invalid_date",
-                value=date(2022, 12, 31),
-                min=date(2023, 1, 1),
+                label="invalid_date",
+                defaultValue="2022-12-31",
+                min="2023-01-01",
             )
 
-        # Try to create a field with max < value
+    def test_date_field_validation_fails_with_default_value_after_max(self):
+        """Test that DateField rejects defaultValue after max."""
+        strategy = DateStrategy()
+
         with pytest.raises(
             ValueError,
-            match="Date must be earlier than or equal to maximum date",
+            match="defaultValue must be earlier than or equal to maximum date",
         ):
             strategy.schema_cls(
-                title="invalid_date",
-                max=date(2023, 12, 31),
-                value=date(2024, 1, 1),
+                label="invalid_date",
+                max="2023-12-31",
+                defaultValue="2024-01-01",
             )
 
 

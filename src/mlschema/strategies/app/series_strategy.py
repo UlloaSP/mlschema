@@ -17,7 +17,7 @@ class SeriesStrategy(Strategy):
 
     Each cell must be a 2-element compound value:
         - tuple/list: ``(v1, v2)`` — positional, names default to ``"field1"`` / ``"field2"``
-        - dict:       ``{"key1": v1, "key2": v2}`` — named, dict keys become sub-field titles
+        - dict:       ``{"key1": v1, "key2": v2}`` — named, dict keys become sub-field labels
 
     Field schemas are auto-inferred from sampled cell values via the injected registry.
     No dtypes registered — selected automatically via :meth:`content_probe` or applied manually.
@@ -29,20 +29,20 @@ class SeriesStrategy(Strategy):
         None — content-based detection only.
 
     Model Attributes:
-        | Name   | Type                  | Description                               |
-        | ------ | --------------------- | ----------------------------------------- |
-        | type   | ``Literal["series"]`` | Fixed type for the strategy.              |
-        | field1 | ``BaseField``         | Schema of the first element of each cell. |
-        | field2 | ``BaseField``         | Schema of the second element of each cell.|
+        | Name      | Type                  | Description                               |
+        | --------- | --------------------- | ----------------------------------------- |
+        | kind      | ``Literal["series"]`` | Fixed type identifier.                    |
+        | field1    | ``BaseField``         | Schema of the first element of each cell. |
+        | field2    | ``BaseField``         | Schema of the second element of each cell.|
 
     Model Restrictions:
-        | Description                   | Error Type             | Error Message                                                                   |
-        | ----------------------------- | ---------------------- | ------------------------------------------------------------------------------- |
-        | ``field1/field2`` not series  | ``PydanticCustomError``| ``SeriesField cannot be nested``                                                |
-        | ``field1/field2`` type known  | ``PydanticCustomError``| ``Unknown sub-field type: '{type_name}'. Register via add_series_sub_field()`` |
+        | Description                   | Error Type             | Error Message                                                                    |
+        | ----------------------------- | ---------------------- | -------------------------------------------------------------------------------- |
+        | ``field1/field2`` not series  | ``PydanticCustomError``| ``SeriesField cannot be nested``                                                 |
+        | ``field1/field2`` kind known  | ``PydanticCustomError``| ``Unknown sub-field type: '{kind_name}'. Register via add_series_sub_field()``  |
 
     Note:
-        ``min_points`` and ``max_points`` are constraints on :class:`SeriesField` itself and
+        ``minPoints`` and ``maxPoints`` are constraints on :class:`SeriesField` itself and
         must be set there directly — they are not strategy-level parameters.
     """
 
@@ -99,7 +99,7 @@ class SeriesStrategy(Strategy):
         return s1, s2
 
     def attributes_from_series(self, series: Series) -> dict:
-        """Derive ``field1``, ``field2``, ``min_points``, and ``max_points`` from the series.
+        """Derive ``field1`` and ``field2`` sub-schemas from the series.
 
         Extracts element sub-Series from compound cells, infers their dtypes via the
         injected registry, and delegates schema building to the matching strategy.
@@ -110,7 +110,7 @@ class SeriesStrategy(Strategy):
             series: DataFrame column with 2-element compound values.
 
         Returns:
-            Dictionary with ``field1``, ``field2``, and optional point constraints.
+            Dictionary with ``field1`` and ``field2`` sub-schemas.
         """
         s1, s2 = self._extract_sub_series(series)
 
@@ -139,12 +139,12 @@ class SeriesStrategy(Strategy):
         def _resolve(s: Series) -> dict:
             s = _coerce(s)
             if self._registry is None:
-                return {"type": "text", "title": str(s.name), "required": True}
+                return {"kind": "text", "label": str(s.name), "required": True}
             strat = self._registry.strategy_for_dtype(
                 s.dtype
             ) or self._registry.strategy_for_name("text")
             if strat is None:
-                return {"type": "text", "title": str(s.name), "required": True}
+                return {"kind": "text", "label": str(s.name), "required": True}
             return strat.build_dict(s)
 
         return {"field1": _resolve(s1), "field2": _resolve(s2)}

@@ -29,12 +29,12 @@ _SUB_FIELD_REGISTRY: dict[str, type[BaseField]] = {
 def add_series_sub_field(cls: type[BaseField]) -> None:
     """Register a custom BaseField subclass as valid SeriesField sub-field.
 
-    Raises ValueError if cls has type == "series" (no nesting allowed).
+    Raises ValueError if cls has kind == "series" (no nesting allowed).
     """
-    type_val = str(cls.model_fields["type"].default)
-    if type_val == FieldTypes.SERIES:
+    kind_val = str(cls.model_fields["kind"].default)
+    if kind_val == FieldTypes.SERIES:
         raise ValueError("SeriesField cannot be registered as a sub-field (no nesting)")
-    _SUB_FIELD_REGISTRY[type_val] = cls
+    _SUB_FIELD_REGISTRY[kind_val] = cls
 
 
 def _parse_sub_field(v: Any) -> BaseField:
@@ -46,17 +46,17 @@ def _parse_sub_field(v: Any) -> BaseField:
             )
         return v
     if isinstance(v, dict):
-        type_name = str(v.get("type", ""))
-        if type_name == FieldTypes.SERIES:
+        kind_name = str(v.get("kind", ""))
+        if kind_name == FieldTypes.SERIES:
             raise PydanticCustomError(
                 "no_series_nesting", "SeriesField cannot be nested"
             )
-        cls = _SUB_FIELD_REGISTRY.get(type_name)
+        cls = _SUB_FIELD_REGISTRY.get(kind_name)
         if cls is None:
             raise PydanticCustomError(
                 "unknown_sub_field_type",
-                "Unknown sub-field type: '{type_name}'. Register via add_series_sub_field().",
-                {"type_name": type_name},
+                "Unknown sub-field type: '{kind_name}'. Register via add_series_sub_field().",
+                {"kind_name": kind_name},
             )
         return cls(**v)
     raise PydanticCustomError(
@@ -71,29 +71,29 @@ class SeriesField(BaseField):
     """Field schema for a series (two-axis) column.
 
     Attributes:
-        type:       Fixed type identifier ``"series"``.
+        kind:       Fixed type identifier ``"series"``.
         field1:     Schema of the first element of each cell.
         field2:     Schema of the second element of each cell.
-        min_points: Minimum number of data points in the series (≥ 1).
-        max_points: Maximum number of data points in the series (≥ 1).
+        minPoints:  Minimum number of data points in the series (≥ 1).
+        maxPoints:  Maximum number of data points in the series (≥ 1).
     """
 
-    type: Literal[FieldTypes.SERIES] = FieldTypes.SERIES
+    kind: Literal[FieldTypes.SERIES] = FieldTypes.SERIES
     field1: _SubField
     field2: _SubField
-    min_points: PositiveInt | None = None
-    max_points: PositiveInt | None = None
+    minPoints: PositiveInt | None = None
+    maxPoints: PositiveInt | None = None
 
     @model_validator(mode="after")
     def _check_series_constraints(self) -> SeriesField:
         if (
-            self.min_points is not None
-            and self.max_points is not None
-            and self.min_points > self.max_points
+            self.minPoints is not None
+            and self.maxPoints is not None
+            and self.minPoints > self.maxPoints
         ):
             raise PydanticCustomError(
                 "series_points_constraint",
-                "min_points ({min_points}) must be ≤ max_points ({max_points})",
-                {"min_points": self.min_points, "max_points": self.max_points},
+                "minPoints ({min_points}) must be ≤ maxPoints ({max_points})",
+                {"min_points": self.minPoints, "max_points": self.maxPoints},
             )
         return self
