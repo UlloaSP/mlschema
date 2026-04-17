@@ -109,7 +109,7 @@ MLSchema generates JSON payloads with the following canonical shape:
 
 ```json
 {
-  "inputs": [
+  "fields": [
     {
       "label": "customer_name",
       "kind": "text",
@@ -128,11 +128,11 @@ MLSchema generates JSON payloads with the following canonical shape:
       "unit": "points"
     }
   ],
-  "outputs": []
+  "reports": []
 }
 ```
 
-The top-level envelope (`inputs`, `outputs`) provides logical separation between model parameters and expected predictions.
+The top-level envelope (`fields`, `reports`) provides logical separation between model parameters and expected predictions.
 
 ### 3.2 Field Type Taxonomy
 
@@ -369,7 +369,7 @@ Optional attributes are **omitted** when not set, keeping payloads compact.
 
 - The reserved attributes (`label`, `kind`, `required`, `description`).
 - The core `Strategy` class API (`build_dict()`, `dtypes`, `type_name`).
-- The shape of the top-level envelope (`{"inputs": [...], "outputs": [...]}`).
+- The shape of the top-level envelope (`{"fields": [...], "reports": [...]}`).
 
 ### 5.2 Example: Custom Strategy for Geospatial Data
 

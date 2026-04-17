@@ -41,7 +41,7 @@
 - Strategy registry that lets you opt into only the field types you want to expose.
 - Pydantic v2 models guarantee structural validity and embed domain-specific constraints.
 - Normalized dtype matching covers both pandas extension types and NumPy dtypes.
-- Deterministic JSON output (`inputs` / `outputs`) suitable for form engines and low-code tooling.
+- Deterministic JSON output (`fields` / `reports`) suitable for form engines and low-code tooling.
 - Fully typed public API with strict static analysis (Pyright) and comprehensive tests.
 
 ## Requirements
@@ -96,12 +96,12 @@ The payload is ready to serialise to JSON and inject into your UI or downstream 
 
 ```json
 {
-  "inputs": [
+  "fields": [
   {"title": "name", "required": true, "type": "text"},
   {"title": "score", "required": true, "type": "number", "step": 0.1},
   {"title": "role", "required": true, "type": "category", "options": ["engineer", "scientist"]}
   ],
-  "outputs": []
+  "reports": []
 }
 ```
 
@@ -137,7 +137,7 @@ schema = builder.build(df)
 
 ```json
 {
-  "inputs": [
+  "fields": [
     {"title": "sensor_id", "required": true, "type": "category", "options": ["A", "B", "C"]},
     {
       "title": "readings", "required": true, "type": "series",
@@ -145,7 +145,7 @@ schema = builder.build(df)
       "field2": {"title": "field2", "required": true, "type": "number", "step": 0.1}
     }
   ],
-  "outputs": []
+  "reports": []
 }
 ```
 
@@ -156,7 +156,7 @@ schema = builder.build(df)
 1. **Registry orchestration** – `MLSchema` keeps an in-memory registry of field strategies, keyed by a logical `type_name` and one or more pandas dtypes.
 2. **Inference pipeline** – each DataFrame column is normalised, matched against the registry, and dispatched to the first compatible strategy.
 3. **Schema materialisation** – strategies merge required metadata (title, type, required) with data-driven attributes, then dump the result through a Pydantic model.
-4. **Structured output** – the service returns the canonical `{"inputs": [...], "outputs": []}` payload that feeds [mlform](https://ulloasp.github.io/mlform/) or any form rendering layer.
+4. **Structured output** – the service returns the canonical `{"fields": [...], "reports": []}` payload that feeds [mlform](https://ulloasp.github.io/mlform/) or any form rendering layer.
 
 ## Built-in Strategies
 

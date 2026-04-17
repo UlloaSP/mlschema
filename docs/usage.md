@@ -105,7 +105,7 @@ Output:
 
 ```json
 {
-  "inputs": [
+  "fields": [
     {"title": "sensor_id", "required": true, "type": "category", "options": ["A", "B", "C"]},
     {
       "title": "readings", "required": true, "type": "series",
@@ -113,7 +113,7 @@ Output:
       "field2": {"title": "field2", "required": true, "type": "number", "step": 0.1}
     }
   ],
-  "outputs": []
+  "reports": []
 }
 ```
 

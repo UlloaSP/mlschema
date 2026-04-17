@@ -140,8 +140,8 @@ class TestMLSchemaIntegrationBasics:
 
         # Verify result is valid JSON
         assert isinstance(result, dict)
-        assert "inputs" in result
-        assert len(result["inputs"]) == 6  # 6 columns
+        assert "fields" in result
+        assert len(result["fields"]) == 6  # 6 columns
 
 
 class TestMLSchemaCustomStrategies:
@@ -160,7 +160,7 @@ class TestMLSchemaCustomStrategies:
         result = ml_schema.build(df)
 
         # Verify custom strategy was used
-        field_schema = result["inputs"][0]
+        field_schema = result["fields"][0]
 
         assert field_schema["kind"] == "custom"
         assert field_schema["unit"] == "seconds"
@@ -187,12 +187,12 @@ class TestMLSchemaCustomStrategies:
 
         result = ml_schema.build(df)
 
-        assert len(result["inputs"]) == 3
+        assert len(result["fields"]) == 3
 
         # Check each field type
-        duration_schema = result["inputs"][0]
-        score_schema = result["inputs"][1]
-        comment_schema = result["inputs"][2]
+        duration_schema = result["fields"][0]
+        score_schema = result["fields"][1]
+        comment_schema = result["fields"][2]
 
         assert duration_schema["kind"] == "custom"
         assert score_schema["kind"] == "advanced_number"
@@ -231,7 +231,7 @@ class TestMLSchemaCustomStrategies:
         df = DataFrame({"score": [1.5, 2.7, 3.9]})
         result = ml_schema.build(df)
 
-        field_schema = result["inputs"][0]
+        field_schema = result["fields"][0]
 
         # Should use updated strategy
         assert field_schema["kind"] == "advanced_number"
@@ -261,8 +261,8 @@ class TestMLSchemaCustomStrategies:
 
         # Duration should fall back to text strategy (if available)
         # or raise an error if no fallback
-        duration_schema = result["inputs"][0]
-        comment_schema = result["inputs"][1]
+        duration_schema = result["fields"][0]
+        comment_schema = result["fields"][1]
 
         # Custom strategy should no longer be used
         assert duration_schema["kind"] == "text"  # Fallback
@@ -299,10 +299,10 @@ class TestMLSchemaComplexDataFrames:
 
         result = ml_schema.build(df)
 
-        assert len(result["inputs"]) == 8
+        assert len(result["fields"]) == 8
 
         # Verify each field type
-        schemas = result["inputs"]
+        schemas = result["fields"]
         types = [schema["kind"] for schema in schemas]
 
         expected_types = [
@@ -341,8 +341,8 @@ class TestMLSchemaComplexDataFrames:
         result = ml_schema.build(df)
 
         # Should still generate schemas
-        assert len(result["inputs"]) == 2
-        schemas = result["inputs"]
+        assert len(result["fields"]) == 2
+        schemas = result["fields"]
 
         # All should be marked as not required
         for schema in schemas:
@@ -368,10 +368,10 @@ class TestMLSchemaComplexDataFrames:
 
         result = ml_schema.build(df)
 
-        assert len(result["inputs"]) == 4
+        assert len(result["fields"]) == 4
 
         # Verify performance - should complete without timeout
-        schemas = result["inputs"]
+        schemas = result["fields"]
         assert all("kind" in schema for schema in schemas)
 
 
@@ -407,7 +407,7 @@ class TestMLSchemaEdgeCases:
         df = DataFrame({"text_col": ["a", "b", "c"]})
         result = ml_schema.build(df)
 
-        schema = result["inputs"][0]
+        schema = result["fields"][0]
 
         # Should use the last registered strategy
         assert schema["kind"] == "alternative_text"
@@ -428,7 +428,7 @@ class TestMLSchemaEdgeCases:
         result = ml_schema.build(df)
 
         # Both should fall back to text strategy
-        schemas = result["inputs"]
+        schemas = result["fields"]
         assert all(schema["kind"] == "text" for schema in schemas)
 
     def test_strategy_unregistration(self):
@@ -444,7 +444,7 @@ class TestMLSchemaEdgeCases:
         result = ml_schema.build(df)
 
         # Verify custom strategy was used
-        field_schema = result["inputs"][0]
+        field_schema = result["fields"][0]
         assert field_schema["kind"] == "custom"
 
         # Unregister the custom strategy
@@ -487,7 +487,7 @@ class TestMLSchemaEdgeCases:
         )
 
         result = ml_schema.build(df)
-        schema = result["inputs"][0]
+        schema = result["fields"][0]
 
         # Should be classified as text (object dtype)
         assert schema["kind"] == "text"
@@ -670,10 +670,10 @@ class TestMLSchemaRealWorldScenarios:
 
         result = ml_schema.build(df)
 
-        assert len(result["inputs"]) == 9
+        assert len(result["fields"]) == 9
 
         # Verify realistic field types
-        schemas = result["inputs"]
+        schemas = result["fields"]
         field_types = {schema["label"]: schema["kind"] for schema in schemas}
 
         expected_types = {
@@ -710,10 +710,10 @@ class TestMLSchemaRealWorldScenarios:
 
         result = ml_schema.build(df)
 
-        assert len(result["inputs"]) == 4
+        assert len(result["fields"]) == 4
 
         # Check time series specific attributes
-        schemas = result["inputs"]
+        schemas = result["fields"]
         temp_schema = next(s for s in schemas if s["label"] == "temperature")
 
         # Should have numeric step attribute
@@ -738,7 +738,7 @@ class TestMLSchemaRealWorldScenarios:
 
         # ml_schema2 should succeed
         result2 = ml_schema2.build(df)
-        assert len(result2["inputs"]) == 2
+        assert len(result2["fields"]) == 2
 
 
 class TestFieldRegistryNormalizeDtype:
@@ -771,7 +771,7 @@ class TestFieldRegistryNormalizeDtype:
         assert normalize_dtype(string_dtype) == "string"
 
     def test_normalize_dtype_with_string(self):
-        """Test _normalize_dtype with string inputs."""
+        """Test _normalize_dtype with string fields."""
 
         # Test with string dtype names
         assert normalize_dtype("int64") == "int64"

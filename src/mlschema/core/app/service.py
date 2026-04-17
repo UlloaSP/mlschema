@@ -22,7 +22,7 @@ class Service:
     to handle different data types and their corresponding schema representations.
 
     The service generates JSON payloads in the format:
-    {"inputs": [...], "outputs": [...]}
+    {"fields": [...], "reports": [...]}
 
     Attributes:
         _registry: Internal registry that manages field strategies for different data types.
@@ -120,4 +120,4 @@ class Service:
         Returns:
             JSON payload with the schema of each column.
         """
-        return {"inputs": self._schema_payload(df), "outputs": []}
+        return {"fields": self._schema_payload(df), "reports": []}
