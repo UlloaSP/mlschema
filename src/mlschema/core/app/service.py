@@ -120,4 +120,4 @@ class Service:
         Returns:
             JSON payload with the schema of each column.
         """
-        return {"fields": self._schema_payload(df), "reports": []}
+        return {"fields": self._schema_payload(df), "reports": [], "explanations": []}
