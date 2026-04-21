@@ -113,7 +113,8 @@ Output:
       "field2": {"title": "field2", "required": true, "type": "number", "step": 0.1}
     }
   ],
-  "reports": []
+  "reports": [],
+  "explanations": []
 }
 ```
 
@@ -163,7 +164,7 @@ df = pd.read_csv("data.csv")
 form_schema = mls.build(df)
 ```
 
-The `build()` method scans each column, delegates to the first compatible strategy, and returns a validated and well-formed JSON.
+The `build()` method scans each column, delegates to the first compatible strategy, and returns a validated and well-formed payload with top-level `fields`, `reports`, and `explanations` keys.
 
 > **Data‑type integrity is mandatory.**
 > Ensure your DataFrame columns carry accurate dtypes. Undeclared or unsupported dtypes fall back to `TextStrategy`. If you rely on that behaviour, remember to register `TextStrategy`.

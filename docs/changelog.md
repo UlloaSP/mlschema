@@ -87,6 +87,7 @@ N/A
 ### Changed
 
 - `Service._field_payload()`: content-probe lookup now takes priority over dtype and fallback lookups.
+- `Service.build_schema()`: top-level payload now includes `explanations` alongside `fields` and `reports`.
 - `FieldTypes` enum: added `SERIES = "series"`.
 - `strategies` public API: `SeriesStrategy` and `add_series_sub_field` now exported at package level.
 
