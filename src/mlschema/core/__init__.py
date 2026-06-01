@@ -1,36 +1,41 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Pablo Ulloa Santin
-"""Core abstractions and error contracts for **MLSchema**.
+"""Core strict inference API and field contracts for MLSchema."""
 
-This module defines the *extension surface* on which all custom behaviour
-is built.  Integrators subclass the abstractions below to introduce new data
-types or override default processing logic, and they trap the accompanying
-exceptions to maintain deterministic error handling across the pipeline.
-"""
-
-from mlschema.core.app import Strategy
-from mlschema.core.domain import BaseField, BaseReport
+from mlschema.core.app import (
+    FieldBuilder,
+    FieldContext,
+    FieldDict,
+    FieldKind,
+    infer_schema,
+    kind,
+)
+from mlschema.core.domain import BaseField
 from mlschema.core.exceptions import (
     EmptyDataFrameError,
-    FallbackStrategyMissingError,
-    FieldRegistryError,
+    FieldBuilderError,
+    FieldKindAlreadyRegisteredError,
+    FieldKindError,
     FieldServiceError,
     InvalidValueError,
     MLSchemaError,
-    StrategyDtypeAlreadyRegisteredError,
-    StrategyNameAlreadyRegisteredError,
+    UnknownFieldKindError,
 )
 
 __all__ = [
     "BaseField",
-    "BaseReport",
     "EmptyDataFrameError",
-    "FallbackStrategyMissingError",
-    "FieldRegistryError",
+    "FieldBuilder",
+    "FieldBuilderError",
+    "FieldContext",
+    "FieldDict",
+    "FieldKind",
+    "FieldKindAlreadyRegisteredError",
+    "FieldKindError",
     "FieldServiceError",
     "InvalidValueError",
     "MLSchemaError",
-    "Strategy",
-    "StrategyDtypeAlreadyRegisteredError",
-    "StrategyNameAlreadyRegisteredError",
+    "UnknownFieldKindError",
+    "infer_schema",
+    "kind",
 ]

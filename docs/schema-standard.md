@@ -1,231 +1,468 @@
-# The MLSchema Standard: A Extensible Contract for Machine Learning
+# Schema Standard
 
-> This section explains the foundational design principles behind the MLSchema JSON format, how it achieves vendor-agnostic compatibility, and the deliberate constraints that enable safe extensibility.
+> The MLSchema standard defines the JSON field contract emitted by `infer_schema()`: a validated, frontend-ready representation of tabular inputs derived from `pandas.DataFrame` columns.
 
 ---
 
-## 1. Executive Overview
+## Overview
 
-**MLSchema** is not merely a pandas → JSON converter. It establishes a **data contract** between machine learning models and consumer applications—ensuring that model inputs and outputs can be reliably described, validated, and rendered across heterogeneous systems.
+MLSchema is not a generic JSON Schema generator. It defines a compact field standard for data-driven interfaces: prediction forms, review tools, annotation workflows, internal dashboards, and frontend libraries such as [mlform](https://ulloasp.github.io/mlform/).
 
-Unlike ad-hoc form definitions or proprietary model serialization formats, MLSchema proposes a **standard** that is:
+The standard is intentionally close to the DataFrame. Column names become labels, pandas dtypes drive field kinds, nullability determines whether a field is required, and Pydantic models validate the final contract before it is returned.
 
-- **Reproducible**: The same DataFrame always produces identical schemas.
-- **Validated**: Every field complies with domain-specific constraints (ranges, patterns, cardinality).
-- **Extensible**: New field types can be registered without breaking existing consumers.
-- **Transport-agnostic**: JSON serialization permits language-agnostic integration with web frameworks, microservices, and low-code platforms.
+The canonical public workflow is:
 
-### Why a Standard Matters
+```python
+from mlschema import infer_schema
 
-When a machine learning team deploys a model, downstream consumers must understand:
-- Which inputs the model accepts.
-- What types and ranges each input expects.
-- How to present those inputs in a UI (text box, slider, dropdown, date picker).
-- What the output schema looks like.
-
-Without a formal specification, teams waste cycles reverse-engineering model contracts or hand-rolling form definitions. A standard eliminates that friction and unlocks reproducible, governable inference pipelines.
-
-## 2. Core Principles
-
-### 2.1 Strategy-Driven Architecture
-
-MLSchema adopts the **strategy pattern** as its foundational design principle. Each pandas dtype is mapped to exactly one field type via a pluggable strategy:
-
-```text
-pandas dtype (e.g., "int64")
-    ↓
-Strategy registry lookup
-    ↓
-Pydantic BaseField subclass
-    ↓
-JSON schema
+schema = infer_schema(df)
 ```
 
-**Why strategies?**
-
-1. **Single Responsibility**: Each strategy owns one problem domain (text encoding, numeric validation, categorical enumerations).
-2. **Hot-Swap Extensibility**: Register custom strategies without modifying core code.
-3. **Forward Compatibility**: Introduce domain-specific controls (geospatial, IoT widgets) as standalone strategies.
-
-### 2.2 Mandatory Field Attributes
-
-Every field in an MLSchema schema carries reserved attributes defined by the `BaseField` Pydantic model and always present in generated output:
-
-| Attribute   | Type         | Constraint               | Example              |
-|-------------|--------------|--------------------------|----------------------|
-| `label`     | `str`        | 1–100 characters         | `"Age"`              |
-| `required`  | `bool`       | Derived from nullability | `true`               |
-| `kind`      | `str`        | Strategy-specific        | `"text"`, `"number"` |
-
-Optional attributes (omitted when `None`):
-
-| Attribute                  | Type                                        | Description                                  |
-|----------------------------|---------------------------------------------|----------------------------------------------|
-| `description`              | `str \| None`                               | Help text (max 500 chars)                    |
-| `disabled`                 | `bool \| None`                              | Field is disabled                            |
-| `hidden`                   | `bool \| None`                              | Field is hidden                              |
-| `readOnly`                 | `bool \| None`                              | Field is read-only                           |
-| `disabledWhen`             | `Any \| None`                               | Declarative condition to disable the field   |
-| `hiddenWhen`               | `Any \| None`                               | Declarative condition to hide the field      |
-| `readOnlyWhen`             | `Any \| None`                               | Declarative condition to make read-only      |
-| `asyncValidationDebounceMs`| `int \| None`                               | Debounce in ms for async validation          |
-| `inactiveFieldPolicy`      | `"include" \| "omit" \| "reset-on-hide"`    | Behaviour when field becomes inactive        |
-| `valuePath`                | `str \| list[str] \| None`                  | Key path for reading the value on submit     |
-| `defaultValue`             | `Any \| None`                               | Initial value for the field                  |
-| `ui`                       | `dict[str, Any] \| None`                    | Arbitrary UI-layer props                     |
-
-These attributes are **reserved**. Custom strategies must not emit them via `attributes_from_series()`.
-
-### 2.3 Domain-Specific Extensions
-
-Each strategy introduces optional attributes that refine the field contract:
-
-- **NumberField**: `defaultValue` (inherited from `BaseField`), `min`, `max`, `step`, `unit`, `placeholder`
-- **TextField**: `defaultValue` (inherited from `BaseField`), `minLength`, `maxLength`, `pattern`, `placeholder`
-- **CategoryField**: `defaultValue` (inherited from `BaseField`), `options`
-- **BooleanField**: `defaultValue` (inherited from `BaseField`), `trueLabel`, `falseLabel`
-- **DateField**: `defaultValue` (inherited from `BaseField`), `min`, `max`, `step`
-- **SeriesField**: `field1`, `field2`, `minPoints`, `maxPoints`
-
-These extensions are **not** free-form; they are rigorously typed and validated by Pydantic models.
-
-### 2.4 Deterministic Output
-
-The same DataFrame always produces identical JSON. This is guaranteed by:
-
-1. Normalizing pandas dtypes (e.g., `np.int64` → `"int64"`).
-2. Preserving column order and names.
-3. Using Pydantic's `model_dump()` with consistent serialization settings (`mode="json"`, `exclude_none=True`).
-
-Deterministic output is critical for CI/CD pipelines, caching, and contract versioning.
-
----
-
-## 3. The MLSchema JSON Format
-
-### 3.1 Canonical Structure
-
-MLSchema generates JSON payloads with the following canonical shape:
+The result is always a list of field dictionaries.
 
 ```json
-{
-  "fields": [
-    {
-      "label": "customer_name",
-      "kind": "text",
-      "required": true,
-      "minLength": 1,
-      "maxLength": 100,
-      "placeholder": "Enter full name"
-    },
-    {
-      "label": "satisfaction_score",
-      "kind": "number",
-      "required": true,
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "points"
-    }
-  ],
-  "reports": [],
-  "explanations": []
-}
+[
+  {
+    "kind": "text",
+    "label": "name",
+    "required": true
+  },
+  {
+    "kind": "number",
+    "label": "score",
+    "required": true,
+    "step": 0.1
+  }
+]
 ```
 
-The top-level envelope (`fields`, `reports`, `explanations`) provides logical separation between model parameters, expected predictions, and explanation metadata.
+This page documents the schema contract itself: its payload shape, reserved attributes, builtin kinds, validation rules, extension model, and compatibility expectations.
 
-### 3.2 Field Type Taxonomy
+---
 
-MLSchema ships with six built-in field types:
+## Design Principles
 
-#### **Kind: `text`**
+MLSchema follows a small set of constraints to keep generated schemas predictable across Python backends and frontend consumers.
+
+The top-level payload is always a field list. There is no envelope, model metadata block, version header, or output schema section in the emitted payload. Those concerns can be added by downstream applications, but the MLSchema contract remains focused on input fields.
+
+Each field is discriminated by `kind`. Consumers should branch on this value to decide how to render, validate, or transform the field.
+
+Every emitted field is validated before it is returned. Invalid constraints are not passed through as “best effort” JSON.
+
+The output is JSON-serialisable. Pydantic serialisation is performed in JSON mode and `None` values are omitted, which keeps the payload compact while preserving explicit defaults and constraints.
+
+Builtin inference is enabled by default. Common DataFrame workflows do not require manual registration.
+
+Extension is explicit. Domain behaviour enters through custom builders, custom kinds, and overrides; not by mutating internal registries or relying on private classes.
+
+---
+
+## Canonical Payload Shape
+
+The MLSchema payload is a list of fields.
+
+```json
+[
+  {
+    "kind": "text",
+    "label": "customer_name",
+    "required": true,
+    "minLength": 1,
+    "maxLength": 100,
+    "placeholder": "Enter full name"
+  },
+  {
+    "kind": "number",
+    "label": "satisfaction_score",
+    "required": true,
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "unit": "points"
+  }
+]
+```
+
+Each object in the list represents one frontend field. Field order follows DataFrame column order.
+
+A field dictionary contains three layers of information:
+
+| Layer                    | Purpose                                                                   |
+| ------------------------ | ------------------------------------------------------------------------- |
+| Base attributes          | Shared contract present across field kinds.                               |
+| Kind-specific attributes | Constraints and metadata belonging to a specific field kind.              |
+| UI metadata              | Optional consumer-facing hints that do not change the core data contract. |
+
+The standard does not require consumers to understand every key. A renderer can safely use `kind`, `label`, and `required` as the minimum baseline, then progressively support kind-specific attributes.
+
+---
+
+## Base Field Contract
+
+All fields inherit from `BaseField`.
+
+The required base attributes are:
+
+| Attribute  | Type   | Meaning                                                   |
+| ---------- | ------ | --------------------------------------------------------- |
+| `kind`     | `str`  | Field discriminator.                                      |
+| `label`    | `str`  | Human-readable label. Defaults to the column name.        |
+| `required` | `bool` | `true` when the source column contains no missing values. |
+
+Optional base attributes are omitted when not set.
+
+| Attribute                   | Type                                     | Meaning                                                            |
+| --------------------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| `description`               | `str`                                    | Help text or domain explanation.                                   |
+| `disabled`                  | `bool`                                   | Field is present but disabled.                                     |
+| `hidden`                    | `bool`                                   | Field is present but hidden.                                       |
+| `readOnly`                  | `bool`                                   | Field is visible but not editable.                                 |
+| `disabledWhen`              | any                                      | Declarative condition for disabling the field.                     |
+| `hiddenWhen`                | any                                      | Declarative condition for hiding the field.                        |
+| `readOnlyWhen`              | any                                      | Declarative condition for making the field read-only.              |
+| `asyncValidationDebounceMs` | `int`                                    | Debounce interval for asynchronous validation.                     |
+| `inactiveFieldPolicy`       | `"include"`, `"omit"`, `"reset-on-hide"` | Submission policy when a field becomes inactive.                   |
+| `valuePath`                 | `str` or `list[str]`                     | Alternative path used by consumers when reading or writing values. |
+| `defaultValue`              | any                                      | Initial field value.                                               |
+| `ui`                        | `dict`                                   | Free-form UI metadata for frontend consumers.                      |
+
+Field models reject unknown attributes. This is deliberate: the schema should fail at generation time rather than leak unsupported keys into the frontend contract.
+
+---
+
+## Builtin Kind Resolution
+
+Builtin kinds are enabled by default and evaluated in a fixed order.
+
+```text
+series
+boolean
+category
+date
+number
+text
+```
+
+The order is part of the contract. More specific detections run before broader fallbacks. `series` runs first because it detects pair-shaped object cells by content. `text` runs last because it accepts any column that was not claimed earlier.
+
+| Kind       | Detection                                                    | Inferred metadata   |
+| ---------- | ------------------------------------------------------------ | ------------------- |
+| `series`   | Non-null cells are 2-element tuples, lists, or dictionaries. | `field1`, `field2`  |
+| `boolean`  | `bool`, `boolean`                                            | Base field metadata |
+| `category` | `category`                                                   | `options`           |
+| `date`     | `datetime64[ns]`, `datetime64[us]`, `datetime64`             | Base field metadata |
+| `number`   | `int64`, `int32`, `float64`, `float32`                       | `step`              |
+| `text`     | Fallback                                                     | Base field metadata |
+
+The contract assumes that DataFrame dtypes are meaningful. A numeric column stored as `object` is not treated as `number` unless a custom builder or preprocessing step handles it.
+
+---
+
+## Required Semantics
+
+`required` is inferred from nullability.
+
+A column with no missing values produces:
 
 ```json
 {
   "kind": "text",
-  "label": "email",
-  "required": true,
-  "minLength": 5,
-  "maxLength": 254,
-  "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
-  "placeholder": "user@example.com"
+  "label": "name",
+  "required": true
 }
 ```
 
-**Supported pandas dtypes**: `object`, `string`
+A column containing at least one missing value produces:
 
-#### **Kind: `number`**
+```json
+{
+  "kind": "text",
+  "label": "name",
+  "required": false
+}
+```
+
+This rule is intentionally simple. MLSchema does not infer business-level optionality. If a nullable training column should still be required in a production form, set that decision with `overrides`.
+
+---
+
+## Text Field
+
+`text` represents free-form textual input and is also the fallback kind for columns not claimed by a more specific builtin.
+
+Minimal inferred field:
+
+```json
+{
+  "kind": "text",
+  "label": "customer_name",
+  "required": true
+}
+```
+
+Extended field:
+
+```json
+{
+  "kind": "text",
+  "label": "Email",
+  "required": true,
+  "description": "Primary contact email.",
+  "minLength": 5,
+  "maxLength": 254,
+  "pattern": "^[^@]+@[^@]+\\.[^@]+$",
+  "placeholder": "user@example.com",
+  "defaultValue": "ada@example.com"
+}
+```
+
+Supported kind-specific attributes:
+
+| Attribute     | Type  | Meaning                  |
+| ------------- | ----- | ------------------------ |
+| `minLength`   | `int` | Minimum accepted length. |
+| `maxLength`   | `int` | Maximum accepted length. |
+| `pattern`     | `str` | Validation pattern.      |
+| `placeholder` | `str` | Input placeholder.       |
+
+Validation rejects inconsistent length bounds, and default values must satisfy declared text constraints.
+
+---
+
+## Number Field
+
+`number` represents integer and floating-point numeric input.
+
+Integer columns infer `step: 1`.
 
 ```json
 {
   "kind": "number",
-  "label": "revenue",
+  "label": "age",
   "required": true,
-  "min": 0,
-  "max": 1000000,
-  "step": 0.01,
-  "unit": "USD",
-  "placeholder": "Enter amount"
+  "step": 1
 }
 ```
 
-**Supported pandas dtypes**: `int64`, `float64`, `int32`, `float32`
+Float columns infer `step: 0.1`.
 
-#### **Kind: `category`**
+```json
+{
+  "kind": "number",
+  "label": "score",
+  "required": true,
+  "step": 0.1
+}
+```
 
-The `options` key is mandatory and is automatically derived from the DataFrame's unique categorical values.
+Extended field:
+
+```json
+{
+  "kind": "number",
+  "label": "Revenue",
+  "required": true,
+  "description": "Revenue reported for the selected period.",
+  "min": 0,
+  "max": 1000000,
+  "step": 0.01,
+  "unit": "EUR",
+  "placeholder": "Enter amount",
+  "defaultValue": 0
+}
+```
+
+Supported kind-specific attributes:
+
+| Attribute     | Type   | Meaning                             |
+| ------------- | ------ | ----------------------------------- |
+| `min`         | number | Minimum accepted value.             |
+| `max`         | number | Maximum accepted value.             |
+| `step`        | number | Increment used by numeric controls. |
+| `placeholder` | `str`  | Input placeholder.                  |
+| `unit`        | `str`  | Unit displayed by consumers.        |
+
+Validation rejects `min > max`. Default values must be inside the declared range.
+
+---
+
+## Category Field
+
+`category` represents a closed set of options.
+
+It is inferred from pandas categorical columns.
+
+```python
+df["tier"] = pd.Categorical(
+    ["pro", "free"],
+    categories=["free", "pro"],
+)
+```
+
+Generated field:
 
 ```json
 {
   "kind": "category",
-  "label": "customer_segment",
+  "label": "tier",
   "required": true,
-  "options": ["Bronze", "Silver", "Gold"]
+  "options": ["free", "pro"]
 }
 ```
 
-**Supported pandas dtypes**: `category`
+Extended field:
 
-#### **Kind: `boolean`**
+```json
+{
+  "kind": "category",
+  "label": "Plan",
+  "required": true,
+  "options": ["free", "pro"],
+  "defaultValue": "pro"
+}
+```
+
+Supported kind-specific attributes:
+
+| Attribute | Type   | Meaning                                          |
+| --------- | ------ | ------------------------------------------------ |
+| `options` | `list` | Accepted values. Must contain at least one item. |
+
+`defaultValue` must be one of the declared options.
+
+Category options are taken from the categorical dtype categories when available. A defensive fallback may use non-null unique values, but production schemas should prefer explicit pandas categorical dtypes because they preserve the intended option set and order.
+
+---
+
+## Boolean Field
+
+`boolean` represents true/false input.
 
 ```json
 {
   "kind": "boolean",
-  "label": "is_active",
-  "required": true,
-  "trueLabel": "Yes",
-  "falseLabel": "No"
+  "label": "active",
+  "required": true
 }
 ```
 
-**Supported pandas dtypes**: `bool`, `boolean`
+Extended field:
 
-#### **Kind: `date`**
+```json
+{
+  "kind": "boolean",
+  "label": "Enabled",
+  "required": true,
+  "trueLabel": "Yes",
+  "falseLabel": "No",
+  "defaultValue": true
+}
+```
 
-`min` and `max` are ISO date strings (`YYYY-MM-DD`). Backend validation ensures `min ≤ max` via lexicographic comparison (valid for ISO format).
+Supported kind-specific attributes:
+
+| Attribute    | Type  | Meaning                    |
+| ------------ | ----- | -------------------------- |
+| `trueLabel`  | `str` | Label for the true state.  |
+| `falseLabel` | `str` | Label for the false state. |
+
+Boolean fields support `defaultValue` through the base contract.
+
+---
+
+## Date Field
+
+`date` represents date-like input inferred from pandas datetime columns.
 
 ```json
 {
   "kind": "date",
-  "label": "contract_renewal",
-  "required": false,
-  "min": "2024-01-01",
-  "max": "2026-12-31",
-  "step": 7
+  "label": "created",
+  "required": true
 }
 ```
 
-**Supported pandas dtypes**: `datetime64[ns]`, `datetime64`
+Extended field:
 
-#### **Kind: `series`**
+```json
+{
+  "kind": "date",
+  "label": "Created at",
+  "required": true,
+  "min": "2024-01-01",
+  "max": "2024-12-31",
+  "step": 1,
+  "defaultValue": "2024-01-01"
+}
+```
 
-Represents a two-axis column where each cell is a 2-element compound value. Sub-fields are inferred automatically from element dtypes; nesting series inside series is explicitly rejected.
+Supported kind-specific attributes:
+
+| Attribute | Type             | Meaning                       |
+| --------- | ---------------- | ----------------------------- |
+| `min`     | `str`            | Minimum accepted date string. |
+| `max`     | `str`            | Maximum accepted date string. |
+| `step`    | positive integer | Step used by date controls.   |
+
+Validation rejects `min > max`. Default values must be inside the declared range.
+
+The standard expects date strings to be serialised in a frontend-compatible format. ISO-style date strings are the recommended representation for cross-language consumers.
+
+---
+
+## Series Field
+
+`series` represents a two-axis value stored in a single DataFrame column. Typical examples are timestamp-value readings, coordinate pairs, or ordered measurement pairs.
+
+A series column is detected by content rather than dtype. Non-null cells must all be 2-element tuples, 2-element lists, or 2-key dictionaries.
+
+```python
+df = pd.DataFrame(
+    {
+        "reading": [
+            (pd.Timestamp("2024-01-01"), 23.5),
+            (pd.Timestamp("2024-01-02"), 24.1),
+        ]
+    }
+)
+```
+
+Generated field:
 
 ```json
 {
   "kind": "series",
-  "label": "readings",
+  "label": "reading",
+  "required": true,
+  "field1": {
+    "kind": "date",
+    "label": "field1",
+    "required": true
+  },
+  "field2": {
+    "kind": "number",
+    "label": "field2",
+    "required": true,
+    "step": 0.1
+  }
+}
+```
+
+Supported cell shapes:
+
+| Shape | Example                        | Subfield labels                       |
+| ----- | ------------------------------ | ------------------------------------- |
+| Tuple | `(x, y)`                       | `field1`, `field2`                    |
+| List  | `[x, y]`                       | `field1`, `field2`                    |
+| Dict  | `{"timestamp": x, "value": y}` | Dictionary keys converted to strings. |
+
+Extended field:
+
+```json
+{
+  "kind": "series",
+  "label": "Sensor reading",
   "required": true,
   "field1": {
     "kind": "date",
@@ -238,251 +475,144 @@ Represents a two-axis column where each cell is a 2-element compound value. Sub-
     "required": true,
     "step": 0.1
   },
-  "minPoints": 10,
-  "maxPoints": 1000
+  "minPoints": 1,
+  "maxPoints": 100
 }
 ```
 
-**Detection**: Content-based (not dtype-based). `SeriesStrategy` claims any `object` column whose non-null cells are all 2-element tuples, lists, or dicts.
+Supported kind-specific attributes:
 
-**Supported cell formats**:
+| Attribute   | Type             | Meaning                            |
+| ----------- | ---------------- | ---------------------------------- |
+| `field1`    | field object     | First inferred subfield.           |
+| `field2`    | field object     | Second inferred subfield.          |
+| `minPoints` | positive integer | Minimum accepted number of points. |
+| `maxPoints` | positive integer | Maximum accepted number of points. |
 
-| Format | Example | Sub-field labels |
-| ------ | ------- | ---------------- |
-| Tuple | `(v1, v2)` | `field1`, `field2` |
-| List | `[v1, v2]` | `field1`, `field2` |
-| Dict | `{"k1": v1, "k2": v2}` | dict keys |
+Before subfield inference, object subseries may be coerced where possible. Python dates and datetimes become datetime series, parseable date strings become datetime series, and numeric-looking strings become numeric series. Other object values remain object values and continue through normal inference.
 
-**Constraints**:
+Nested series are rejected. A `series` field cannot contain another `series` field as `field1` or `field2`.
 
-| Constraint | Rule | Error |
-| ---------- | ---- | ----- |
-| `field1` / `field2` not series | No nesting | `PydanticCustomError("no_series_nesting")` |
-| Sub-field kind known | Must be registered via `add_series_sub_field()` | `PydanticCustomError("unknown_sub_field_type")` |
-| `minPoints` / `maxPoints` ≥ 1 | `PositiveInt` | Pydantic validation error |
-| `minPoints ≤ maxPoints` | Model validator | `PydanticCustomError("series_points_constraint")` |
-
-### 3.3 Report Type Taxonomy
-
-MLSchema ships with two built-in report types for describing model outputs:
-
-#### **Kind: `regressor`**
-
-```json
-{
-  "kind": "regressor",
-  "label": "Predicted price",
-  "source": "model_output",
-  "unit": "EUR",
-  "precision": 2
-}
-```
-
-| Attribute      | Type           | Description                                    |
-|----------------|----------------|------------------------------------------------|
-| `unit`         | `str \| None`  | Unit label (e.g. `"€"`, `"kg"`)               |
-| `precision`    | `int \| None`  | Decimal places shown (mlform default: 2)       |
-| `explanations` | `bool \| None` | Show feature-importance explanations           |
-
-#### **Kind: `classifier`**
-
-```json
-{
-  "kind": "classifier",
-  "label": "Predicted class",
-  "source": "model_output",
-  "labels": ["cat", "dog", "bird"],
-  "details": true
-}
-```
-
-| Attribute      | Type             | Description                                    |
-|----------------|------------------|------------------------------------------------|
-| `labels`       | `list[str] \| None` | Ordered class labels                        |
-| `details`      | `bool \| None`   | Show per-class breakdown (mlform default: true)|
-| `explanations` | `bool \| None`   | Show feature-importance explanations           |
+Invalid pair shapes are not claimed as `series`. Empty series, null-only series, malformed tuples, malformed lists, malformed dictionaries, scalar strings, and ordinary object values continue through the remaining builders.
 
 ---
 
-## 4. Design Decisions & Rationale
+## Determinism And Serialisation
 
-### 4.1 Why Pydantic?
+The same DataFrame and the same inference configuration should produce the same field list.
 
-Pydantic v2 provides:
+MLSchema preserves DataFrame column order, normalises dtype names before matching, applies builders in a fixed order, validates fields with their registered Pydantic model, and serialises with JSON-compatible output.
 
-1. **Type safety**: Schemas are validated at construction time, not at serialization.
-2. **Composability**: Custom models inherit from `BaseField`, enabling incremental extension.
-3. **Standard format**: Pydantic models emit JSON in a deterministic, language-agnostic format.
-4. **Validators**: Embedded, reusable validation logic (e.g., `min ≤ max`, regex patterns).
+`None` values are omitted. This keeps generated schemas compact and avoids forcing frontend consumers to distinguish between “not configured” and explicit `null`.
 
-### 4.2 Why a Literal Type Annotation?
-
-The `kind` field in each Pydantic model uses Python's `Literal` type:
-
-```python
-class NumberField(BaseField):
-    kind: Literal[FieldTypes.NUMBER] = FieldTypes.NUMBER
-```
-
-This ensures:
-
-- **Type narrowing**: IDEs and static analyzers can discriminate on the `kind` field.
-- **Exhaustiveness**: Consumer code can enforce complete handling of all field types.
-- **No collisions**: Only one schema matches a given `kind` string.
-
-### 4.3 Why Reserved Keys?
-
-The reserved keys (`label`, `kind`, `required`, `description`) are **always** populated by the base `Strategy` class. Custom strategies cannot override them via `attributes_from_series()`. This ensures:
-
-1. **Predictability**: Consumers know these keys will always be present and meaningful.
-2. **Schema integrity**: The contract is never violated by careless implementations.
-3. **Versioning safety**: Future MLSchema versions can extend reserved keys safely.
-
-### 4.4 Why `exclude_none=True`?
-
-Pydantic's serialization mode `exclude_none=True` strips `null` values:
+A minimal field therefore remains minimal:
 
 ```json
 {
   "kind": "text",
-  "label": "email",
-  "required": true,
-  "minLength": 1
-  // "placeholder": null is excluded
+  "label": "name",
+  "required": true
 }
 ```
 
-Optional attributes are **omitted** when not set, keeping payloads compact.
-
----
-
-## 5. Achieving Safe Extensibility
-
-### 5.1 The Extensibility Contract
-
-**✅ Safe to extend:**
-
-- Register custom strategies for new pandas dtypes.
-- Create custom Pydantic models that inherit from `BaseField` or `BaseReport`.
-- Override `attributes_from_series()` to inject domain-specific metadata.
-
-**❌ Do not modify:**
-
-- The reserved attributes (`label`, `kind`, `required`, `description`).
-- The core `Strategy` class API (`build_dict()`, `dtypes`, `type_name`).
-- The shape of the top-level envelope (`{"fields": [...], "reports": [...], "explanations": [...]}`).
-
-### 5.2 Example: Custom Strategy for Geospatial Data
-
-```python
-from typing import Literal
-from pydantic import Field
-from pandas import Series
-from mlschema.core import BaseField, Strategy
-
-# 1️⃣  Define the Pydantic schema
-class LocationField(BaseField):
-    kind: Literal["location"] = "location"
-    latitude: float | None = None
-    longitude: float | None = None
-    zoom: int = 10
-
-# 2️⃣  Define the Strategy
-class LocationStrategy(Strategy):
-    def __init__(self) -> None:
-        super().__init__(
-            type_name="location",
-            schema_cls=LocationField,
-            dtypes=("object",),
-        )
-
-    def attributes_from_series(self, series: Series) -> dict:
-        return {
-            "latitude": series.apply(extract_lat).mean(),
-            "longitude": series.apply(extract_lon).mean(),
-        }
-
-# 3️⃣  Register it
-mls = MLSchema()
-mls.register(LocationStrategy())
-```
-
-Resulting schema:
+An enriched field only includes the attributes that are actually set:
 
 ```json
 {
-  "kind": "location",
-  "label": "store_location",
+  "kind": "text",
+  "label": "Full name",
   "required": true,
-  "latitude": 40.7128,
-  "longitude": -74.0060,
-  "zoom": 12
+  "description": "Visible customer name.",
+  "minLength": 1,
+  "maxLength": 80,
+  "placeholder": "Ada Lovelace",
+  "defaultValue": "Ada",
+  "ui": {
+    "autocomplete": "name"
+  }
 }
 ```
 
 ---
 
-## 6. Validation & Error Handling
+## Validation Model
 
-### 6.1 Multi-Layer Validation
+Validation happens before the schema is returned.
 
-MLSchema enforces validation at three points:
+The relevant validation layers are:
 
-1. **Strategy registration**: Ensures no dtype collisions or duplicate `type_name`s.
-2. **DataFrame inspection**: Confirms all columns carry supported dtypes; raises if fallback is missing.
-3. **Pydantic instantiation**: Validates field constraints (e.g., `min ≤ max`).
+| Layer                  | Responsibility                                                           |
+| ---------------------- | ------------------------------------------------------------------------ |
+| DataFrame validation   | Rejects empty DataFrames.                                                |
+| Kind registration      | Rejects duplicate kind names and invalid custom kind models.             |
+| Builder validation     | Rejects invalid builder return values, missing kinds, and unknown kinds. |
+| Field model validation | Enforces Pydantic constraints for each field kind.                       |
+| Override validation    | Ensures patched fields still satisfy the target field model.             |
 
-### 6.2 Exception Hierarchy
-
-All library-level exceptions inherit from `mlschema.core.MLSchemaError`:
-
-```python
-try:
-    schema = mls.build(df)
-except mlschema.core.MLSchemaError as e:
-    log.error(f"Schema generation failed: {e}")
-```
-
-Specific exceptions:
-
-- `EmptyDataFrameError` – DataFrame has no rows or columns.
-- `FallbackStrategyMissingError` – Unsupported dtype with no fallback.
-- `StrategyNameAlreadyRegisteredError` – Duplicate `type_name` on `register()`.
-- `StrategyDtypeAlreadyRegisteredError` – Duplicate dtype on `register()`.
-- `ValidationError` (Pydantic) – Field constraint violation.
+This makes the generated schema suitable for frontend consumers that expect a stable contract. Broken fields fail during generation instead of failing later in rendering or submission.
 
 ---
 
-## 7. Best Practices for Schema Design
+## Error Contract
 
-### 7.1 Pre-validation Checklist
+MLSchema exposes library-level exceptions through `mlschema.core.exceptions` and re-exports them from `mlschema.core`.
 
-Before calling `mls.build(df)`:
+| Error                             | Meaning                                                                                                           |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `MLSchemaError`                   | Base package exception.                                                                                           |
+| `InvalidValueError`               | Base class for configuration or user input violations.                                                            |
+| `FieldServiceError`               | Base runtime input inference error.                                                                               |
+| `EmptyDataFrameError`             | The DataFrame has no rows or no columns.                                                                          |
+| `FieldKindError`                  | `kind()` received an invalid model, a model without `kind`, or a `None` kind default.                             |
+| `FieldBuilderError`               | A builder returned an invalid payload, omitted `kind`, no builder matched, or overrides targeted missing columns. |
+| `FieldKindAlreadyRegisteredError` | Duplicate kind names were registered.                                                                             |
+| `UnknownFieldKindError`           | A builder emitted a kind with no registered field model.                                                          |
+| `pydantic.ValidationError`        | A field payload violated its Pydantic model constraints.                                                          |
 
-1. ✅ **Confirm dtypes**: Inspect `df.dtypes` to ensure columns carry the expected types.
-2. ✅ **Handle nulls**: Decide whether columns should be `required: true` or `required: false`.
-3. ✅ **Register strategies**: Only register the field types your application needs.
-4. ✅ **Test edge cases**: Empty DataFrames, single rows, all-null columns.
-
-### 7.2 Custom Strategy Patterns
-
-1. **Inherit from `BaseField`**: Ensure your Pydantic model extends `BaseField`.
-2. **Use `Literal` for `kind`**: Set `kind: Literal["custom_type"] = "custom_type"`.
-3. **Override `attributes_from_series()` only**: Do not override `build_dict()` or other base methods.
-4. **Validate early**: Use Pydantic `@model_validator` decorators to catch constraint violations at construction time.
-5. **Respect reserved keys**: Do not emit `label`, `kind`, `required`, or `description` from `attributes_from_series()`.
-
----
-
-## 8. Summary
-
-MLSchema establishes a **data contract** that bridges machine learning models and consumer applications. By combining a strategy-driven architecture with rigorous Pydantic validation, the library achieves:
-
-- **Reproducibility**: Same DataFrame → identical schema.
-- **Extensibility**: Custom strategies plug in without core modifications.
-- **Type Safety**: Literal annotations, Pydantic models, and static analysis.
-- **Simplicity**: Sensible defaults; no configuration required for common dtypes.
+Applications that only need a broad failure boundary can catch `MLSchemaError` for library-level failures and `pydantic.ValidationError` for contract validation failures.
 
 ---
 
-**Next**: Refer to the [Usage Guide](usage.md) to implement your first custom strategy, or see the [API Reference](reference.md) for exhaustive method signatures.
+## Compatibility Expectations
+
+The MLSchema standard is intended to be consumed outside Python. Frontend consumers should treat the payload as a discriminated field list.
+
+A consumer should:
+
+* Preserve field order.
+* Branch on `kind`.
+* Treat unknown kinds as unsupported unless explicitly registered.
+* Respect `required`, `defaultValue`, and kind-specific constraints.
+* Ignore unknown `ui` metadata if it is not relevant to that renderer.
+* Avoid relying on absent optional keys.
+* Treat missing optional keys as “not configured”.
+
+A consumer should not infer hidden semantics from labels or column order alone. The explicit field contract is the source of truth.
+
+---
+
+## Practical Schema Design
+
+Good schemas start with deliberate DataFrames.
+
+Use pandas numeric dtypes for numeric fields, categorical dtypes for closed option sets, boolean dtypes for boolean controls, and datetime dtypes for date controls. Object columns are acceptable, but they are ambiguous and usually fall back to `text`.
+
+Use overrides for final product decisions: labels, descriptions, bounds, defaults, placeholders, units, boolean labels, point limits, and UI metadata.
+
+Use custom builders for reusable rules that still map to existing kinds.
+
+Use custom kinds when a new frontend contract is required.
+
+Keep custom kinds small and explicit. A new kind should exist because a consumer needs to render or validate it differently, not because a column needs a nicer label.
+
+Do not depend on internal registry, service, or strategy classes. The supported contract is built around `infer_schema()`, optional `builders`, optional `kinds`, and optional `overrides`.
+
+---
+
+## Boundary Of The Standard
+
+MLSchema describes fields. It does not describe model weights, prediction responses, explanations, evaluation metrics, feature importance, transport protocols, authentication, storage, or UI layout.
+
+Those concerns belong to the application layer.
+
+This boundary is intentional. Keeping the standard limited to field contracts makes the payload stable, easy to validate, and simple to consume from Python, TypeScript, or any system that can read JSON.

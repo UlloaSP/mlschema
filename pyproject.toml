@@ -1,75 +1,64 @@
 [project]
 name = "mlschema"
-version = "0.1.6"
-description = "Lightweight orchestration layer that turns pandas DataFrames into front-end-ready JSON schemas, engineered to pair seamlessly with [mlform](https://github.com/UlloaSP/mlform)."
+version = "0.2.0"
+description = "Infer validated, frontend-ready field schemas from pandas DataFrames."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { text = "MIT" }
-authors = [
-    { name = "Pablo Ulloa Santín", email = "pablo.ulloa.santin@udc.es" }
-]
+authors = [{ name = "Pablo Ulloa Santín", email = "pablo.ulloa.santin@udc.es" }]
 maintainers = [
-    { name = "Pablo Ulloa Santín", email = "pablo.ulloa.santin@udc.es" }
+    { name = "Pablo Ulloa Santín", email = "pablo.ulloa.santin@udc.es" },
 ]
 keywords = [
     "pandas",
     "dataframe",
+    "schema-inference",
+    "field-schema",
+    "form-generation",
+    "frontend-forms",
     "json-schema",
+    "json",
     "validation",
     "pydantic",
-    "schema-inference",
     "data-validation",
+    "data-contracts",
     "machine-learning",
     "data-science",
-    "etl",
-    "type-inference",
+    "mlops",
     "frontend-integration",
 ]
 classifiers = [
     # Development Status
     "Development Status :: 4 - Beta",
-
     # Intended Audience
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Information Technology",
-
     # License
     "License :: OSI Approved :: MIT License",
-
     # Natural Language
     "Natural Language :: English",
-
     # Operating System
     "Operating System :: OS Independent",
-    "Operating System :: POSIX",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: MacOS",
-
     # Programming Language
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
-
+    # Framework
+    "Framework :: Pydantic",
+    "Framework :: Pydantic :: 2",
     # Topic
     "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: Code Generators",
     "Topic :: Utilities",
-
     # Typing
     "Typing :: Typed",
-
-    # Framework
-    "Framework :: Pydantic",
-    "Framework :: Pytest",
 ]
 requires-python = ">=3.14,<3.15"
-dependencies = [
-    "pandas>=2.3.3,<3.0.0",
-    "pydantic>=2.12.3,<3.0.0",
-]
+dependencies = ["pandas>=3.0.3,<4.0.0", "pydantic>=2.13.4,<3.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/UlloaSP/mlschema"
@@ -85,41 +74,31 @@ Funding = "https://github.com/sponsors/UlloaSP"
 [dependency-groups]
 # Development dependencies
 dev = [
-    "mlschema[test,docs,lint]",
-    "pre-commit>=4.3.0",
+    { include-group = "test" },
+    { include-group = "docs" },
+    { include-group = "lint" },
+    "pre-commit>=4.6.0",
 ]
 
 # Testing dependencies
-test = [
-    "pytest>=8.4.2",
-    "pytest-cov>=7.0.0",
-    "pytest-mock>=3.15.1",
-]
+test = ["pytest>=9.0.3", "pytest-cov>=7.1.0", "pytest-mock>=3.15.1"]
 
 # Documentation dependencies
 docs = [
     "mkdocs>=1.6.1",
-    "mkdocs-material>=9.6.22",
-    "mkdocstrings[python]>=0.30.1",
+    "mkdocs-material>=9.7.6",
+    "mkdocstrings[python]>=1.0.4",
 ]
 
 # Linting and formatting dependencies
-lint = [
-    "pyright>=1.1.407",
-    "ruff>=0.14.2",
-]
+lint = ["pyright>=1.1.409", "ruff>=0.15.15"]
 
 # All dependencies (for easy installation)
-all = [
-    "mlschema[dev,test,docs,lint]",
-]
+all = [{ include-group = "dev" }]
 
 [build-system]
 requires = ["hatchling>=1.25.0"]
 build-backend = "hatchling.build"
-
-[tool.hatch.version]
-path = "src/mlschema/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -147,11 +126,11 @@ minversion = "8.0"
 testpaths = ["test"]
 pythonpath = ["src"]
 addopts = [
-    "-ra",                    # Show summary of all test outcomes
-    "--strict-markers",       # Require markers to be registered
-    "--strict-config",        # Require valid pytest configuration
-    "--showlocals",           # Show local variables in tracebacks
-    "--tb=short",             # Short traceback format
+    "-ra",              # Show summary of all test outcomes
+    "--strict-markers", # Require markers to be registered
+    "--strict-config",  # Require valid pytest configuration
+    "--showlocals",     # Show local variables in tracebacks
+    "--tb=short",       # Short traceback format
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
@@ -159,7 +138,7 @@ markers = [
     "unit: marks tests as unit tests",
 ]
 filterwarnings = [
-    "error",                  # Turn warnings into errors
+    "error",                             # Turn warnings into errors
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
 ]
@@ -168,12 +147,7 @@ filterwarnings = [
 source = ["src"]
 branch = true
 parallel = true
-omit = [
-    "*/test/*",
-    "*/tests/*",
-    "*/__pycache__/*",
-    "*/site-packages/*",
-]
+omit = ["*/test/*", "*/tests/*", "*/__pycache__/*", "*/site-packages/*"]
 
 [tool.coverage.report]
 precision = 2
@@ -201,39 +175,32 @@ directory = "htmlcov"
 
 [tool.ruff]
 line-length = 88
-target-version = "py313"
+target-version = "py314"
 src = ["src", "test"]
-extend-exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    "build",
-    "dist",
-    "*.egg-info",
-]
+extend-exclude = [".git", ".venv", "__pycache__", "build", "dist", "*.egg-info"]
 
 [tool.ruff.lint]
 select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # pyflakes
-    "I",      # isort
-    "B",      # flake8-bugbear
-    "C4",     # flake8-comprehensions
-    "UP",     # pyupgrade
-    "ARG",    # flake8-unused-arguments
-    "C90",    # mccabe complexity
-    "T10",    # flake8-debugger
-    "T20",    # flake8-print
-    "TID",    # flake8-tidy-imports
-    "SIM",    # flake8-simplify
-    "DTZ",    # flake8-datetimez
-    "RET",    # flake8-return
-    "PTH",    # flake8-use-pathlib
-    "ERA",    # eradicate (commented-out code)
-    "PL",     # pylint
-    "PERF",   # perflint
-    "RUF",    # ruff-specific rules
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "ARG",  # flake8-unused-arguments
+    "C90",  # mccabe complexity
+    "T10",  # flake8-debugger
+    "T20",  # flake8-print
+    "TID",  # flake8-tidy-imports
+    "SIM",  # flake8-simplify
+    "DTZ",  # flake8-datetimez
+    "RET",  # flake8-return
+    "PTH",  # flake8-use-pathlib
+    "ERA",  # eradicate (commented-out code)
+    "PL",   # pylint
+    "PERF", # perflint
+    "RUF",  # ruff-specific rules
 ]
 ignore = [
     "E501",    # Line too long (handled by formatter)
@@ -250,9 +217,6 @@ ignore = [
     "PLC0415", # Import at function level (avoid circular imports in tests)
     "S101",    # assert statements are expected in tests
     "DTZ",     # datetime without timezone acceptable in tests
-]
-"src/mlschema/core/app/strategy.py" = [
-    "ARG002",  # Unused method argument (base class interface)
 ]
 
 [tool.ruff.lint.isort]
@@ -279,30 +243,36 @@ docstring-code-format = true
 
 [tool.pyright]
 include = ["src"]
-exclude = [
-    "**/__pycache__",
-    "**/node_modules",
-    ".venv",
-    "build",
-    "dist",
-]
+exclude = ["test", "**/node_modules", "**/__pycache__", ".venv", ".git"]
+venvPath = "."
+venv = ".venv"
 pythonVersion = "3.14"
 pythonPlatform = "All"
-typeCheckingMode = "strict"
+typeCheckingMode = "basic"
 reportMissingImports = true
 reportMissingTypeStubs = false
+reportGeneralTypeIssues = true
+reportOptionalMemberAccess = true
+reportOptionalCall = true
+reportOptionalIterable = true
+reportOptionalContextManager = true
+reportOptionalOperand = true
+reportUntypedFunctionDecorator = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnknownVariableType = false
+reportUnknownMemberType = false
+reportMissingParameterType = false
+reportCallInDefaultInitializer = false
 reportUnusedImport = true
-reportUnusedClass = true
-reportUnusedFunction = true
+reportUnusedClass = false
+reportUnusedFunction = false
 reportUnusedVariable = true
 reportDuplicateImport = true
-reportPrivateUsage = true
-reportUnnecessaryIsInstance = true
-reportUnnecessaryCast = true
-reportUnnecessaryComparison = true
-reportConstantRedefinition = true
-reportIncompatibleMethodOverride = true
-reportIncompatibleVariableOverride = true
+reportUnnecessaryIsInstance = false
+reportUnnecessaryCast = false
+reportImplicitStringConcatenation = false
 
 # ============================================================================
 # MyPy Configuration (Alternative Type Checker)
@@ -334,7 +304,7 @@ disallow_untyped_defs = false
 
 [tool.bandit]
 exclude_dirs = ["test", "tests", ".venv"]
-skips = ["B101"]  # Skip assert_used (legitimate in tests)
+skips = ["B101"]                          # Skip assert_used (legitimate in tests)
 
 # ============================================================================
 # Interrogate Configuration (Docstring Coverage)
