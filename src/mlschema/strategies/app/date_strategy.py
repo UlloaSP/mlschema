@@ -16,6 +16,7 @@ class DateStrategy(Strategy):
         | Name           | Type                |
         | -------------- | ------------------- |
         | datetime64[ns] | `DatetimeTZDtype`   |
+        | datetime64[us] | `DatetimeDtype`     |
         | datetime64     | `DatetimeDtype`     |
 
     Model Attributes:
@@ -40,5 +41,5 @@ class DateStrategy(Strategy):
         super().__init__(
             type_name=FieldTypes.DATE,
             schema_cls=DateField,
-            dtypes=("datetime64[ns]", "datetime64"),
+            dtypes=("datetime64[ns]", "datetime64[us]", "datetime64"),
         )

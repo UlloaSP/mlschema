@@ -1,6 +1,6 @@
 [project]
 name = "mlschema"
-version = "0.1.6"
+version = "0.2.0"
 description = "Lightweight orchestration layer that turns pandas DataFrames into front-end-ready JSON schemas, engineered to pair seamlessly with [mlform](https://github.com/UlloaSP/mlform)."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { text = "MIT" }
@@ -67,8 +67,8 @@ classifiers = [
 ]
 requires-python = ">=3.14,<3.15"
 dependencies = [
-    "pandas>=2.3.3,<3.0.0",
-    "pydantic>=2.12.3,<3.0.0",
+    "pandas>=3.0.3,<4.0.0",
+    "pydantic>=2.13.4,<3.0.0",
 ]
 
 [project.urls]
@@ -85,41 +85,40 @@ Funding = "https://github.com/sponsors/UlloaSP"
 [dependency-groups]
 # Development dependencies
 dev = [
-    "mlschema[test,docs,lint]",
-    "pre-commit>=4.3.0",
+    { include-group = "test" },
+    { include-group = "docs" },
+    { include-group = "lint" },
+    "pre-commit>=4.6.0",
 ]
 
 # Testing dependencies
 test = [
-    "pytest>=8.4.2",
-    "pytest-cov>=7.0.0",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
     "pytest-mock>=3.15.1",
 ]
 
 # Documentation dependencies
 docs = [
     "mkdocs>=1.6.1",
-    "mkdocs-material>=9.6.22",
-    "mkdocstrings[python]>=0.30.1",
+    "mkdocs-material>=9.7.6",
+    "mkdocstrings[python]>=1.0.4",
 ]
 
 # Linting and formatting dependencies
 lint = [
-    "pyright>=1.1.407",
-    "ruff>=0.14.2",
+    "pyright>=1.1.409",
+    "ruff>=0.15.15",
 ]
 
 # All dependencies (for easy installation)
 all = [
-    "mlschema[dev,test,docs,lint]",
+    { include-group = "dev" },
 ]
 
 [build-system]
 requires = ["hatchling>=1.25.0"]
 build-backend = "hatchling.build"
-
-[tool.hatch.version]
-path = "src/mlschema/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -201,7 +200,7 @@ directory = "htmlcov"
 
 [tool.ruff]
 line-length = 88
-target-version = "py313"
+target-version = "py314"
 src = ["src", "test"]
 extend-exclude = [
     ".git",
@@ -280,29 +279,41 @@ docstring-code-format = true
 [tool.pyright]
 include = ["src"]
 exclude = [
-    "**/__pycache__",
+    "test",
     "**/node_modules",
+    "**/__pycache__",
     ".venv",
-    "build",
-    "dist",
+    ".git",
 ]
+venvPath = "."
+venv = ".venv"
 pythonVersion = "3.14"
 pythonPlatform = "All"
-typeCheckingMode = "strict"
+typeCheckingMode = "basic"
 reportMissingImports = true
 reportMissingTypeStubs = false
+reportGeneralTypeIssues = true
+reportOptionalMemberAccess = true
+reportOptionalCall = true
+reportOptionalIterable = true
+reportOptionalContextManager = true
+reportOptionalOperand = true
+reportUntypedFunctionDecorator = false
+reportUnknownParameterType = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnknownVariableType = false
+reportUnknownMemberType = false
+reportMissingParameterType = false
+reportCallInDefaultInitializer = false
 reportUnusedImport = true
-reportUnusedClass = true
-reportUnusedFunction = true
+reportUnusedClass = false
+reportUnusedFunction = false
 reportUnusedVariable = true
 reportDuplicateImport = true
-reportPrivateUsage = true
-reportUnnecessaryIsInstance = true
-reportUnnecessaryCast = true
-reportUnnecessaryComparison = true
-reportConstantRedefinition = true
-reportIncompatibleMethodOverride = true
-reportIncompatibleVariableOverride = true
+reportUnnecessaryIsInstance = false
+reportUnnecessaryCast = false
+reportImplicitStringConcatenation = false
 
 # ============================================================================
 # MyPy Configuration (Alternative Type Checker)

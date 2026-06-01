@@ -187,15 +187,15 @@ class TestMLSchemaBuild:
         """Test building schema from a DataFrame."""
         ml_schema = MLSchema()
         df = DataFrame({"col1": [1, 2, 3], "col2": ["a", "b", "c"]})
-        expected_json = '{"schema": "data"}'
+        expected_fields = [{"schema": "data"}]
 
         with patch.object(
-            ml_schema.field_service, "build_schema", return_value=expected_json
+            ml_schema.field_service, "build_schema", return_value=expected_fields
         ) as mock_build:
             result = ml_schema.build(df)
 
             mock_build.assert_called_once_with(df)
-            assert result == expected_json
+            assert result == expected_fields
 
     def test_build_delegates_to_field_service(self):
         """Test that build method properly delegates to field service."""
@@ -204,38 +204,38 @@ class TestMLSchemaBuild:
 
         # Mock the field service to verify delegation
         ml_schema.field_service = Mock(spec=Service)
-        ml_schema.field_service.build_schema.return_value = '{"test": "json"}'
+        ml_schema.field_service.build_schema.return_value = [{"test": "json"}]
 
         result = ml_schema.build(df)
 
         ml_schema.field_service.build_schema.assert_called_once_with(df)
-        assert result == '{"test": "json"}'
+        assert result == [{"test": "json"}]
 
     def test_build_with_empty_dataframe(self):
         """Test building schema from an empty DataFrame."""
         ml_schema = MLSchema()
         empty_df = DataFrame()
-        expected_json = '{"fields": []}'
+        expected_fields: list[dict] = []
 
         with patch.object(
-            ml_schema.field_service, "build_schema", return_value=expected_json
+            ml_schema.field_service, "build_schema", return_value=expected_fields
         ) as mock_build:
             result = ml_schema.build(empty_df)
 
             mock_build.assert_called_once_with(empty_df)
-            assert result == expected_json
+            assert result == expected_fields
 
-    def test_build_return_type_is_string(self):
-        """Test that build method returns a string (JSON)."""
+    def test_build_return_type_is_list(self):
+        """Test that build method returns a field list."""
         ml_schema = MLSchema()
         df = DataFrame({"test": [1, 2, 3]})
 
         with patch.object(
-            ml_schema.field_service, "build_schema", return_value='{"json": "string"}'
+            ml_schema.field_service, "build_schema", return_value=[{"json": "field"}]
         ):
             result = ml_schema.build(df)
 
-            assert isinstance(result, str)
+            assert isinstance(result, list)
 
     def test_build_with_complex_dataframe(self):
         """Test building schema from a complex DataFrame with various dtypes."""
@@ -249,15 +249,15 @@ class TestMLSchemaBuild:
                 "dates": pd.date_range("2023-01-01", periods=3),
             }
         )
-        expected_json = '{"complex": "schema"}'
+        expected_fields = [{"complex": "schema"}]
 
         with patch.object(
-            ml_schema.field_service, "build_schema", return_value=expected_json
+            ml_schema.field_service, "build_schema", return_value=expected_fields
         ) as mock_build:
             result = ml_schema.build(df)
 
             mock_build.assert_called_once_with(df)
-            assert result == expected_json
+            assert result == expected_fields
 
 
 class TestMLSchemaIntegration:
@@ -401,16 +401,19 @@ class TestMLSchemaDocumentationCompliance:
             }
         )
 
-        # Mock the build method to return example JSON
-        expected_json = '{"fields": [{"name": "name", "type": "text"}, {"name": "age", "type": "number"}]}'
+        # Mock the build method to return example field schemas
+        expected_fields = [
+            {"name": "name", "type": "text"},
+            {"name": "age", "type": "number"},
+        ]
 
         with patch.object(
-            ml_schema.field_service, "build_schema", return_value=expected_json
+            ml_schema.field_service, "build_schema", return_value=expected_fields
         ):
             result = ml_schema.build(df)
 
-            assert isinstance(result, str)
-            assert result == expected_json
+            assert isinstance(result, list)
+            assert result == expected_fields
 
     def test_register_method_documentation(self):
         """Test that register method behavior matches documentation."""
@@ -451,7 +454,7 @@ class TestMLSchemaDocumentationCompliance:
             result = ml_schema.build(df)
 
             assert isinstance(result, str)  # Should be JSON string
-            # Should be valid JSON format (at least syntactically)
+            # Should be a field list
             assert result.startswith("{") or result.startswith("[")
 
 

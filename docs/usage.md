@@ -104,18 +104,14 @@ schema = builder.build(df)
 Output:
 
 ```json
-{
-  "fields": [
-    {"title": "sensor_id", "required": true, "type": "category", "options": ["A", "B", "C"]},
-    {
-      "title": "readings", "required": true, "type": "series",
-      "field1": {"title": "field1", "required": true, "type": "date", "step": 1},
-      "field2": {"title": "field2", "required": true, "type": "number", "step": 0.1}
-    }
-  ],
-  "reports": [],
-  "explanations": []
-}
+[
+  {"title": "sensor_id", "required": true, "type": "category", "options": ["A", "B", "C"]},
+  {
+    "title": "readings", "required": true, "type": "series",
+    "field1": {"title": "field1", "required": true, "type": "date", "step": 1},
+    "field2": {"title": "field2", "required": true, "type": "number", "step": 0.1}
+  }
+]
 ```
 
 `min_points` and `max_points` can be set directly on `SeriesField` to document cardinality constraints; they are not inferred from data.
@@ -164,7 +160,7 @@ df = pd.read_csv("data.csv")
 form_schema = mls.build(df)
 ```
 
-The `build()` method scans each column, delegates to the first compatible strategy, and returns a validated and well-formed payload with top-level `fields`, `reports`, and `explanations` keys.
+The `build()` method scans each column, delegates to the first compatible strategy, and returns a validated field-list payload.
 
 > **Data‑type integrity is mandatory.**
 > Ensure your DataFrame columns carry accurate dtypes. Undeclared or unsupported dtypes fall back to `TextStrategy`. If you rely on that behaviour, remember to register `TextStrategy`.

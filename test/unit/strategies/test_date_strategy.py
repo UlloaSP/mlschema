@@ -28,7 +28,7 @@ class TestDateStrategyInitialization:
 
         assert strategy.type_name == FieldTypes.DATE
         assert strategy.schema_cls == DateField
-        assert strategy.dtypes == ("datetime64[ns]", "datetime64")
+        assert strategy.dtypes == ("datetime64[ns]", "datetime64[us]", "datetime64")
 
     def test_initialization_calls_parent_constructor(self):
         """Test that DateStrategy properly calls parent class constructor."""
@@ -42,7 +42,7 @@ class TestDateStrategyInitialization:
             mock_parent_init.assert_called_once_with(
                 type_name=FieldTypes.DATE,
                 schema_cls=DateField,
-                dtypes=("datetime64[ns]", "datetime64"),
+                dtypes=("datetime64[ns]", "datetime64[us]", "datetime64"),
             )
 
 
@@ -435,7 +435,7 @@ class TestDateStrategyMocking:
             mock_parent_init.assert_called_once_with(
                 type_name=FieldTypes.DATE,
                 schema_cls=DateField,
-                dtypes=("datetime64[ns]", "datetime64"),
+                dtypes=("datetime64[ns]", "datetime64[us]", "datetime64"),
             )
 
 

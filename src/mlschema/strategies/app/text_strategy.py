@@ -16,6 +16,7 @@ class TextStrategy(Strategy):
         | Name     | Type              |
         | -------- | ----------------- |
         | object   | `object`          |
+        | str      | `StringDType`     |
         | string   | `StringDtype`     |
 
     Model Attributes:
@@ -41,5 +42,5 @@ class TextStrategy(Strategy):
         super().__init__(
             type_name=FieldTypes.TEXT,
             schema_cls=TextField,
-            dtypes=("object", "string"),
+            dtypes=("object", "str", "string"),
         )

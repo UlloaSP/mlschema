@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Pablo Ulloa Santin
-from enum import Enum
+from enum import StrEnum
 
 
-class FieldTypes(str, Enum):
+class FieldTypes(StrEnum):
     TEXT = "text"
     NUMBER = "number"
     BOOLEAN = "boolean"

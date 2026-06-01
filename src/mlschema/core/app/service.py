@@ -22,7 +22,7 @@ class Service:
     to handle different data types and their corresponding schema representations.
 
     The service generates JSON payloads in the format:
-    {"fields": [...], "reports": [...]}
+    [{"kind": "...", "label": "..."}]
 
     Attributes:
         _registry: Internal registry that manages field strategies for different data types.
@@ -111,13 +111,13 @@ class Service:
             raise EmptyDataFrameError(df)
         return [self._field_payload(col) for _, col in df.items()]
 
-    def build_schema(self, df: DataFrame) -> dict[str, list[dict]]:
-        """Return the final payload ready for injection into the front-end.
+    def build_schema(self, df: DataFrame) -> list[dict]:
+        """Return field schemas ready for injection into the front-end.
 
         Args:
             df: Source DataFrame.
 
         Returns:
-            JSON payload with the schema of each column.
+            List with the schema of each column.
         """
-        return {"fields": self._schema_payload(df), "reports": [], "explanations": []}
+        return self._schema_payload(df)

@@ -8,7 +8,7 @@ MLSchema depends on the following open-source libraries. We are grateful to thei
 
 ### pandas (BSD 3-Clause License)
 
-**Version:** >=2.3.3
+**Version:** >=3.0.3
 **License:** BSD 3-Clause
 **Project URL:** <https://pandas.pydata.org/>
 **License URL:** <https://github.com/pandas-dev/pandas/blob/main/LICENSE>
@@ -51,7 +51,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### Pydantic (MIT License)
 
-**Version:** >=2.12.3
+**Version:** >=2.13.4
 **License:** MIT
 **Project URL:** <https://pydantic.dev/>
 **License URL:** <https://github.com/pydantic/pydantic/blob/main/LICENSE>
@@ -86,7 +86,7 @@ SOFTWARE.
 
 ### pytest (MIT License)
 
-**Version:** >=8.4.2
+**Version:** >=9.0.3
 **License:** MIT
 **Project URL:** <https://pytest.org/>
 **License URL:** <https://github.com/pytest-dev/pytest/blob/main/LICENSE>
@@ -97,7 +97,7 @@ Copyright (c) 2004 Holger Krekel and contributors
 
 ### pytest-cov (MIT License)
 
-**Version:** >=7.0.0
+**Version:** >=7.1.0
 **License:** MIT
 **Project URL:** <https://pytest-cov.readthedocs.io/>
 **License URL:** <https://github.com/pytest-dev/pytest-cov/blob/master/LICENSE>
@@ -119,7 +119,7 @@ Copyright (c) Bruno Oliveira
 
 ### Ruff (MIT License)
 
-**Version:** >=0.14.2
+**Version:** >=0.15.15
 **License:** MIT
 **Project URL:** <https://docs.astral.sh/ruff/>
 **License URL:** <https://github.com/astral-sh/ruff/blob/main/LICENSE>
@@ -130,7 +130,7 @@ Copyright (c) 2022 Charlie Marsh
 
 ### Pyright (MIT License)
 
-**Version:** >=1.1.407
+**Version:** >=1.1.409
 **License:** MIT
 **Project URL:** <https://github.com/microsoft/pyright>
 **License URL:** <https://github.com/microsoft/pyright/blob/main/LICENSE.txt>
@@ -141,7 +141,7 @@ Copyright (c) Microsoft Corporation. All rights reserved.
 
 ### pre-commit (MIT License)
 
-**Version:** >=4.3.0
+**Version:** >=4.6.0
 **License:** MIT
 **Project URL:** <https://pre-commit.com/>
 **License URL:** <https://github.com/pre-commit/pre-commit/blob/main/LICENSE>
@@ -165,7 +165,7 @@ Copyright © 2014-present, Tom Christie. All rights reserved.
 
 ### MkDocs Material (MIT License)
 
-**Version:** >=9.6.22
+**Version:** >=9.7.6
 **License:** MIT
 **Project URL:** <https://squidfunk.github.io/mkdocs-material/>
 **License URL:** <https://github.com/squidfunk/mkdocs-material/blob/master/LICENSE>
@@ -176,7 +176,7 @@ Copyright (c) 2016-2025 Martin Donath
 
 ### mkdocstrings (ISC License)
 
-**Version:** >=0.30.1
+**Version:** >=1.0.4
 **License:** ISC
 **Project URL:** <https://mkdocstrings.github.io/>
 **License URL:** <https://github.com/mkdocstrings/mkdocstrings/blob/master/LICENSE>
@@ -207,4 +207,4 @@ If you believe any license information is incorrect or outdated, please open an 
 
 ---
 
-**Last Updated:** October 28, 2025
+**Last Updated:** June 1, 2026

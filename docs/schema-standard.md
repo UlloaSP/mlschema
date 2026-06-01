@@ -108,32 +108,28 @@ Deterministic output is critical for CI/CD pipelines, caching, and contract vers
 MLSchema generates JSON payloads with the following canonical shape:
 
 ```json
-{
-  "fields": [
-    {
-      "label": "customer_name",
-      "kind": "text",
-      "required": true,
-      "minLength": 1,
-      "maxLength": 100,
-      "placeholder": "Enter full name"
-    },
-    {
-      "label": "satisfaction_score",
-      "kind": "number",
-      "required": true,
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "points"
-    }
-  ],
-  "reports": [],
-  "explanations": []
-}
+[
+  {
+    "label": "customer_name",
+    "kind": "text",
+    "required": true,
+    "minLength": 1,
+    "maxLength": 100,
+    "placeholder": "Enter full name"
+  },
+  {
+    "label": "satisfaction_score",
+    "kind": "number",
+    "required": true,
+    "min": 0,
+    "max": 100,
+    "step": 1,
+    "unit": "points"
+  }
+]
 ```
 
-The top-level envelope (`fields`, `reports`, `explanations`) provides logical separation between model parameters, expected predictions, and explanation metadata.
+The top-level payload is a field list. Model outputs and explanation metadata belong to downstream consumers.
 
 ### 3.2 Field Type Taxonomy
 
@@ -262,48 +258,6 @@ Represents a two-axis column where each cell is a 2-element compound value. Sub-
 | `minPoints` / `maxPoints` ≥ 1 | `PositiveInt` | Pydantic validation error |
 | `minPoints ≤ maxPoints` | Model validator | `PydanticCustomError("series_points_constraint")` |
 
-### 3.3 Report Type Taxonomy
-
-MLSchema ships with two built-in report types for describing model outputs:
-
-#### **Kind: `regressor`**
-
-```json
-{
-  "kind": "regressor",
-  "label": "Predicted price",
-  "source": "model_output",
-  "unit": "EUR",
-  "precision": 2
-}
-```
-
-| Attribute      | Type           | Description                                    |
-|----------------|----------------|------------------------------------------------|
-| `unit`         | `str \| None`  | Unit label (e.g. `"€"`, `"kg"`)               |
-| `precision`    | `int \| None`  | Decimal places shown (mlform default: 2)       |
-| `explanations` | `bool \| None` | Show feature-importance explanations           |
-
-#### **Kind: `classifier`**
-
-```json
-{
-  "kind": "classifier",
-  "label": "Predicted class",
-  "source": "model_output",
-  "labels": ["cat", "dog", "bird"],
-  "details": true
-}
-```
-
-| Attribute      | Type             | Description                                    |
-|----------------|------------------|------------------------------------------------|
-| `labels`       | `list[str] \| None` | Ordered class labels                        |
-| `details`      | `bool \| None`   | Show per-class breakdown (mlform default: true)|
-| `explanations` | `bool \| None`   | Show feature-importance explanations           |
-
----
-
 ## 4. Design Decisions & Rationale
 
 ### 4.1 Why Pydantic?
@@ -363,14 +317,14 @@ Optional attributes are **omitted** when not set, keeping payloads compact.
 **✅ Safe to extend:**
 
 - Register custom strategies for new pandas dtypes.
-- Create custom Pydantic models that inherit from `BaseField` or `BaseReport`.
+- Create custom Pydantic models that inherit from `BaseField`.
 - Override `attributes_from_series()` to inject domain-specific metadata.
 
 **❌ Do not modify:**
 
 - The reserved attributes (`label`, `kind`, `required`, `description`).
 - The core `Strategy` class API (`build_dict()`, `dtypes`, `type_name`).
-- The shape of the top-level envelope (`{"fields": [...], "reports": [...], "explanations": [...]}`).
+- The top-level field-list payload shape.
 
 ### 5.2 Example: Custom Strategy for Geospatial Data
 

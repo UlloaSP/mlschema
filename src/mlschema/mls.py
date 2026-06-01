@@ -53,14 +53,14 @@ class MLSchema:
         """
         self.field_service.update(strategy)
 
-    def build(self, df: DataFrame) -> dict[str, list[dict[str, Any]]]:
+    def build(self, df: DataFrame) -> list[dict[str, Any]]:
         """Translate a DataFrame into a JSON-serialisable form schema
 
         Args:
             df: Source data whose columns will be analysed and mapped to field definitions.
 
         Returns:
-            Dictionary with the schema information, where keys are field names
+            List of field schema dictionaries, one per DataFrame column.
 
         Raises:
             EmptyDataFrameError: If the DataFrame is empty.

@@ -136,8 +136,8 @@ MLSchema depends on:
 
 ### Runtime Dependencies
 
-- **pandas** (>=2.3.3): Well-maintained, security advisories tracked
-- **Pydantic** (>=2.12.3): Strong security record, actively maintained
+- **pandas** (>=3.0.3): Well-maintained, security advisories tracked
+- **Pydantic** (>=2.13.4): Strong security record, actively maintained
 
 ### Monitoring
 
@@ -219,4 +219,4 @@ Thank you for helping keep MLSchema and its users safe! 🔒
 
 ---
 
-**Last Updated**: October 28, 2025
+**Last Updated**: June 1, 2026

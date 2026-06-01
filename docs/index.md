@@ -76,7 +76,7 @@ schema = ms.build(df)
 1. **Automatic schema inference** – text, numeric, categorical, boolean and date handled out of the box.
 2. **Pydantic v2 validators** – schema is fully typed and runtime-safe.
 3. **No external services** – all processing is in-process; suitable for air-gapped environments.
-4. **Typed returns** – JSON schema is delivered as a structured payload with `fields`, `reports`, and `explanations` for IDE autocompletion and predictable downstream handling.
+4. **Typed returns** – JSON schema is delivered as a structured field list for IDE autocompletion and predictable downstream handling.
 
 ---
 

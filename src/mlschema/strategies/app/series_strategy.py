@@ -129,7 +129,7 @@ class SeriesStrategy(Strategy):
                 return pd.Series(pd.to_datetime(s))
             try:
                 return pd.Series(pd.to_datetime(s, format="mixed"))
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 pass
             coerced: Series = pd.Series(pd.to_numeric(s, errors="coerce"))
             if not bool(coerced.isna().all()):

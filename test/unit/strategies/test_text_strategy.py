@@ -27,7 +27,7 @@ class TestTextStrategyInitialization:
 
         assert strategy.type_name == FieldTypes.TEXT
         assert strategy.schema_cls == TextField
-        assert strategy.dtypes == ("object", "string")
+        assert strategy.dtypes == ("object", "str", "string")
 
     def test_initialization_calls_parent_constructor(self):
         """Test that TextStrategy properly calls parent class constructor."""
@@ -41,7 +41,7 @@ class TestTextStrategyInitialization:
             mock_parent_init.assert_called_once_with(
                 type_name=FieldTypes.TEXT,
                 schema_cls=TextField,
-                dtypes=("object", "string"),
+                dtypes=("object", "str", "string"),
             )
 
 
@@ -488,7 +488,7 @@ class TestTextStrategyMocking:
             mock_parent_init.assert_called_once_with(
                 type_name=FieldTypes.TEXT,
                 schema_cls=TextField,
-                dtypes=("object", "string"),
+                dtypes=("object", "str", "string"),
             )
 
 
@@ -499,7 +499,7 @@ class TestTextStrategyConstants:
         """Test that all supported dtypes are text-related."""
         strategy = TextStrategy()
 
-        text_dtypes = ["object", "string"]
+        text_dtypes = ["object", "str", "string"]
         for dtype in strategy.dtypes:
             assert dtype in text_dtypes
 
@@ -563,7 +563,7 @@ class TestTextStrategyDocumentationCompliance:
         # Documentation mentions "object" and pandas' "string"
         assert "object" in strategy.dtypes
         assert "string" in strategy.dtypes
-        assert len(strategy.dtypes) == 2
+        assert len(strategy.dtypes) == 3
 
     def test_classification_functionality(self):
         """Test the core classification functionality."""

@@ -45,8 +45,12 @@ uv tree
 
 # Validate import & print version
 python - << 'PY'
+from importlib.metadata import version
+
 import mlschema
-print("mlschema version:", mlschema.__version__)
+
+print("mlschema import:", mlschema.MLSchema)
+print("mlschema version:", version("mlschema"))
 PY
 ```
 
@@ -60,8 +64,8 @@ All transitive dependencies are resolved automatically by your package manager. 
 
 | Package      | Minimal Version |
 | ------------ | --------------- |
-| **pydantic** | `>= 2.12.3`     |
-| **pandas**   | `>= 2.3.3`      |
+| **pydantic** | `>= 2.13.4`     |
+| **pandas**   | `>= 3.0.3`      |
 
 > **Notice**
 > `mlschema` leverages Python 3.14’s **zero‑cost structural pattern matching** and **buffer protocol optimisations**—downgrades are not supported.

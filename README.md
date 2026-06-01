@@ -41,14 +41,14 @@
 - Strategy registry that lets you opt into only the field types you want to expose.
 - Pydantic v2 models guarantee structural validity and embed domain-specific constraints.
 - Normalized dtype matching covers both pandas extension types and NumPy dtypes.
-- Deterministic JSON output (`fields` / `reports` / `explanations`) suitable for form engines and low-code tooling.
+- Deterministic JSON field-list output suitable for form engines and low-code tooling.
 - Fully typed public API with strict static analysis (Pyright) and comprehensive tests.
 
 ## Requirements
 
 - Python `>= 3.14, < 3.15`
-- pandas `>= 2.3.3, < 3.0.0`
-- pydantic `>= 2.12.3, < 3.0.0`
+- pandas `>= 3.0.3, < 4.0.0`
+- pydantic `>= 2.13.4, < 3.0.0`
 
 All transitive dependencies are resolved automatically by your package manager.
 
@@ -65,7 +65,7 @@ Alternative package managers:
 - `conda install -c conda-forge mlschema`
 - `pipenv install mlschema`
 
-Pin a version (for example `mlschema==0.1.3`) when you need deterministic environments.
+Pin a version (for example `mlschema==0.2.0`) when you need deterministic environments.
 
 ## Quick Start
 
@@ -95,15 +95,11 @@ schema = builder.build(df)
 The payload is ready to serialise to JSON and inject into your UI or downstream service:
 
 ```json
-{
-  "fields": [
+[
   {"title": "name", "required": true, "type": "text"},
   {"title": "score", "required": true, "type": "number", "step": 0.1},
   {"title": "role", "required": true, "type": "category", "options": ["engineer", "scientist"]}
-  ],
-  "reports": [],
-  "explanations": []
-}
+]
 ```
 
 `TextStrategy` acts as the default fallback. Make sure it is registered when you want unsupported columns to degrade gracefully.
@@ -137,18 +133,14 @@ schema = builder.build(df)
 ```
 
 ```json
-{
-  "fields": [
-    {"title": "sensor_id", "required": true, "type": "category", "options": ["A", "B", "C"]},
-    {
-      "title": "readings", "required": true, "type": "series",
-      "field1": {"title": "field1", "required": true, "type": "date", "step": 1},
-      "field2": {"title": "field2", "required": true, "type": "number", "step": 0.1}
-    }
-  ],
-  "reports": [],
-  "explanations": []
-}
+[
+  {"title": "sensor_id", "required": true, "type": "category", "options": ["A", "B", "C"]},
+  {
+    "title": "readings", "required": true, "type": "series",
+    "field1": {"title": "field1", "required": true, "type": "date", "step": 1},
+    "field2": {"title": "field2", "required": true, "type": "number", "step": 0.1}
+  }
+]
 ```
 
 `min_points` and `max_points` can be set directly on `SeriesField` to document cardinality constraints; they are not inferred from data.
@@ -158,7 +150,7 @@ schema = builder.build(df)
 1. **Registry orchestration** – `MLSchema` keeps an in-memory registry of field strategies, keyed by a logical `type_name` and one or more pandas dtypes.
 2. **Inference pipeline** – each DataFrame column is normalised, matched against the registry, and dispatched to the first compatible strategy.
 3. **Schema materialisation** – strategies merge required metadata (title, type, required) with data-driven attributes, then dump the result through a Pydantic model.
-4. **Structured output** – the service returns the canonical `{"fields": [...], "reports": [], "explanations": []}` payload that feeds [mlform](https://ulloasp.github.io/mlform/) or any form rendering layer.
+4. **Structured output** – the service returns the canonical field-list payload that feeds [mlform](https://ulloasp.github.io/mlform/) or any form rendering layer.
 
 ## Built-in Strategies
 
