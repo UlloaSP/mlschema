@@ -25,8 +25,8 @@ class NumberStrategy(Strategy):
     Model Attributes:
         | Name        | Type                | Description                                |
         | ----------- | ------------------- | ------------------------------------------ |
-        | type        | `Literal["number"]` | Fixed type for the strategy.               |
-        | value       | `int | float | None`| The current value of the field.            |
+        | kind        | `Literal["number"]` | Fixed type for the strategy.               |
+        | defaultValue| `int | float | None`| Initial value of the field.                |
         | step        | `float | int`       | Increment for numeric values.              |
         | min         | `int | float | None`| Minimum allowed value.                     |
         | max         | `int | float | None`| Maximum allowed value.                     |
@@ -37,8 +37,8 @@ class NumberStrategy(Strategy):
         | Description           | Error Type            | Error Message                                     |
         | --------------------- | --------------------- | ------------------------------------------------- |
         | `min` ≤ `max`         | `PydanticCustomError` | `min {min} must be ≤ max {max}`                   |
-        | `value` ≥ `min`       | `PydanticCustomError` | `value {value} must be ≥ min {min}`               |
-        | `value` ≤ `max`       | `PydanticCustomError` | `value {value} must be ≤ max {max}`               |
+        | `defaultValue` ≥ `min`| `PydanticCustomError` | `defaultValue {value} must be ≥ min {min}`        |
+        | `defaultValue` ≤ `max`| `PydanticCustomError` | `defaultValue {value} must be ≤ max {max}`        |
 
     """
 

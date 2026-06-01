@@ -22,7 +22,7 @@ class Strategy:
     Usage contract:
         * Do **not** mutate the incoming `Series`; treat it as read-only.
         * Subclasses should override `attributes_from_series()` to emit extra
-        metadata, but must avoid the reserved keys: `"title"`, `"type"`,
+        metadata, but must avoid the reserved keys: `"label"`, `"kind"`,
         `"required"`, `"description"`.
         * Registration is idempotent—duplicate `type_name`'s must be replaced via
         `MLSchema.update()`.
@@ -98,7 +98,8 @@ class Strategy:
             series: Dataframe column to analyze.
 
         Returns:
-            Dictionary with additional attributes; never includes the standard keys ``title``, ``type``, ``required``, ``description``.
+            Dictionary with additional attributes; never includes the standard keys
+            ``label``, ``kind``, ``required``, ``description``.
         """
         return {}
 
@@ -114,10 +115,10 @@ class Strategy:
             JSON with the field schema.
         """
         base_attrs: dict = {
-            "title": series.name,
+            "label": series.name,
             "required": not series.isna().any(),
             "description": None,
-            "type": self.type_name,
+            "kind": self.type_name,
         }
 
         # Incorporate implementation-specific attributes

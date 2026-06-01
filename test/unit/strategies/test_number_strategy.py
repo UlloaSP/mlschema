@@ -325,38 +325,37 @@ class TestNumberStrategyBusinessLogic:
         int_result = strategy.attributes_from_series(int_series)
         assert int_result["step"] == 1
 
-    def test_number_field_validation_fails_with_invalid_value(self):
-        """Test that NumberField validation fails with invalid values."""
+    def test_number_field_validation_fails_with_invalid_range(self):
+        """Test that NumberField validation fails when min > max."""
         strategy = NumberStrategy()
 
-        # Try to create a field with min > max
-        with pytest.raises(
-            ValidationError,
-        ):
+        with pytest.raises(ValidationError):
             strategy.schema_cls(
-                title="invalid_number",
+                label="invalid_number",
                 max=0.0,
                 min=1.0,
             )
 
-        # Try to create a field with min > value
-        with pytest.raises(
-            ValidationError,
-        ):
+    def test_number_field_validation_fails_when_default_value_is_below_min(self):
+        """Test that NumberField rejects defaultValue below min."""
+        strategy = NumberStrategy()
+
+        with pytest.raises(ValidationError):
             strategy.schema_cls(
-                title="invalid_number",
-                value=0.0,
+                label="invalid_number",
+                defaultValue=0.0,
                 min=1.0,
             )
 
-        # Try to create a field with max < value
-        with pytest.raises(
-            ValidationError,
-        ):
+    def test_number_field_validation_fails_when_default_value_is_above_max(self):
+        """Test that NumberField rejects defaultValue above max."""
+        strategy = NumberStrategy()
+
+        with pytest.raises(ValidationError):
             strategy.schema_cls(
-                title="invalid_number",
+                label="invalid_number",
                 max=1.0,
-                value=2.0,
+                defaultValue=2.0,
             )
 
 
@@ -372,19 +371,19 @@ class TestNumberStrategyIntegration:
         attributes = strategy.attributes_from_series(series)
 
         # Verify the schema class can be instantiated with extracted attributes
-        field_instance = strategy.schema_cls(title="test_number", **attributes)
+        field_instance = strategy.schema_cls(label="test_number", **attributes)
 
         assert isinstance(field_instance, NumberField)
-        assert field_instance.type == FieldTypes.NUMBER
-        assert field_instance.title == "test_number"
+        assert field_instance.kind == FieldTypes.NUMBER
+        assert field_instance.label == "test_number"
         assert field_instance.step == 1
 
     def test_strategy_type_matches_field_type(self):
         """Test that strategy type name matches the field type."""
         strategy = NumberStrategy()
-        field_instance = strategy.schema_cls(title="test", step=1)
+        field_instance = strategy.schema_cls(label="test", step=1)
 
-        assert strategy.type_name == field_instance.type
+        assert strategy.type_name == field_instance.kind
 
     def test_extracted_step_works_with_number_field_validation(self):
         """Test that extracted step value works with NumberField validation."""
@@ -394,21 +393,21 @@ class TestNumberStrategyIntegration:
         float_series = Series([1.5, 2.5], dtype="float64", name="prices")
         float_attributes = strategy.attributes_from_series(float_series)
         float_field = strategy.schema_cls(
-            title="price", value=1.5, min=0.0, max=10.0, **float_attributes
+            label="price", defaultValue=1.5, min=0.0, max=10.0, **float_attributes
         )
 
         assert float_field.step == 0.1
-        assert float_field.value == 1.5
+        assert float_field.defaultValue == 1.5
 
         # Test integer series
         int_series = Series([1, 2, 3], dtype="int64", name="counts")
         int_attributes = strategy.attributes_from_series(int_series)
         int_field = strategy.schema_cls(
-            title="count", value=2, min=0, max=100, **int_attributes
+            label="count", defaultValue=2, min=0, max=100, **int_attributes
         )
 
         assert int_field.step == 1
-        assert int_field.value == 2
+        assert int_field.defaultValue == 2
 
     def test_dtypes_consistency(self):
         """Test that dtypes tuple is immutable and consistent."""

@@ -21,8 +21,8 @@ class TextStrategy(Strategy):
     Model Attributes:
         | Name        | Type              | Description                                |
         | ----------- | ----------------- | ------------------------------------------ |
-        | type        | `Literal["text"]` | Fixed type for the strategy.               |
-        | value       | `str | None`      | The current value of the field.            |
+        | kind        | `Literal["text"]` | Fixed type for the strategy.               |
+        | defaultValue| `str | None`      | Initial value of the field.                |
         | placeholder | `str | None`      | Placeholder text for the field.            |
         | min_length  | `int | None`      | Minimum length of the text.                |
         | max_length  | `int | None`      | Maximum length of the text.                |
@@ -32,8 +32,8 @@ class TextStrategy(Strategy):
         | Description                   | Error Type            | Error Message                                                 |
         | ----------------------------- | --------------------- | ------------------------------------------------------------- |
         | `min_length` ≤ `max_length`   | `PydanticCustomError` | `minLength {minLength} must be ≤ maxLength {maxLength}`       |
-        | `value` length ≥ `min_length` | `PydanticCustomError` | `value length {value_length} must be ≥ minLength {minLength}` |
-        | `value` length ≤ `max_length` | `PydanticCustomError` | `value length {value_length} must be ≤ maxLength {maxLength}` |
+        | `defaultValue` length ≥ `min_length` | `PydanticCustomError` | `defaultValue length {value_length} must be ≥ minLength {minLength}` |
+        | `defaultValue` length ≤ `max_length` | `PydanticCustomError` | `defaultValue length {value_length} must be ≤ maxLength {maxLength}` |
 
     """
 

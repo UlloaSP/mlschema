@@ -195,18 +195,18 @@ class TestBooleanStrategyIntegration:
         strategy = BooleanStrategy()
 
         # Verify the schema class can be instantiated
-        field_instance = strategy.schema_cls(title="test_boolean")
+        field_instance = strategy.schema_cls(label="test_boolean")
 
         assert isinstance(field_instance, BooleanField)
-        assert field_instance.type == FieldTypes.BOOLEAN
-        assert field_instance.title == "test_boolean"
+        assert field_instance.kind == FieldTypes.BOOLEAN
+        assert field_instance.label == "test_boolean"
 
     def test_strategy_type_matches_field_type(self):
         """Test that strategy type name matches the field type."""
         strategy = BooleanStrategy()
-        field_instance = strategy.schema_cls(title="test")
+        field_instance = strategy.schema_cls(label="test")
 
-        assert strategy.type_name == field_instance.type.value
+        assert strategy.type_name == field_instance.kind.value
 
     def test_dtypes_consistency(self):
         """Test that dtypes tuple is immutable and consistent."""

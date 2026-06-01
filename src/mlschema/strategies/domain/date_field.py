@@ -2,7 +2,6 @@
 # Copyright (c) 2025 Pablo Ulloa Santin
 from __future__ import annotations
 
-from datetime import date
 from typing import Literal
 
 from pydantic import PositiveInt, model_validator
@@ -13,28 +12,30 @@ from mlschema.strategies.domain.field_types import FieldTypes
 
 
 class DateField(BaseField):
-    type: Literal[FieldTypes.DATE] = FieldTypes.DATE
-    value: date | None = None
-    min: date | None = None
-    max: date | None = None
-    step: PositiveInt = 1
+    kind: Literal[FieldTypes.DATE] = FieldTypes.DATE
+    defaultValue: str | None = None
+    min: str | None = None
+    max: str | None = None
+    step: PositiveInt | None = None
 
     @model_validator(mode="after")
     def _check_dates(self) -> DateField:
-        if self.min and self.max and self.min > self.max:
+        # ISO date strings (YYYY-MM-DD) sort lexicographically, so string comparison is valid.
+        if self.min is not None and self.max is not None and self.min > self.max:
             raise PydanticCustomError(
                 "date_range_error",
                 "Minimum date must be earlier than or equal to maximum date",
             )
 
-        if self.value:
-            if self.min and self.value < self.min:
+        if self.defaultValue is not None:
+            if self.min is not None and self.defaultValue < self.min:
                 raise PydanticCustomError(
-                    "date_min_error", "Date must be later than or equal to minimum date"
+                    "date_min_error",
+                    "defaultValue must be later than or equal to minimum date",
                 )
-            if self.max and self.value > self.max:
+            if self.max is not None and self.defaultValue > self.max:
                 raise PydanticCustomError(
                     "date_max_error",
-                    "Date must be earlier than or equal to maximum date",
+                    "defaultValue must be earlier than or equal to maximum date",
                 )
         return self

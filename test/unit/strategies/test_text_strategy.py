@@ -313,18 +313,18 @@ class TestTextStrategyIntegration:
         strategy = TextStrategy()
 
         # Verify the schema class can be instantiated
-        field_instance = strategy.schema_cls(title="test_text")
+        field_instance = strategy.schema_cls(label="test_text")
 
         assert isinstance(field_instance, TextField)
-        assert field_instance.type == FieldTypes.TEXT
-        assert field_instance.title == "test_text"
+        assert field_instance.kind == FieldTypes.TEXT
+        assert field_instance.label == "test_text"
 
     def test_strategy_type_matches_field_type(self):
         """Test that strategy type name matches the field type."""
         strategy = TextStrategy()
-        field_instance = strategy.schema_cls(title="test")
+        field_instance = strategy.schema_cls(label="test")
 
-        assert strategy.type_name == field_instance.type
+        assert strategy.type_name == field_instance.kind
 
     def test_dtypes_consistency(self):
         """Test that dtypes tuple is immutable and consistent."""
@@ -336,51 +336,70 @@ class TestTextStrategyIntegration:
         assert isinstance(strategy1.dtypes, tuple)  # Immutable
 
     def test_text_field_validation_with_length_constraints(self):
-        """Test that TextField validation works with length constraints."""
+        """Test that TextField validates length constraint configuration."""
         strategy = TextStrategy()
 
-        # Create a text field with valid length constraints
         field = strategy.schema_cls(
-            title="username", value="john_doe", minLength=3, maxLength=20
+            label="username",
+            defaultValue="john_doe",
+            minLength=3,
+            maxLength=20,
         )
 
-        assert field.value == "john_doe"
+        assert field.defaultValue == "john_doe"
         assert field.minLength == 3
         assert field.maxLength == 20
 
     def test_text_field_validation_fails_with_invalid_constraints(self):
-        """Test that TextField validation fails with invalid length constraints."""
+        """Test that TextField validation fails when minLength > maxLength."""
         strategy = TextStrategy()
 
-        # Try to create a field with minLength > maxLength
         with pytest.raises(ValueError, match=r"minLength .* must be ≤ maxLength"):
             strategy.schema_cls(
-                title="invalid_text",
+                label="invalid_text",
                 minLength=20,
-                maxLength=10,  # max < min
+                maxLength=10,
             )
 
-    def test_text_field_validation_fails_when_value_too_short(self):
-        """Test that TextField validation fails when value length < minLength."""
+    def test_text_field_accepts_optional_pattern(self):
+        """Test that TextField accepts an optional regex pattern."""
         strategy = TextStrategy()
 
-        # Try to create a field with value shorter than minLength
-        with pytest.raises(ValueError, match=r"value length .* must be ≥ minLength"):
+        field = strategy.schema_cls(label="email", pattern=r"^[\w.]+@[\w.]+$")
+
+        assert field.pattern == r"^[\w.]+@[\w.]+$"
+
+    def test_text_field_accepts_placeholder(self):
+        """Test that TextField accepts an optional placeholder."""
+        strategy = TextStrategy()
+
+        field = strategy.schema_cls(label="search", placeholder="Type to search…")
+
+        assert field.placeholder == "Type to search…"
+
+    def test_text_field_validation_fails_when_default_value_too_short(self):
+        """Test that TextField validation fails when defaultValue length < minLength."""
+        strategy = TextStrategy()
+
+        with pytest.raises(
+            ValueError, match=r"defaultValue length .* must be ≥ minLength"
+        ):
             strategy.schema_cls(
-                title="short_text",
-                value="ab",  # Only 2 characters
+                label="short_text",
+                defaultValue="ab",
                 minLength=5,
             )
 
-    def test_text_field_validation_fails_when_value_too_long(self):
-        """Test that TextField validation fails when value length > maxLength."""
+    def test_text_field_validation_fails_when_default_value_too_long(self):
+        """Test that TextField validation fails when defaultValue length > maxLength."""
         strategy = TextStrategy()
 
-        # Try to create a field with value longer than maxLength
-        with pytest.raises(ValueError, match=r"value length .* must be ≤ maxLength"):
+        with pytest.raises(
+            ValueError, match=r"defaultValue length .* must be ≤ maxLength"
+        ):
             strategy.schema_cls(
-                title="long_text",
-                value="this is a very long text",  # 24 characters
+                label="long_text",
+                defaultValue="this is a very long text",
                 maxLength=10,
             )
 

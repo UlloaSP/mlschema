@@ -9,5 +9,7 @@ from mlschema.strategies.domain.field_types import FieldTypes
 
 
 class BooleanField(BaseField):
-    type: Literal[FieldTypes.BOOLEAN] = FieldTypes.BOOLEAN
-    value: bool | None = None
+    kind: Literal[FieldTypes.BOOLEAN] = FieldTypes.BOOLEAN
+    defaultValue: bool | None = None
+    trueLabel: str | None = None
+    falseLabel: str | None = None

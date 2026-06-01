@@ -33,7 +33,7 @@
 
 - Converts analytics data into stable JSON schemas in a few lines of code.
 - Keeps inference logic server-side; no external services or background workers required.
-- Ships with production-tested strategies for text, numeric, categorical, boolean, and temporal data.
+- Ships with production-tested strategies for text, numeric, categorical, boolean, temporal, and two-axis series data.
 - Designed for synchronous use alongside [mlform](https://ulloasp.github.io/mlform/), yet fully usable on its own.
 
 ## Key Features
@@ -41,7 +41,7 @@
 - Strategy registry that lets you opt into only the field types you want to expose.
 - Pydantic v2 models guarantee structural validity and embed domain-specific constraints.
 - Normalized dtype matching covers both pandas extension types and NumPy dtypes.
-- Deterministic JSON output (`inputs` / `outputs`) suitable for form engines and low-code tooling.
+- Deterministic JSON output (`fields` / `reports` / `explanations`) suitable for form engines and low-code tooling.
 - Fully typed public API with strict static analysis (Pyright) and comprehensive tests.
 
 ## Requirements
@@ -65,7 +65,7 @@ Alternative package managers:
 - `conda install -c conda-forge mlschema`
 - `pipenv install mlschema`
 
-Pin a version (for example `mlschema==0.1.2`) when you need deterministic environments.
+Pin a version (for example `mlschema==0.1.3`) when you need deterministic environments.
 
 ## Quick Start
 
@@ -96,35 +96,84 @@ The payload is ready to serialise to JSON and inject into your UI or downstream 
 
 ```json
 {
-  "inputs": [
+  "fields": [
   {"title": "name", "required": true, "type": "text"},
   {"title": "score", "required": true, "type": "number", "step": 0.1},
   {"title": "role", "required": true, "type": "category", "options": ["engineer", "scientist"]}
   ],
-  "outputs": []
+  "reports": [],
+  "explanations": []
 }
 ```
 
 `TextStrategy` acts as the default fallback. Make sure it is registered when you want unsupported columns to degrade gracefully.
+
+### Series columns
+
+Columns where each cell is a 2-element compound value (`(v1, v2)`, `[v1, v2]`, or `{"key1": v1, "key2": v2}`) are handled automatically by `SeriesStrategy`. Sub-field schemas are inferred from the element dtypes via the registered strategies:
+
+```python
+import pandas as pd
+from datetime import date
+from mlschema import MLSchema
+from mlschema.strategies import TextStrategy, NumberStrategy, DateStrategy, SeriesStrategy
+
+df = pd.DataFrame({
+    "sensor_id": pd.Categorical(["A", "B", "C"]),
+    "readings": [
+        (date(2024, 1, 1), 23.5),
+        (date(2024, 1, 2), 24.1),
+        (date(2024, 1, 3), 22.8),
+    ],
+})
+
+builder = MLSchema()
+builder.register(TextStrategy())
+builder.register(NumberStrategy())
+builder.register(DateStrategy())
+builder.register(SeriesStrategy())   # claims compound-cell columns automatically
+
+schema = builder.build(df)
+```
+
+```json
+{
+  "fields": [
+    {"title": "sensor_id", "required": true, "type": "category", "options": ["A", "B", "C"]},
+    {
+      "title": "readings", "required": true, "type": "series",
+      "field1": {"title": "field1", "required": true, "type": "date", "step": 1},
+      "field2": {"title": "field2", "required": true, "type": "number", "step": 0.1}
+    }
+  ],
+  "reports": [],
+  "explanations": []
+}
+```
+
+`min_points` and `max_points` can be set directly on `SeriesField` to document cardinality constraints; they are not inferred from data.
 
 ## How It Works
 
 1. **Registry orchestration** – `MLSchema` keeps an in-memory registry of field strategies, keyed by a logical `type_name` and one or more pandas dtypes.
 2. **Inference pipeline** – each DataFrame column is normalised, matched against the registry, and dispatched to the first compatible strategy.
 3. **Schema materialisation** – strategies merge required metadata (title, type, required) with data-driven attributes, then dump the result through a Pydantic model.
-4. **Structured output** – the service returns the canonical `{"inputs": [...], "outputs": []}` payload that feeds [mlform](https://ulloasp.github.io/mlform/) or any form rendering layer.
+4. **Structured output** – the service returns the canonical `{"fields": [...], "reports": [], "explanations": []}` payload that feeds [mlform](https://ulloasp.github.io/mlform/) or any form rendering layer.
 
 ## Built-in Strategies
 
 | Strategy class | `type` name | Supported pandas dtypes | Additional attributes |
 | -------------- | ----------- | ----------------------- | --------------------- |
-| `TextStrategy` | `text`      | `object`, `string`      | `minLength`, `maxLength`, `pattern`, `value`, `placeholder` |
-| `NumberStrategy` | `number`  | `int64`, `int32`, `float64`, `float32` | `min`, `max`, `step`, `value`, `unit`, `placeholder` |
-| `CategoryStrategy` | `category` | `category` | `options`, `value` |
-| `BooleanStrategy` | `boolean` | `bool`, `boolean` | `value` |
-| `DateStrategy` | `date` | `datetime64[ns]`, `datetime64` | `min`, `max`, `value`, `step` |
+| `TextStrategy` | `text`      | `object`, `string`      | `defaultValue` (from `BaseField`), `minLength`, `maxLength`, `pattern`, `placeholder` |
+| `NumberStrategy` | `number`  | `int64`, `int32`, `float64`, `float32` | `defaultValue` (from `BaseField`), `min`, `max`, `step`, `unit`, `placeholder` |
+| `CategoryStrategy` | `category` | `category` | `defaultValue` (from `BaseField`), `options` |
+| `BooleanStrategy` | `boolean` | `bool`, `boolean` | `defaultValue` (from `BaseField`) |
+| `DateStrategy` | `date` | `datetime64[ns]`, `datetime64` | `defaultValue` (from `BaseField`), `min`, `max`, `step` |
+| `SeriesStrategy` | `series` | content-based (2-element cells) | `field1`, `field2`, `min_points`, `max_points` |
 
 Register only the strategies you need. Duplicate registrations raise explicit errors; use `MLSchema.update()` to swap implementations at runtime.
+
+`SeriesStrategy` uses **content-based detection** instead of dtype matching — it automatically claims any `object` column whose cells are all 2-element tuples, lists, or dicts, and infers the sub-field schemas from the element dtypes via the registry.
 
 ## Extending MLSchema
 

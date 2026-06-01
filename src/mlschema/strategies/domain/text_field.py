@@ -12,8 +12,8 @@ from mlschema.strategies.domain.field_types import FieldTypes
 
 
 class TextField(BaseField):
-    type: Literal[FieldTypes.TEXT] = FieldTypes.TEXT
-    value: str | None = None
+    kind: Literal[FieldTypes.TEXT] = FieldTypes.TEXT
+    defaultValue: str | None = None
     placeholder: str | None = None
     minLength: int | None = None
     maxLength: int | None = None
@@ -39,25 +39,30 @@ class TextField(BaseField):
             )
 
         if (
-            self.value is not None
+            self.defaultValue is not None
             and self.minLength is not None
-            and len(self.value) < self.minLength
+            and len(self.defaultValue) < self.minLength
         ):
             raise PydanticCustomError(
                 "min_length_validation",
-                "value length ({value_length}) must be ≥ minLength ({min_length})",
-                {"value_length": len(self.value), "min_length": self.minLength},
+                "defaultValue length ({value_length}) must be ≥ minLength ({min_length})",
+                {
+                    "value_length": len(self.defaultValue),
+                    "min_length": self.minLength,
+                },
             )
 
         if (
-            self.value is not None
+            self.defaultValue is not None
             and self.maxLength is not None
-            and len(self.value) > self.maxLength
+            and len(self.defaultValue) > self.maxLength
         ):
             raise PydanticCustomError(
                 "max_length_validation",
-                "value length ({value_length}) must be ≤ maxLength ({max_length})",
-                {"value_length": len(self.value), "max_length": self.maxLength},
+                "defaultValue length ({value_length}) must be ≤ maxLength ({max_length})",
+                {
+                    "value_length": len(self.defaultValue),
+                    "max_length": self.maxLength,
+                },
             )
-
         return self
