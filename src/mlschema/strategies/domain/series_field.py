@@ -15,8 +15,8 @@ from mlschema.strategies.domain.field_types import FieldTypes
 from mlschema.strategies.domain.number_field import NumberField
 from mlschema.strategies.domain.text_field import TextField
 
-# Module-level registry: type_name → field class
-# Pre-populated with 5 built-ins; extend via add_series_sub_field()
+# Module-level registry: kind name → field class.
+# Pre-populated with built-ins; custom kinds are added by infer_schema().
 _SUB_FIELD_REGISTRY: dict[str, type[BaseField]] = {
     FieldTypes.BOOLEAN: BooleanField,
     FieldTypes.CATEGORY: CategoryField,
@@ -55,7 +55,7 @@ def _parse_sub_field(v: Any) -> BaseField:
         if cls is None:
             raise PydanticCustomError(
                 "unknown_sub_field_type",
-                "Unknown sub-field type: '{kind_name}'. Register via add_series_sub_field().",
+                "Unknown sub-field type: '{kind_name}'. Register it as a custom kind.",
                 {"kind_name": kind_name},
             )
         return cls(**v)

@@ -13,7 +13,7 @@ class MLSchemaError(Exception):
 
     ```python
     try:
-        schema = ms.build(df)
+        schema = infer_schema(df)
     except MLSchemaError as exc:  # catch-all
         logger.error("Schema failure: %s", exc, exc_info=True)
         raise HTTPException(422, detail=str(exc)) from exc
@@ -21,7 +21,7 @@ class MLSchemaError(Exception):
 
     Attributes:
         context: Optional, machine-friendly diagnostics (e.g., offending
-            `dtype`, column name, strategy ID).  Contents are *stable* only
+            `dtype`, column name, builder ID).  Contents are *stable* only
             for the public leaf exceptions; treat additional keys as
             informational.
     """
@@ -43,12 +43,12 @@ class InvalidValueError(MLSchemaError, ValueError):
     Args
     ----
     param: Logical argument name that triggered the failure
-        (``"dtype"``, ``"type_name"``, …).
+        (``"dtype"``, ``"kind"``, …).
     value: Offending value already *normalised* by the caller.
     message: Human-readable description.  If *None*, a neutral default is
         auto-generated.
     context: Arbitrary diagnostics for observability pipelines
-        (e.g., ``{"strategy": "NumberStrategy"}``).
+        (e.g., ``{"builder": "number_builder"}``).
 
     Attributes:
     param: Same as the *param* constructor argument.
@@ -59,12 +59,12 @@ class InvalidValueError(MLSchemaError, ValueError):
     Examples
     --------
     ```python
-    if dtype_key in registry:
+    if kind_name in models:
         raise InvalidValueError(
-            param="dtype",
-            value=dtype_key,
-            message=f"dtype {dtype_key!r} already mapped",
-            context={"registered_strategy": registry[dtype_key]},
+            param="kind",
+            value=kind_name,
+            message=f"kind {kind_name!r} already mapped",
+            context={"registered_kind": models[kind_name]},
         )
     ```
     """

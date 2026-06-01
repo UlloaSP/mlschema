@@ -1,17 +1,25 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Pablo Ulloa Santin
-from .boolean_strategy import BooleanStrategy
-from .category_strategy import CategoryStrategy
-from .date_strategy import DateStrategy
-from .number_strategy import NumberStrategy
-from .series_strategy import SeriesStrategy
-from .text_strategy import TextStrategy
+"""Builtin callable field builders.
+
+Each builtin kind lives in its own module. This package re-exports the public
+builders and the `builtin_kinds()` factory used by `infer_schema()`.
+"""
+
+from .boolean import boolean_builder
+from .category import category_builder
+from .date import date_builder
+from .factory import builtin_kinds
+from .number import number_builder
+from .series import series_builder
+from .text import text_builder
 
 __all__ = [
-    "BooleanStrategy",
-    "CategoryStrategy",
-    "DateStrategy",
-    "NumberStrategy",
-    "SeriesStrategy",
-    "TextStrategy",
+    "boolean_builder",
+    "builtin_kinds",
+    "category_builder",
+    "date_builder",
+    "number_builder",
+    "series_builder",
+    "text_builder",
 ]

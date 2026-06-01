@@ -1,17 +1,15 @@
-- [x] Remove report/explanation domain code and exports.
-- [x] Change build contract to return field list directly.
-- [x] Update tests for unwrapped field list.
-- [x] Update docs/README/changelog references.
-- [x] Update dependency versions and lockfile.
-- [x] Run verification and document result.
-- [x] Remove duplicate package version source and update CI.
-- [x] Rebuild changelog from git tags and commits.
+- [x] Restore coverage depth lost during test rewrite.
+- [x] Add granular parametrized unit tests for builtin dtype matching and edge cases.
+- [x] Add granular model constraint and dtype normalization tests.
+- [x] Add integration, architecture, and load matrix tests without legacy leaks.
+- [x] Update debt/todo review and lessons.
+- [x] Run `uv` tests, `ruff`, `pyright`, docs build, pre-commit, build, and graphify update.
 
 ## Review
 
-- Removed report/explanation models, exports, and docs.
-- `MLSchema.build()` now returns `list[dict]` directly.
-- Updated dependencies/package version and regenerated local lock state.
-- Verification passed: `uv run pytest`, `uv run ruff check .`, `uv run pyright`, `uv run mkdocs build --strict`.
-- CI publish version now reads `pyproject.toml`; `src/mlschema/__init__.py` no longer stores duplicate version.
-- Verification passed after CI update: `uv build`, `uv run pre-commit run --all-files`, `uv run pytest`.
+- Expanded modular suite from 37 to 215 pytest items.
+- Added granular dtype matrix tests for boolean, number, date, category, and text builders.
+- Added edge-case tests for category options, numeric edge values, series shapes, series coercion, dtype normalization, BaseField attributes, factory order, and FieldContext metadata.
+- Added integration output matrix for every builtin dtype family and series shape.
+- Added architecture tests for test layout, line limits, and removed public API leaks.
+- Verification passed: `uv run pytest`, `uv run ruff check .`, `uv run pyright`, `uv run mkdocs build --strict`, `uv run pre-commit run --all-files`, `uv build`, `graphify update .`.

@@ -6,4 +6,6 @@
 - For Python tasks, always run commands through `uv`, and verify with `ruff` plus `pyright`.
 - Keep tool config single-source when supported; prefer `pyproject.toml` over parallel tool-specific config files.
 - When changelog content is suspect, derive entries from tags and commit ranges instead of editing existing sections in place.
-- Prefer adding new accepted dtypes to owning strategies over hiding semantic compatibility in global dtype normalization.
+- Prefer adding new accepted dtypes to owning builtin builders over hiding semantic compatibility in global dtype normalization.
+- When replacing large test suites, preserve or justify coverage depth; do not collapse hundreds of cases into a small smoke suite.
+- When touching tests, update `tasks/tdd.md` with the suite map and validation intent in the same change.

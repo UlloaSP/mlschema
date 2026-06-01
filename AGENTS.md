@@ -24,6 +24,8 @@ Hard constraints override convenience. If a requested change conflicts with them
 - For any Python work, use `uv` for environment/commands, `ruff` for lint/format, and `pyright` for type checking.
 - `tasks/debt.md` is mandatory repo memory for technical debt, known bugs, architectural compromises, and incomplete migrations.
 - Any change touching `src\`, `test\`, `docs\`, or `README.md` must update `tasks/debt.md` if the debt picture changes, including debt removed, debt added, or scope/status changes.
+- `tasks/tdd.md` is mandatory repo memory for the test suite map, coverage intent, and test organization.
+- Any change touching `test\` must update `tasks/tdd.md` in the same change so the test overview stays synchronized.
 - Do not duplicate business rules unless duplication is explicitly justified by UX or runtime needs.
 - Do not add new runtime dependencies without explicit reason.
 - Do not leave dead branches, half-wired flags, placeholder implementations, or misleading UI copy.
@@ -43,6 +45,8 @@ Hard constraints override convenience. If a requested change conflicts with them
 
 - When creating a test for a feature do it in a single file.
 - Tests for a feature have to cover at least the success case and each error case at least once.
+- Read `tasks/tdd.md` before changing tests.
+- Update `tasks/tdd.md` whenever tests are added, removed, renamed, reorganized, or their validation intent changes.
 - Update tests in same change when behavior or contract changes.
 - Run narrowest relevant verification first, then broader checks when environment supports them.
 - If full verification cannot run, report exact command attempted and exact blocker.

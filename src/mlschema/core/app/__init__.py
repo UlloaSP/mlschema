@@ -1,7 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Pablo Ulloa Santin
-from .registry import Registry
-from .service import Service
-from .strategy import Strategy
+from .inference import infer_schema
+from .kind import FieldBuilder, FieldContext, FieldDict, FieldKind, kind
 
-__all__ = ["Registry", "Service", "Strategy"]
+__all__ = [
+    "FieldBuilder",
+    "FieldContext",
+    "FieldDict",
+    "FieldKind",
+    "infer_schema",
+    "kind",
+]

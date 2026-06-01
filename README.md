@@ -5,250 +5,402 @@
 [![CI](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/UlloaSP/mlschema.svg)](https://github.com/UlloaSP/mlschema/blob/main/LICENSE)
 
-> Lightweight orchestration layer that turns pandas DataFrames into front-end-ready JSON schemas, engineered to pair seamlessly with [mlform](https://github.com/UlloaSP/mlform).
+> Turn pandas DataFrames into validated, front-end-ready field schemas.
 
-## Contents
+`mlschema` is a lightweight Python SDK for deriving JSON-serialisable field contracts from tabular data. It is designed for model inputs, prediction forms, review tools, annotation workflows, dashboards, and any frontend that needs to render fields from a `pandas.DataFrame` without hand-writing the same schema twice.
 
-- [MLSchema](#mlschema)
-  - [Contents](#contents)
-  - [Overview](#overview)
-  - [Key Features](#key-features)
-  - [Requirements](#requirements)
-  - [Installation](#installation)
-  - [Quick Start](#quick-start)
-  - [Schema Output](#schema-output)
-  - [How It Works](#how-it-works)
-  - [Built-in Strategies](#built-in-strategies)
-  - [Extending MLSchema](#extending-mlschema)
-  - [Validation \& Error Handling](#validation--error-handling)
-  - [Tooling \& Quality](#tooling--quality)
-  - [Resources](#resources)
-  - [Contributing](#contributing)
-  - [Security](#security)
-  - [License](#license)
+It pairs naturally with [mlform](https://github.com/UlloaSP/mlform), but the generated schema is plain JSON-compatible data and can be consumed by any frontend or service layer.
 
-## Overview
+## Why MLSchema
 
-`mlschema` accelerates form and contract generation by automatically deriving JSON field definitions from tabular data. The library applies a strategy-driven pipeline on top of pandas, validating every payload with Pydantic before it reaches your UI tier or downstream services.
+DataFrame columns already carry useful contract information: names, dtypes, categories, nullability, dates, numeric values, and structured pairs. MLSchema turns that information into a validated field list.
 
-- Converts analytics data into stable JSON schemas in a few lines of code.
-- Keeps inference logic server-side; no external services or background workers required.
-- Ships with production-tested strategies for text, numeric, categorical, boolean, temporal, and two-axis series data.
-- Designed for synchronous use alongside [mlform](https://ulloasp.github.io/mlform/), yet fully usable on its own.
+Instead of maintaining separate form definitions beside the data pipeline, use `infer_schema(df)` as the baseline and refine only what is genuinely product-specific: labels, bounds, defaults, units, placeholders, UI hints, or custom field kinds.
+
+```python id="54fwnz"
+import pandas as pd
+
+from mlschema import infer_schema
+
+df = pd.DataFrame(
+    {
+        "name": ["Ada", "Linus", "Grace"],
+        "score": [98.5, 86.0, 91.0],
+        "role": pd.Categorical(["engineer", "engineer", "scientist"]),
+        "active": [True, False, True],
+    }
+)
+
+schema = infer_schema(df)
+```
+
+```json id="mt9rru"
+[
+  {
+    "kind": "text",
+    "label": "name",
+    "required": true
+  },
+  {
+    "kind": "number",
+    "label": "score",
+    "required": true,
+    "step": 0.1
+  },
+  {
+    "kind": "category",
+    "label": "role",
+    "required": true,
+    "options": ["engineer", "scientist"]
+  },
+  {
+    "kind": "boolean",
+    "label": "active",
+    "required": true
+  }
+]
+```
 
 ## Key Features
 
-- Strategy registry that lets you opt into only the field types you want to expose.
-- Pydantic v2 models guarantee structural validity and embed domain-specific constraints.
-- Normalized dtype matching covers both pandas extension types and NumPy dtypes.
-- Deterministic JSON field-list output suitable for form engines and low-code tooling.
-- Fully typed public API with strict static analysis (Pyright) and comprehensive tests.
+* Function-first API: `infer_schema(df)`.
+* Builtin inference for `text`, `number`, `category`, `boolean`, `date`, and two-axis `series` fields.
+* Pydantic v2 validation before any schema is returned.
+* JSON-serialisable field-list output for frontend and service integration.
+* Field refinements through `overrides`.
+* Domain-specific behaviour through custom builders.
+* New frontend contracts through strict custom kinds.
+* Typed public API with `py.typed`, Pyright, Ruff, pytest, and CI.
 
 ## Requirements
 
-- Python `>= 3.14, < 3.15`
-- pandas `>= 3.0.3, < 4.0.0`
-- pydantic `>= 2.13.4, < 3.0.0`
-
-All transitive dependencies are resolved automatically by your package manager.
+* Python `>=3.14,<3.15`
+* pandas `>=3.0.3,<4.0.0`
+* pydantic `>=2.13.4,<3.0.0`
 
 ## Installation
 
-```bash
+```bash id="ejpqxw"
 uv add mlschema
 ```
 
 Alternative package managers:
 
-- `pip install mlschema`
-- `poetry add mlschema`
-- `conda install -c conda-forge mlschema`
-- `pipenv install mlschema`
+```bash id="gqitqn"
+pip install mlschema
+```
 
-Pin a version (for example `mlschema==0.2.0`) when you need deterministic environments.
+```bash id="2n70wl"
+poetry add mlschema
+```
+
+Pin a version when reproducible environments matter:
+
+```bash id="yrqcr7"
+uv add "mlschema==0.2.0"
+```
 
 ## Quick Start
 
-```python
+```python id="f7024l"
 import pandas as pd
-from mlschema import MLSchema
-from mlschema.strategies import TextStrategy, NumberStrategy, CategoryStrategy
+
+from mlschema import infer_schema
 
 df = pd.DataFrame(
-  {
-    "name": ["Ada", "Linus", "Grace"],
-    "score": [98.5, 86.0, 91.0],
-    "role": pd.Categorical(["engineer", "engineer", "scientist"]),
-  }
+    {
+        "customer": ["Ada", "Linus", "Grace"],
+        "age": [42, 55, 38],
+        "tier": pd.Categorical(["pro", "free", "pro"], categories=["free", "pro"]),
+        "created": pd.date_range("2024-01-01", periods=3),
+    }
 )
 
-builder = MLSchema()
-builder.register(TextStrategy())      # fallback for unsupported dtypes
-builder.register(NumberStrategy())
-builder.register(CategoryStrategy())
-
-schema = builder.build(df)
+schema = infer_schema(df)
 ```
+
+The result can be returned from an API, stored as a contract, passed to a form renderer, or used in tests to detect schema drift.
+
+MLSchema works best when DataFrame dtypes are deliberate. Numeric columns should use numeric dtypes, categorical columns should use `category`, date columns should use pandas datetime dtypes, and boolean columns should use boolean dtypes. Ambiguous object columns fall back to `text`.
 
 ## Schema Output
 
-The payload is ready to serialise to JSON and inject into your UI or downstream service:
+The canonical output is a field list.
 
-```json
+There is no top-level envelope by default. MLSchema returns the contract directly:
+
+```json id="25et3y"
 [
-  {"title": "name", "required": true, "type": "text"},
-  {"title": "score", "required": true, "type": "number", "step": 0.1},
-  {"title": "role", "required": true, "type": "category", "options": ["engineer", "scientist"]}
-]
-```
-
-`TextStrategy` acts as the default fallback. Make sure it is registered when you want unsupported columns to degrade gracefully.
-
-### Series columns
-
-Columns where each cell is a 2-element compound value (`(v1, v2)`, `[v1, v2]`, or `{"key1": v1, "key2": v2}`) are handled automatically by `SeriesStrategy`. Sub-field schemas are inferred from the element dtypes via the registered strategies:
-
-```python
-import pandas as pd
-from datetime import date
-from mlschema import MLSchema
-from mlschema.strategies import TextStrategy, NumberStrategy, DateStrategy, SeriesStrategy
-
-df = pd.DataFrame({
-    "sensor_id": pd.Categorical(["A", "B", "C"]),
-    "readings": [
-        (date(2024, 1, 1), 23.5),
-        (date(2024, 1, 2), 24.1),
-        (date(2024, 1, 3), 22.8),
-    ],
-})
-
-builder = MLSchema()
-builder.register(TextStrategy())
-builder.register(NumberStrategy())
-builder.register(DateStrategy())
-builder.register(SeriesStrategy())   # claims compound-cell columns automatically
-
-schema = builder.build(df)
-```
-
-```json
-[
-  {"title": "sensor_id", "required": true, "type": "category", "options": ["A", "B", "C"]},
   {
-    "title": "readings", "required": true, "type": "series",
-    "field1": {"title": "field1", "required": true, "type": "date", "step": 1},
-    "field2": {"title": "field2", "required": true, "type": "number", "step": 0.1}
+    "kind": "text",
+    "label": "customer",
+    "required": true
+  },
+  {
+    "kind": "number",
+    "label": "age",
+    "required": true,
+    "step": 1
+  },
+  {
+    "kind": "category",
+    "label": "tier",
+    "required": true,
+    "options": ["free", "pro"]
+  },
+  {
+    "kind": "date",
+    "label": "created",
+    "required": true
   }
 ]
 ```
 
-`min_points` and `max_points` can be set directly on `SeriesField` to document cardinality constraints; they are not inferred from data.
+Each field includes:
 
-## How It Works
+* `kind`: the frontend discriminator.
+* `label`: the human-readable label, inferred from the column name unless overridden.
+* `required`: `true` when the source column contains no missing values.
+* kind-specific metadata, such as `step`, `options`, `field1`, `field2`, or validation bounds.
 
-1. **Registry orchestration** – `MLSchema` keeps an in-memory registry of field strategies, keyed by a logical `type_name` and one or more pandas dtypes.
-2. **Inference pipeline** – each DataFrame column is normalised, matched against the registry, and dispatched to the first compatible strategy.
-3. **Schema materialisation** – strategies merge required metadata (title, type, required) with data-driven attributes, then dump the result through a Pydantic model.
-4. **Structured output** – the service returns the canonical field-list payload that feeds [mlform](https://ulloasp.github.io/mlform/) or any form rendering layer.
+Optional values set to `None` are omitted from the output.
 
-## Built-in Strategies
+## Builtin Kinds
 
-| Strategy class | `type` name | Supported pandas dtypes | Additional attributes |
-| -------------- | ----------- | ----------------------- | --------------------- |
-| `TextStrategy` | `text`      | `object`, `string`      | `defaultValue` (from `BaseField`), `minLength`, `maxLength`, `pattern`, `placeholder` |
-| `NumberStrategy` | `number`  | `int64`, `int32`, `float64`, `float32` | `defaultValue` (from `BaseField`), `min`, `max`, `step`, `unit`, `placeholder` |
-| `CategoryStrategy` | `category` | `category` | `defaultValue` (from `BaseField`), `options` |
-| `BooleanStrategy` | `boolean` | `bool`, `boolean` | `defaultValue` (from `BaseField`) |
-| `DateStrategy` | `date` | `datetime64[ns]`, `datetime64` | `defaultValue` (from `BaseField`), `min`, `max`, `step` |
-| `SeriesStrategy` | `series` | content-based (2-element cells) | `field1`, `field2`, `min_points`, `max_points` |
+Builtin kinds are enabled by default and resolved in a fixed order.
 
-Register only the strategies you need. Duplicate registrations raise explicit errors; use `MLSchema.update()` to swap implementations at runtime.
+| Kind       | Detection                                                    | Notes                                                                  |
+| ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| `series`   | Non-null cells are 2-element tuples, lists, or dictionaries. | Infers `field1` and `field2` recursively.                              |
+| `boolean`  | `bool`, `boolean`                                            | Emits a boolean field contract.                                        |
+| `category` | `category`                                                   | Emits `options` from categorical categories.                           |
+| `date`     | `datetime64[ns]`, `datetime64[us]`, `datetime64`             | Emits a date field contract.                                           |
+| `number`   | `int64`, `int32`, `float64`, `float32`                       | Emits `step: 1` for integer columns and `step: 0.1` for float columns. |
+| `text`     | fallback                                                     | Claims columns not handled by earlier kinds.                           |
 
-`SeriesStrategy` uses **content-based detection** instead of dtype matching — it automatically claims any `object` column whose cells are all 2-element tuples, lists, or dicts, and infers the sub-field schemas from the element dtypes via the registry.
+The order matters. `series` runs before `text` because it detects pair-shaped object cells by content. `text` runs last as the safe fallback.
+
+## Series Columns
+
+A `series` field represents a two-axis value stored in a single DataFrame column, such as timestamp-value readings.
+
+```python id="vjf8bq"
+import pandas as pd
+
+from mlschema import infer_schema
+
+df = pd.DataFrame(
+    {
+        "readings": [
+            (pd.Timestamp("2024-01-01"), 23.5),
+            (pd.Timestamp("2024-01-02"), 24.1),
+            (pd.Timestamp("2024-01-03"), 22.8),
+        ],
+    }
+)
+
+schema = infer_schema(df)
+```
+
+```json id="f1a308"
+[
+  {
+    "kind": "series",
+    "label": "readings",
+    "required": true,
+    "field1": {
+      "kind": "date",
+      "label": "field1",
+      "required": true
+    },
+    "field2": {
+      "kind": "number",
+      "label": "field2",
+      "required": true,
+      "step": 0.1
+    }
+  }
+]
+```
+
+Supported cell shapes are:
+
+```python id="iv6b5b"
+(timestamp, value)
+[timestamp, value]
+{"timestamp": timestamp, "value": value}
+```
+
+Nested series are rejected. Cardinality constraints such as `minPoints` and `maxPoints` can be added with `overrides`.
+
+## Refining Fields With Overrides
+
+Inference provides the structural baseline. Production interfaces often need clearer labels, ranges, defaults, units, placeholders, or UI metadata.
+
+```python id="v9tboo"
+schema = infer_schema(
+    df,
+    overrides={
+        "age": {
+            "label": "Age",
+            "description": "Customer age in years.",
+            "min": 0,
+            "max": 120,
+            "step": 1,
+            "unit": "years",
+        },
+        "tier": {
+            "label": "Plan",
+            "defaultValue": "pro",
+        },
+    },
+)
+```
+
+Overrides are applied after inference and before final validation. Missing columns and invalid constraints fail explicitly instead of producing a broken schema.
 
 ## Extending MLSchema
 
-Create bespoke field types by pairing a custom Pydantic model with a strategy implementation:
+Use a custom builder when an existing kind is correct, but the column needs domain-aware metadata.
 
-```python
-from typing import Literal
+```python id="0r5mdy"
 from pandas import Series
-from mlschema.core import BaseField, Strategy
 
+from mlschema import FieldContext, infer_schema
 
-class RatingField(BaseField):
-  type: Literal["rating"] = "rating"
-  min: int | None = None
-  max: int | None = None
-  precision: float = 0.5
+def money_builder(series: Series, ctx: FieldContext) -> dict | None:
+    if ctx.name != "amount_eur":
+        return None
 
-
-class RatingStrategy(Strategy):
-  def __init__(self) -> None:
-    super().__init__(
-      type_name="rating",
-      schema_cls=RatingField,
-      dtypes=("float64",),
-    )
-
-  def attributes_from_series(self, series: Series) -> dict:
     return {
-      "min": float(series.min()),
-      "max": float(series.max()),
+        "kind": "number",
+        "label": "Amount",
+        "required": ctx.required,
+        "step": 0.01,
+        "unit": "EUR",
+        "min": 0,
     }
+
+schema = infer_schema(df, builders=[money_builder])
 ```
 
-- Use `Strategy.dtypes` to advertise the pandas dtypes your strategy understands.
-- Avoid mutating the incoming `Series`; treat it as read-only.
-- Reserved keys (`title`, `type`, `required`, `description`) are populated by the base class.
+Use a custom kind when the frontend needs a new field discriminator and a dedicated validation model.
 
-Reference the full guide at [https://ulloasp.github.io/mlschema/usage/](https://ulloasp.github.io/mlschema/usage/) for end-to-end patterns.
+```python id="96x5rn"
+from typing import Literal
 
-## Validation & Error Handling
+from pandas import Series
 
-- `EmptyDataFrameError` – raised when the DataFrame has no rows or columns.
-- `FallbackStrategyMissingError` – triggered if an unsupported dtype is encountered without a registered fallback.
-- `StrategyNameAlreadyRegisteredError` / `StrategyDtypeAlreadyRegisteredError` – guard against duplicate registrations.
-- Pydantic `ValidationError` / `PydanticCustomError` – surface invalid field constraints early (`min`/`max`, regex patterns, date ranges, etc.).
+from mlschema import BaseField, FieldContext, infer_schema, kind
 
-All exceptions derive from `mlschema.core.MLSchemaError`, making it straightforward to trap library-level failures.
+class DurationField(BaseField):
+    kind: Literal["duration"] = "duration"
+    unit: Literal["seconds"] = "seconds"
+    minSeconds: int
+    maxSeconds: int
 
-## Tooling & Quality
+def duration_builder(series: Series, ctx: FieldContext) -> dict | None:
+    if ctx.dtype not in {"timedelta64[ns]", "timedelta64[us]"}:
+        return None
 
-- Distributed as an MIT-licensed wheel and sdist built with Hatchling.
-- Strict typing (`pyright`) and linting (`ruff`) shipped with the repo.
-- Test suite powered by `pytest` and `pytest-cov`; coverage reports live alongside the source tree.
-- `py.typed` marker ensures type information propagates to downstream projects.
+    return {
+        "kind": "duration",
+        "label": ctx.name,
+        "required": ctx.required,
+        "unit": "seconds",
+        "minSeconds": int(series.min().total_seconds()),
+        "maxSeconds": int(series.max().total_seconds()),
+    }
 
-## Resources
+schema = infer_schema(
+    df,
+    kinds=[
+        kind(model=DurationField, infer=duration_builder),
+    ],
+)
+```
 
-- Documentation portal: [https://ulloasp.github.io/mlschema/](https://ulloasp.github.io/mlschema/)
-- API reference: [https://ulloasp.github.io/mlschema/reference/](https://ulloasp.github.io/mlschema/reference/)
-- Changelog: [https://ulloasp.github.io/mlschema/changelog/](https://ulloasp.github.io/mlschema/changelog/)
-- Issue tracker: [https://github.com/UlloaSP/mlschema/issues](https://github.com/UlloaSP/mlschema/issues)
-- Discussions: [https://github.com/UlloaSP/mlschema/discussions](https://github.com/UlloaSP/mlschema/discussions)
-- mlform (optional form renderer): [https://github.com/UlloaSP/mlform](https://github.com/UlloaSP/mlform)
+Resolution is predictable:
+
+```text id="kwtd5b"
+user builders
+custom kind builders
+builtin builders
+```
+
+The first builder returning a field dictionary owns the column.
+
+## Validation And Errors
+
+MLSchema validates the generated contract before returning it.
+
+Common errors include:
+
+| Error                             | Meaning                                                                                                              |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `EmptyDataFrameError`             | The input DataFrame has no rows or no columns.                                                                       |
+| `FieldBuilderError`               | A builder returned an invalid payload, omitted `kind`, no builder matched, or an override targeted a missing column. |
+| `UnknownFieldKindError`           | A builder emitted a kind with no registered field model.                                                             |
+| `FieldKindAlreadyRegisteredError` | Duplicate kind names were registered.                                                                                |
+| `FieldKindError`                  | `kind()` received an invalid field model.                                                                            |
+| `pydantic.ValidationError`        | The final field payload violates its Pydantic model.                                                                 |
+
+Library exceptions are available from `mlschema.core.exceptions` and re-exported from `mlschema.core`.
+
+## With mlform
+
+MLSchema focuses on inference and validation. [mlform](https://github.com/UlloaSP/mlform) can consume the generated field list to render interactive forms.
+
+The split is intentional: Python owns the data contract; the frontend owns rendering, interaction, and submission.
+
+## Documentation
+
+* Documentation: https://ulloasp.github.io/mlschema/
+* Usage guide: https://ulloasp.github.io/mlschema/usage/
+* Schema standard: https://ulloasp.github.io/mlschema/schema-standard/
+* API reference: https://ulloasp.github.io/mlschema/reference/
+* Changelog: https://ulloasp.github.io/mlschema/changelog/
+
+## Tooling And Quality
+
+* MIT-licensed package distributed as wheel and sdist.
+* Built with Hatchling.
+* Typed with `py.typed`.
+* Tested with `pytest` and `pytest-cov`.
+* Checked with `ruff` and `pyright`.
+* CI provided by GitHub Actions.
 
 ## Contributing
 
-Community contributions are welcome. Review the guidelines and pick an issue to get started:
+Contributions are welcome.
 
-- Contribution guide: [https://github.com/UlloaSP/mlschema/blob/main/CONTRIBUTING.md](https://github.com/UlloaSP/mlschema/blob/main/CONTRIBUTING.md)
-- Good first issues: [https://github.com/UlloaSP/mlschema/labels/good%20first%20issue](https://github.com/UlloaSP/mlschema/labels/good%20first%20issue)
-- Development workflow: `uv sync`, `uv run pre-commit install`, `uv run pytest`
+Useful commands for local development:
+
+```bash id="2fzokc"
+uv sync
+uv run pre-commit install
+uv run pytest
+```
+
+Project links:
+
+* Issues: https://github.com/UlloaSP/mlschema/issues
+* Discussions: https://github.com/UlloaSP/mlschema/discussions
+* Contributing guide: https://github.com/UlloaSP/mlschema/blob/main/CONTRIBUTING.md
 
 ## Security
 
-Please report security concerns privately by emailing `pablo.ulloa.santin@udc.es`. The coordinated disclosure process is documented at [https://github.com/UlloaSP/mlschema/blob/main/SECURITY.md](https://github.com/UlloaSP/mlschema/blob/main/SECURITY.md).
+Please report security concerns privately by emailing `pablo.ulloa.santin@udc.es`.
+
+The disclosure process is documented in [SECURITY.md](https://github.com/UlloaSP/mlschema/blob/main/SECURITY.md).
 
 ## License
 
-Released under the MIT License. Complete terms and third-party attributions are available at:
+Released under the MIT License.
 
-- License: [https://github.com/UlloaSP/mlschema/blob/main/LICENSE](https://github.com/UlloaSP/mlschema/blob/main/LICENSE)
-- Third-party notices: [https://github.com/UlloaSP/mlschema/blob/main/THIRD_PARTY_LICENSES.md](https://github.com/UlloaSP/mlschema/blob/main/THIRD_PARTY_LICENSES.md)
+* License: https://github.com/UlloaSP/mlschema/blob/main/LICENSE
+* Third-party notices: https://github.com/UlloaSP/mlschema/blob/main/THIRD_PARTY_LICENSES.md
 
 ---
 
-Made by [Pablo Ulloa Santin](https://github.com/UlloaSP) and the MLSchema community.
+Made by [Pablo Ulloa Santin](https://github.com/UlloaSP) and contributors.
