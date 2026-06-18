@@ -16,25 +16,18 @@ class MinimalField(BaseField):
     "kwargs",
     [
         {"description": "Short help"},
-        {"disabled": True},
-        {"hidden": False},
-        {"readOnly": True},
-        {"disabledWhen": {"field": "x"}},
-        {"hiddenWhen": {"field": "x"}},
-        {"readOnlyWhen": {"field": "x"}},
-        {"asyncValidationDebounceMs": 250},
-        {"inactiveFieldPolicy": "include"},
-        {"inactiveFieldPolicy": "omit"},
-        {"inactiveFieldPolicy": "reset-on-hide"},
+        {"mappedTo": "name"},
+        {"mappedTo": 0},
         {"valuePath": "payload.name"},
         {"valuePath": ["payload", "name"]},
         {"defaultValue": "Ada"},
-        {"ui": {"placeholder": "Name"}},
     ],
 )
 def test_base_field_accepts_optional_contract_attributes(kwargs):
     """Validates BaseField optional attributes remain accepted."""
-    assert MinimalField(label="name", **kwargs).kind == "minimal"
+    params = {"label": "name", **kwargs}
+    params.setdefault("mappedTo", 0)
+    assert MinimalField(**params).kind == "minimal"
 
 
 @pytest.mark.parametrize(
@@ -43,7 +36,11 @@ def test_base_field_accepts_optional_contract_attributes(kwargs):
         {"label": ""},
         {"label": "x" * 101},
         {"label": "ok", "description": "x" * 501},
-        {"label": "ok", "inactiveFieldPolicy": "drop"},
+        {"label": "ok"},
+        {"label": "ok", "mappedTo": None},
+        {"label": "ok", "mappedTo": ""},
+        {"label": "ok", "mappedTo": -1},
+        {"label": "ok", "mappedTo": {"default": "name"}},
         {"label": "ok", "extra": "forbidden"},
     ],
 )

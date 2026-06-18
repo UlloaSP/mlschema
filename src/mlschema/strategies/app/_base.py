@@ -21,11 +21,12 @@ def base_field(ctx: FieldContext, kind_name: str) -> FieldDict:
 
     Returns:
         Dict containing the reserved field keys populated by MLSchema:
-        `kind`, `label`, `required`, and `description`.
+        `kind`, `label`, `required`, `mappedTo`, and `description`.
     """
     return {
         "kind": str(kind_name),
         "label": ctx.name,
         "required": ctx.required,
+        "mappedTo": ctx.mappedTo,
         "description": None,
     }

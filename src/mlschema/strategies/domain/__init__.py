@@ -5,6 +5,7 @@ from .category_field import CategoryField
 from .date_field import DateField
 from .field_types import FieldTypes
 from .number_field import NumberField
+from .onehot_category_field import OneHotCategoryField, OneHotCategoryOption
 from .series_field import SeriesField
 from .text_field import TextField
 
@@ -14,6 +15,8 @@ __all__ = [
     "DateField",
     "FieldTypes",
     "NumberField",
+    "OneHotCategoryField",
+    "OneHotCategoryOption",
     "SeriesField",
     "TextField",
 ]

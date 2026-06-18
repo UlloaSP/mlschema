@@ -21,6 +21,7 @@ from mlschema.core.domain import BaseField
 from mlschema.core.exceptions import FieldKindError
 
 type FieldDict = dict[str, Any]
+type MappedToTarget = str | int
 type FieldBuilder = Callable[[Series, "FieldContext"], FieldDict | None]
 type FieldInfer = Callable[[Series], FieldDict]
 
@@ -34,6 +35,7 @@ class FieldContext:
         dtype: Normalised pandas dtype name for the source series.
         required: `True` when the source series contains no null values.
         index: Zero-based column position in the input DataFrame.
+        mappedTo: Backend feature name or original model input position.
         infer_field: Recursive callback for builders that need to infer
             sub-fields, such as the builtin series builder.
     """
@@ -42,6 +44,7 @@ class FieldContext:
     dtype: str
     required: bool
     index: int
+    mappedTo: MappedToTarget
     infer_field: FieldInfer
 
 

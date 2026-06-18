@@ -8,6 +8,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 No unreleased changes documented yet.
 
+## [0.2.1] - 2026-06-18
+
+### Added
+
+* Added mandatory `mappedTo` output for normal fields.
+* Added `onehot-category` inference for named one-hot encoded feature columns.
+* Added `options[].mappedTo` targets for `onehot-category` options.
+* Added `onehot_separator` to `infer_schema()`; the default separator is `"__"` for `feature__value` columns.
+* Added positional-column fallback labels such as `feature_0`, `feature_1`, and integer `mappedTo` targets.
+
+### Changed
+
+* Changed named DataFrame columns to emit string `mappedTo` targets matching the column name.
+* Changed positional DataFrame columns to emit generated labels and zero-based integer `mappedTo` targets.
+* Changed one-hot grouping to require named encoded feature columns; positional binary columns now remain ordinary fields.
+* Updated README, usage docs, and schema-standard docs for the `mappedTo` and `onehot-category` contracts.
+
+### Fixed
+
+* Fixed schema mapping ambiguity between display labels and backend targets.
+* Fixed one-hot output so the parent field has no `mappedTo`; each option owns its backend target.
+* Fixed regression coverage for named feature mappings, positional mappings, custom one-hot separators, and positional binary columns.
+
 ## [0.2.0] - 2026-06-01
 
 `0.2.0` is a breaking release. MLSchema moves from the previous class-and-registry API to a smaller function-first API centred on `infer_schema(df)`. The schema output is now the field list itself, not a top-level object containing `fields`, `reports`, or `explanations`.

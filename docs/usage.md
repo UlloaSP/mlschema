@@ -31,23 +31,26 @@ schema = infer_schema(df)
   {
     "kind": "text",
     "label": "name",
-    "required": true
+    "required": true,
+    "mappedTo": "name"
   },
   {
     "kind": "number",
     "label": "score",
     "required": true,
+    "mappedTo": "score",
     "step": 0.1
   },
   {
     "kind": "boolean",
     "label": "active",
-    "required": true
+    "required": true,
+    "mappedTo": "active"
   }
 ]
 ```
 
-A field is considered required when its source column contains no missing values. The column name becomes the default label, and each builtin kind contributes only the metadata that can be inferred safely from the data.
+A field is considered required when its source column contains no missing values. Named columns become the default label and string `mappedTo` target. Positional columns get generated labels such as `feature_0` and numeric `mappedTo` targets.
 
 A DataFrame with no rows or no columns is rejected with `EmptyDataFrameError`.
 
@@ -57,17 +60,19 @@ Builtin inference covers the standard field types expected in most tabular form 
 
 | Kind       | Detection                                                    | Output behaviour                                                       |
 | ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| `series`   | Non-null cells are 2-element tuples, lists, or dictionaries. | Infers two nested subfields recursively.                               |
-| `boolean`  | `bool`, `boolean`                                            | Emits a boolean field contract.                                        |
-| `category` | `category`                                                   | Emits `options` from categorical categories.                           |
-| `date`     | `datetime64[ns]`, `datetime64[us]`, `datetime64`             | Emits a date field contract.                                           |
-| `number`   | `int64`, `int32`, `float64`, `float32`                       | Emits `step: 1` for integer columns and `step: 0.1` for float columns. |
-| `text`     | fallback                                                     | Claims any column not handled by an earlier kind.                      |
+| `series`          | Non-null cells are 2-element tuples, lists, or dictionaries. | Infers two nested subfields recursively.                               |
+| `onehot-category` | 0/1 columns grouped by `onehot_separator`.                   | Emits one category field with `options[].mappedTo`.                    |
+| `boolean`         | `bool`, `boolean`                                            | Emits a boolean field contract.                                        |
+| `category`        | `category`                                                   | Emits `options` from categorical categories.                           |
+| `date`            | `datetime64[ns]`, `datetime64[us]`, `datetime64`             | Emits a date field contract.                                           |
+| `number`          | `int64`, `int32`, `float64`, `float32`                       | Emits `step: 1` for integer columns and `step: 0.1` for float columns. |
+| `text`            | fallback                                                     | Claims any column not handled by an earlier kind.                      |
 
 The builtin order is deliberate:
 
 ```text
 series
+onehot-category
 boolean
 category
 date
@@ -79,9 +84,31 @@ text
 
 This means ordinary usage does not require manual registration. A well-typed DataFrame is enough.
 
+## Feature Mapping
+
+`infer_schema(df)` derives mapping from DataFrame columns:
+
+```python
+infer_schema(df)
+```
+
+Named columns emit string targets:
+
+```json
+{ "label": "age", "mappedTo": "age" }
+```
+
+Positional columns emit generated labels and numeric targets:
+
+```json
+{ "label": "feature_0", "mappedTo": 0 }
+```
+
+One-hot grouping needs named encoded feature columns such as `color__red`. Positional binary columns stay as ordinary fields with integer `mappedTo` targets. The default one-hot separator is `"__"` (`feature__value`). Use `onehot_separator` when your model uses another convention.
+
 ## Overrides
 
-Inference should provide a correct structural baseline, but production forms usually need better labels, bounds, defaults, units, placeholders, or UI hints.
+Inference should provide a correct structural baseline, but production forms usually need better labels, bounds, defaults, units, or placeholders.
 
 Use `overrides` for final field patches by column name.
 
@@ -125,6 +152,7 @@ def money_builder(series: Series, ctx: FieldContext) -> dict | None:
         "kind": "number",
         "label": "Amount",
         "required": ctx.required,
+        "mappedTo": ctx.mappedTo,
         "step": 0.01,
         "unit": "EUR",
         "min": 0,
@@ -225,15 +253,18 @@ Output:
     "kind": "series",
     "label": "reading",
     "required": true,
+    "mappedTo": "reading",
     "field1": {
       "kind": "date",
       "label": "field1",
-      "required": true
+      "required": true,
+      "mappedTo": "reading"
     },
     "field2": {
       "kind": "number",
       "label": "field2",
       "required": true,
+      "mappedTo": "reading",
       "step": 0.1
     }
   }
@@ -297,6 +328,7 @@ def money_builder(series: Series, ctx: FieldContext) -> dict | None:
         "kind": "number",
         "label": "Amount",
         "required": ctx.required,
+        "mappedTo": ctx.mappedTo,
         "step": 0.01,
         "unit": "EUR",
         "min": 0,
@@ -310,6 +342,7 @@ def duration_builder(series: Series, ctx: FieldContext) -> dict | None:
         "kind": "duration",
         "label": ctx.name,
         "required": ctx.required,
+        "mappedTo": ctx.mappedTo,
         "unit": "seconds",
         "minSeconds": int(series.min().total_seconds()),
         "maxSeconds": int(series.max().total_seconds()),
@@ -345,7 +378,6 @@ schema = infer_schema(
             "minLength": 1,
             "maxLength": 80,
             "defaultValue": "Ada",
-            "ui": {"autocomplete": "name"},
         },
         "age": {
             "label": "Age",
@@ -384,7 +416,7 @@ schema = infer_schema(
 )
 ```
 
-The custom `money_builder` owns only `amount_eur`. All other ordinary columns continue through builtin inference. The custom `duration` kind handles timedelta columns. Overrides then apply product-facing labels, defaults, bounds, and UI metadata.
+The custom `money_builder` owns only `amount_eur`. All other ordinary columns continue through builtin inference. The custom `duration` kind handles timedelta columns. Overrides then apply product-facing labels, defaults, and bounds.
 
 This keeps the schema pipeline predictable: inference discovers structure, builders encode reusable domain rules, and overrides apply final column-specific decisions.
 

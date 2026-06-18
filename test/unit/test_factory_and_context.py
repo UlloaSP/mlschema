@@ -12,6 +12,7 @@ def test_builtin_kinds_return_expected_order():
     """Validates builtin inference order stays most-specific to fallback."""
     assert [item.name for item in builtin_kinds()] == [
         "series",
+        "onehot-category",
         "boolean",
         "category",
         "date",
@@ -21,7 +22,8 @@ def test_builtin_kinds_return_expected_order():
 
 
 @pytest.mark.parametrize(
-    "kind_name", ["series", "boolean", "category", "date", "number", "text"]
+    "kind_name",
+    ["series", "onehot-category", "boolean", "category", "date", "number", "text"],
 )
 def test_builtin_kinds_have_callable_inference(kind_name: str):
     """Validates each builtin kind exposes a callable inference function."""
@@ -41,9 +43,12 @@ def test_builtin_kinds_have_callable_inference(kind_name: str):
 )
 def test_field_context_preserves_column_metadata(name, dtype, required, index):
     """Validates FieldContext stores metadata passed to builders."""
-    ctx = FieldContext(name, dtype, required, index, lambda series: {"kind": "text"})
+    ctx = FieldContext(
+        name, dtype, required, index, index, lambda series: {"kind": "text"}
+    )
 
     assert ctx.name == name
     assert ctx.dtype == dtype
     assert ctx.required is required
     assert ctx.index == index
+    assert ctx.mappedTo == index

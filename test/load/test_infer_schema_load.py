@@ -38,6 +38,7 @@ def test_infer_schema_handles_large_categorical_option_sets():
             "kind": "category",
             "label": "segment",
             "required": True,
+            "mappedTo": "segment",
             "options": categories,
         }
     ]

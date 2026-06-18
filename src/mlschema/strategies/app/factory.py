@@ -21,6 +21,7 @@ from mlschema.strategies.domain import (
     CategoryField,
     DateField,
     NumberField,
+    OneHotCategoryField,
     SeriesField,
     TextField,
 )
@@ -36,6 +37,7 @@ def builtin_kinds() -> tuple[FieldKind, ...]:
     """
     return (
         kind(model=SeriesField, infer=series_builder),
+        kind(model=OneHotCategoryField, infer=lambda _series, _ctx: None),
         kind(model=BooleanField, infer=boolean_builder),
         kind(model=CategoryField, infer=category_builder),
         kind(model=DateField, infer=date_builder),

@@ -57,6 +57,7 @@ def test_infer_schema_end_to_end_with_custom_builder_and_kind():
             "kind": "number",
             "label": "Amount",
             "required": ctx.required,
+            "mappedTo": ctx.mappedTo,
             "step": 0.01,
             "unit": "EUR",
         }
@@ -68,6 +69,7 @@ def test_infer_schema_end_to_end_with_custom_builder_and_kind():
             "kind": "duration",
             "label": ctx.name,
             "required": ctx.required,
+            "mappedTo": ctx.mappedTo,
             "minSeconds": int(series.min().total_seconds()),
             "maxSeconds": int(series.max().total_seconds()),
         }
@@ -87,3 +89,64 @@ def test_infer_schema_end_to_end_with_custom_builder_and_kind():
     assert fields[0]["step"] == 0.01
     assert fields[1]["kind"] == "duration"
     assert fields[1]["unit"] == "seconds"
+
+
+def test_infer_schema_maps_named_columns_and_onehot_groups():
+    """Validates named DataFrame columns drive labels and mappedTo strings."""
+    df = DataFrame(
+        {
+            "color__red": [1, 0],
+            "color__blue": [0, 1],
+            "size": [10, 20],
+        }
+    )
+
+    fields = infer_schema(df)
+
+    assert fields == [
+        {
+            "kind": "onehot-category",
+            "label": "color",
+            "required": True,
+            "options": [
+                {"label": "red", "value": "red", "mappedTo": "color__red"},
+                {"label": "blue", "value": "blue", "mappedTo": "color__blue"},
+            ],
+        },
+        {
+            "kind": "number",
+            "label": "size",
+            "required": True,
+            "mappedTo": "size",
+            "step": 1,
+        },
+    ]
+
+
+def test_infer_schema_uses_named_column_targets():
+    """Validates named columns become string mappedTo targets."""
+    fields = infer_schema(DataFrame({"age": [1, 2], "name": ["a", "b"]}))
+
+    assert [field["label"] for field in fields] == ["age", "name"]
+    assert [field["mappedTo"] for field in fields] == ["age", "name"]
+
+
+def test_infer_schema_generates_labels_for_positional_columns():
+    """Validates unnamed positional columns get feature labels and int targets."""
+    fields = infer_schema(DataFrame([[1, "a"], [2, "b"]]))
+
+    assert [field["label"] for field in fields] == ["feature_0", "feature_1"]
+    assert [field["mappedTo"] for field in fields] == [0, 1]
+
+
+def test_infer_schema_keeps_positional_binary_columns_as_fields():
+    """Validates positional binary inputs map like fields, not onehot groups."""
+    fields = infer_schema(DataFrame([[1, 0, 10], [0, 1, 20]]))
+
+    assert [field["kind"] for field in fields] == ["number", "number", "number"]
+    assert [field["label"] for field in fields] == [
+        "feature_0",
+        "feature_1",
+        "feature_2",
+    ]
+    assert [field["mappedTo"] for field in fields] == [0, 1, 2]

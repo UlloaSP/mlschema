@@ -35,18 +35,21 @@ The result is a validated field list:
   {
     "kind": "text",
     "label": "name",
-    "required": true
+    "required": true,
+    "mappedTo": 0
   },
   {
     "kind": "number",
     "label": "score",
     "required": true,
+    "mappedTo": 1,
     "step": 0.1
   },
   {
     "kind": "boolean",
     "label": "active",
-    "required": true
+    "required": true,
+    "mappedTo": 2
   }
 ]
 ```
@@ -72,7 +75,7 @@ The library is useful when the goal is not to build a form manually, but to deri
 | **Frontend-ready contracts**  | Output is JSON-serialisable and designed to be consumed by UI libraries such as `mlform`.           |
 | **Safe defaults**             | Builtin kinds are enabled by default; no registry setup is required for common DataFrame workflows. |
 | **Controlled extension**      | Custom builders and custom kinds allow domain-specific behaviour without changing consumer code.    |
-| **Column-level refinement**   | Overrides provide final labels, bounds, defaults, placeholders, units, and UI metadata.             |
+| **Column-level refinement**   | Overrides provide final labels, bounds, defaults, placeholders, and units.                          |
 
 ---
 
@@ -112,20 +115,21 @@ MLSchema ships with builtin inference for the standard field types used in most 
 
 | Kind       | Detection                                                    |
 | ---------- | ------------------------------------------------------------ |
-| `series`   | Non-null cells are 2-element tuples, lists, or dictionaries. |
-| `boolean`  | `bool`, `boolean`                                            |
-| `category` | `category`                                                   |
-| `date`     | `datetime64[ns]`, `datetime64[us]`, `datetime64`             |
-| `number`   | `int64`, `int32`, `float64`, `float32`                       |
-| `text`     | Fallback for columns not claimed by an earlier kind.         |
+| `series`          | Non-null cells are 2-element tuples, lists, or dictionaries. |
+| `onehot-category` | 0/1 columns grouped by `onehot_separator`.                   |
+| `boolean`         | `bool`, `boolean`                                            |
+| `category`        | `category`                                                   |
+| `date`            | `datetime64[ns]`, `datetime64[us]`, `datetime64`             |
+| `number`          | `int64`, `int32`, `float64`, `float32`                       |
+| `text`            | Fallback for columns not claimed by an earlier kind.         |
 
-The order matters. More specific detections run first, and `text` runs last as the safe fallback.
+The order matters. More specific detections run first, one-hot encoded columns such as `color__red` are grouped before ordinary numeric fields, and `text` runs last as the safe fallback.
 
 ---
 
 ## Refining Inferred Schemas
 
-Inference gives the structural baseline. Production interfaces usually need a more explicit product contract: clearer labels, minimum and maximum values, defaults, units, placeholders, descriptions, or UI hints.
+Inference gives the structural baseline. Production interfaces usually need a more explicit product contract: clearer labels, minimum and maximum values, defaults, units, placeholders, or descriptions.
 
 Use `overrides` for those final column-specific refinements.
 
@@ -164,6 +168,7 @@ def money_builder(series: Series, ctx: FieldContext) -> dict | None:
         "kind": "number",
         "label": "Amount",
         "required": ctx.required,
+        "mappedTo": ctx.mappedTo,
         "step": 0.01,
         "unit": "EUR",
         "min": 0,
@@ -195,6 +200,7 @@ def duration_builder(series: Series, ctx: FieldContext) -> dict | None:
         "kind": "duration",
         "label": ctx.name,
         "required": ctx.required,
+        "mappedTo": ctx.mappedTo,
         "unit": "seconds",
         "minSeconds": int(series.min().total_seconds()),
         "maxSeconds": int(series.max().total_seconds()),

@@ -15,7 +15,13 @@ from typing import Any
 from pandas import DataFrame, Series
 from pydantic import ValidationError
 
-from mlschema.core.app.kind import FieldBuilder, FieldContext, FieldDict, FieldKind
+from mlschema.core.app.kind import (
+    FieldBuilder,
+    FieldContext,
+    FieldDict,
+    FieldKind,
+    MappedToTarget,
+)
 from mlschema.core.exceptions import (
     EmptyDataFrameError,
     FieldBuilderError,
@@ -34,6 +40,7 @@ def infer_schema(
     builders: Sequence[FieldBuilder] = (),
     kinds: Sequence[FieldKind] = (),
     overrides: Mapping[str, Mapping[str, Any]] | None = None,
+    onehot_separator: str = "__",
 ) -> list[FieldDict]:
     """Infer a strict field-list schema from a pandas DataFrame.
 
@@ -45,6 +52,7 @@ def infer_schema(
             kind contributes a Pydantic validator model and an inference builder.
         overrides: Optional mapping of column name to final field patch. Patches
             are applied after builder inference and before Pydantic validation.
+        onehot_separator: Separator for one-hot columns, e.g. `feature__value`.
 
     Returns:
         JSON-serialisable list of validated field dictionaries.
@@ -61,6 +69,8 @@ def infer_schema(
     """
     if df.columns.empty or df.empty:
         raise EmptyDataFrameError(df)
+    targets = _mapped_targets(df)
+    labels = _labels(df)
 
     all_kinds = (*kinds, *builtin_kinds())
     models = _models_by_kind(all_kinds)
@@ -68,12 +78,21 @@ def infer_schema(
     overrides = overrides or {}
     _check_override_columns(df, overrides)
 
+    onehot_groups = _onehot_groups(df, labels, targets, onehot_separator)
+    consumed = {index for group in onehot_groups.values() for index, _, _ in group}
+
     def infer_field(series: Series, index: int = 0) -> FieldDict:
+        label = (
+            labels[index]
+            if str(series.name) == str(df.columns[index])
+            else str(series.name)
+        )
         ctx = FieldContext(
-            name=str(series.name),
+            name=label,
             dtype=normalize_dtype(series.dtype),
             required=not series.isna().any(),
             index=index,
+            mappedTo=targets[index],
             infer_field=lambda sub_series: infer_field(sub_series, index),
         )
         raw = _first_field(series, ctx, infer_builders)
@@ -81,7 +100,87 @@ def infer_schema(
             raw = {**raw, **overrides[str(series.name)]}
         return _validate_field(raw, models)
 
-    return [infer_field(series, index) for index, (_, series) in enumerate(df.items())]
+    fields: list[FieldDict] = []
+    emitted_groups: set[str] = set()
+    for index, (_, series) in enumerate(df.items()):
+        group_name = _group_name(index, onehot_groups)
+        if group_name is not None:
+            if group_name not in emitted_groups:
+                fields.append(
+                    _validate_field(
+                        _onehot_field(group_name, onehot_groups[group_name]), models
+                    )
+                )
+                emitted_groups.add(group_name)
+            continue
+        if index not in consumed:
+            fields.append(infer_field(series, index))
+    return fields
+
+
+def _mapped_targets(df: DataFrame) -> list[MappedToTarget]:
+    if _has_positional_columns(df):
+        return list(range(len(df.columns)))
+    return [str(column) for column in df.columns]
+
+
+def _labels(df: DataFrame) -> list[str]:
+    if _has_positional_columns(df):
+        return [f"feature_{index}" for index in range(len(df.columns))]
+    return [str(column) for column in df.columns]
+
+
+def _has_positional_columns(df: DataFrame) -> bool:
+    return list(df.columns) == list(range(len(df.columns)))
+
+
+def _onehot_groups(
+    df: DataFrame,
+    labels: Sequence[str],
+    targets: Sequence[MappedToTarget],
+    separator: str,
+) -> dict[str, list[tuple[int, str, MappedToTarget]]]:
+    if separator == "":
+        raise FieldBuilderError(
+            "onehot_separator", separator, "Separator cannot be empty."
+        )
+    groups: dict[str, list[tuple[int, str, MappedToTarget]]] = {}
+    for index, label in enumerate(labels):
+        if separator not in label or not _is_binary(df.iloc[:, index]):
+            continue
+        prefix, value = label.split(separator, 1)
+        if prefix and value:
+            groups.setdefault(prefix, []).append((index, value, targets[index]))
+    return {name: options for name, options in groups.items() if len(options) > 1}
+
+
+def _is_binary(series: Series) -> bool:
+    values = set(series.dropna().unique())
+    return bool(values) and values <= {0, 1}
+
+
+def _group_name(
+    index: int, groups: Mapping[str, Sequence[tuple[int, str, MappedToTarget]]]
+) -> str | None:
+    for name, options in groups.items():
+        if any(item[0] == index for item in options):
+            return name
+    return None
+
+
+def _onehot_field(
+    name: str, options: Sequence[tuple[int, str, MappedToTarget]]
+) -> FieldDict:
+    return {
+        "kind": str(FieldTypes.ONEHOT_CATEGORY),
+        "label": name,
+        "required": True,
+        "description": None,
+        "options": [
+            {"label": value, "value": value, "mappedTo": target}
+            for _, value, target in options
+        ],
+    }
 
 
 def _models_by_kind(kinds: Sequence[FieldKind]) -> dict[str, type]:

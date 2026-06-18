@@ -9,3 +9,6 @@
 - Prefer adding new accepted dtypes to owning builtin builders over hiding semantic compatibility in global dtype normalization.
 - When replacing large test suites, preserve or justify coverage depth; do not collapse hundreds of cases into a small smoke suite.
 - When touching tests, update `tasks/tdd.md` with the suite map and validation intent in the same change.
+- For onehot-category contracts, parent field must not carry `mappedTo`; each option owns the backend target.
+- Do not add mapping arguments to `infer_schema()`; named DataFrame columns map to string targets, and positional columns map to integer targets with generated `feature_<position>` labels.
+- Do not infer one-hot groups from positional binary columns; onehot grouping needs named encoded feature columns so option labels are meaningful.

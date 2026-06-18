@@ -8,5 +8,6 @@ class FieldTypes(StrEnum):
     NUMBER = "number"
     BOOLEAN = "boolean"
     CATEGORY = "category"
+    ONEHOT_CATEGORY = "onehot-category"
     DATE = "date"
     SERIES = "series"
