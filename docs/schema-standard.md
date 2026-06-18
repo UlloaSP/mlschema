@@ -68,6 +68,7 @@ The MLSchema payload is a list of fields.
     "kind": "text",
     "label": "customer_name",
     "required": true,
+    "mappedTo": "customer_name",
     "minLength": 1,
     "maxLength": 100,
     "placeholder": "Enter full name"
@@ -76,6 +77,7 @@ The MLSchema payload is a list of fields.
     "kind": "number",
     "label": "satisfaction_score",
     "required": true,
+    "mappedTo": "satisfaction_score",
     "min": 0,
     "max": 100,
     "step": 1,
@@ -92,7 +94,7 @@ A field dictionary contains three layers of information:
 | ------------------------ | ------------------------------------------------------------------------- |
 | Base attributes          | Shared contract present across field kinds.                               |
 | Kind-specific attributes | Constraints and metadata belonging to a specific field kind.              |
-| UI metadata              | Optional consumer-facing hints that do not change the core data contract. |
+| Presentation hints       | Optional kind-specific hints that do not change the core data contract.   |
 
 The standard does not require consumers to understand every key. A renderer can safely use `kind`, `label`, and `required` as the minimum baseline, then progressively support kind-specific attributes.
 
@@ -109,23 +111,15 @@ The required base attributes are:
 | `kind`     | `str`  | Field discriminator.                                      |
 | `label`    | `str`  | Human-readable label. Defaults to the column name.        |
 | `required` | `bool` | `true` when the source column contains no missing values. |
+| `mappedTo` | `str` or `int` | Backend target. Named columns use their column name; positional columns use original model input position. |
 
 Optional base attributes are omitted when not set.
 
 | Attribute                   | Type                                     | Meaning                                                            |
 | --------------------------- | ---------------------------------------- | ------------------------------------------------------------------ |
 | `description`               | `str`                                    | Help text or domain explanation.                                   |
-| `disabled`                  | `bool`                                   | Field is present but disabled.                                     |
-| `hidden`                    | `bool`                                   | Field is present but hidden.                                       |
-| `readOnly`                  | `bool`                                   | Field is visible but not editable.                                 |
-| `disabledWhen`              | any                                      | Declarative condition for disabling the field.                     |
-| `hiddenWhen`                | any                                      | Declarative condition for hiding the field.                        |
-| `readOnlyWhen`              | any                                      | Declarative condition for making the field read-only.              |
-| `asyncValidationDebounceMs` | `int`                                    | Debounce interval for asynchronous validation.                     |
-| `inactiveFieldPolicy`       | `"include"`, `"omit"`, `"reset-on-hide"` | Submission policy when a field becomes inactive.                   |
 | `valuePath`                 | `str` or `list[str]`                     | Alternative path used by consumers when reading or writing values. |
 | `defaultValue`              | any                                      | Initial field value.                                               |
-| `ui`                        | `dict`                                   | Free-form UI metadata for frontend consumers.                      |
 
 Field models reject unknown attributes. This is deliberate: the schema should fail at generation time rather than leak unsupported keys into the frontend contract.
 
@@ -137,6 +131,7 @@ Builtin kinds are enabled by default and evaluated in a fixed order.
 
 ```text
 series
+onehot-category
 boolean
 category
 date
@@ -146,14 +141,15 @@ text
 
 The order is part of the contract. More specific detections run before broader fallbacks. `series` runs first because it detects pair-shaped object cells by content. `text` runs last because it accepts any column that was not claimed earlier.
 
-| Kind       | Detection                                                    | Inferred metadata   |
-| ---------- | ------------------------------------------------------------ | ------------------- |
-| `series`   | Non-null cells are 2-element tuples, lists, or dictionaries. | `field1`, `field2`  |
-| `boolean`  | `bool`, `boolean`                                            | Base field metadata |
-| `category` | `category`                                                   | `options`           |
-| `date`     | `datetime64[ns]`, `datetime64[us]`, `datetime64`             | Base field metadata |
-| `number`   | `int64`, `int32`, `float64`, `float32`                       | `step`              |
-| `text`     | Fallback                                                     | Base field metadata |
+| Kind              | Detection                                                    | Inferred metadata          |
+| ----------------- | ------------------------------------------------------------ | -------------------------- |
+| `series`          | Non-null cells are 2-element tuples, lists, or dictionaries. | `field1`, `field2`         |
+| `onehot-category` | 0/1 columns grouped by `onehot_separator`.                   | `options[].mappedTo`       |
+| `boolean`         | `bool`, `boolean`                                            | Base field metadata        |
+| `category`        | `category`                                                   | `options`                  |
+| `date`            | `datetime64[ns]`, `datetime64[us]`, `datetime64`             | Base field metadata        |
+| `number`          | `int64`, `int32`, `float64`, `float32`                       | `step`                     |
+| `text`            | Fallback                                                     | Base field metadata        |
 
 The contract assumes that DataFrame dtypes are meaningful. A numeric column stored as `object` is not treated as `number` unless a custom builder or preprocessing step handles it.
 
@@ -169,7 +165,8 @@ A column with no missing values produces:
 {
   "kind": "text",
   "label": "name",
-  "required": true
+  "required": true,
+  "mappedTo": "name"
 }
 ```
 
@@ -179,7 +176,8 @@ A column containing at least one missing value produces:
 {
   "kind": "text",
   "label": "name",
-  "required": false
+  "required": false,
+  "mappedTo": "name"
 }
 ```
 
@@ -197,7 +195,8 @@ Minimal inferred field:
 {
   "kind": "text",
   "label": "customer_name",
-  "required": true
+  "required": true,
+  "mappedTo": "customer_name"
 }
 ```
 
@@ -208,6 +207,7 @@ Extended field:
   "kind": "text",
   "label": "Email",
   "required": true,
+  "mappedTo": "email",
   "description": "Primary contact email.",
   "minLength": 5,
   "maxLength": 254,
@@ -241,6 +241,7 @@ Integer columns infer `step: 1`.
   "kind": "number",
   "label": "age",
   "required": true,
+  "mappedTo": "age",
   "step": 1
 }
 ```
@@ -252,6 +253,7 @@ Float columns infer `step: 0.1`.
   "kind": "number",
   "label": "score",
   "required": true,
+  "mappedTo": "score",
   "step": 0.1
 }
 ```
@@ -263,6 +265,7 @@ Extended field:
   "kind": "number",
   "label": "Revenue",
   "required": true,
+  "mappedTo": "revenue",
   "description": "Revenue reported for the selected period.",
   "min": 0,
   "max": 1000000,
@@ -307,6 +310,7 @@ Generated field:
   "kind": "category",
   "label": "tier",
   "required": true,
+  "mappedTo": "tier",
   "options": ["free", "pro"]
 }
 ```
@@ -318,6 +322,7 @@ Extended field:
   "kind": "category",
   "label": "Plan",
   "required": true,
+  "mappedTo": "tier",
   "options": ["free", "pro"],
   "defaultValue": "pro"
 }
@@ -335,6 +340,28 @@ Category options are taken from the categorical dtype categories when available.
 
 ---
 
+## OneHot Category Field
+
+`onehot-category` represents several strict 0/1 model inputs as one category control.
+
+Columns are grouped only when the DataFrame column name is a named encoded feature matching `feature__value`; pass `onehot_separator` to `infer_schema()` to use a different separator. The parent field does not include `mappedTo`; each option maps like a field to the original encoded input.
+
+```json
+{
+  "kind": "onehot-category",
+  "label": "color",
+  "required": true,
+  "options": [
+    { "label": "red", "value": "red", "mappedTo": "color__red" },
+    { "label": "blue", "value": "blue", "mappedTo": "color__blue" }
+  ]
+}
+```
+
+For positional DataFrame columns, MLSchema does not infer a one-hot group from binary values alone. It emits ordinary fields with generated labels such as `feature_0` and numeric `mappedTo` positions.
+
+---
+
 ## Boolean Field
 
 `boolean` represents true/false input.
@@ -343,7 +370,8 @@ Category options are taken from the categorical dtype categories when available.
 {
   "kind": "boolean",
   "label": "active",
-  "required": true
+  "required": true,
+  "mappedTo": 0
 }
 ```
 
@@ -354,6 +382,7 @@ Extended field:
   "kind": "boolean",
   "label": "Enabled",
   "required": true,
+  "mappedTo": "enabled",
   "trueLabel": "Yes",
   "falseLabel": "No",
   "defaultValue": true
@@ -379,7 +408,8 @@ Boolean fields support `defaultValue` through the base contract.
 {
   "kind": "date",
   "label": "created",
-  "required": true
+  "required": true,
+  "mappedTo": 0
 }
 ```
 
@@ -390,6 +420,7 @@ Extended field:
   "kind": "date",
   "label": "Created at",
   "required": true,
+  "mappedTo": "created",
   "min": "2024-01-01",
   "max": "2024-12-31",
   "step": 1,
@@ -435,15 +466,18 @@ Generated field:
   "kind": "series",
   "label": "reading",
   "required": true,
+  "mappedTo": 0,
   "field1": {
     "kind": "date",
     "label": "field1",
-    "required": true
+    "required": true,
+    "mappedTo": 0
   },
   "field2": {
     "kind": "number",
     "label": "field2",
     "required": true,
+    "mappedTo": 0,
     "step": 0.1
   }
 }
@@ -464,15 +498,18 @@ Extended field:
   "kind": "series",
   "label": "Sensor reading",
   "required": true,
+  "mappedTo": "reading",
   "field1": {
     "kind": "date",
     "label": "field1",
-    "required": true
+    "required": true,
+    "mappedTo": "reading"
   },
   "field2": {
     "kind": "number",
     "label": "field2",
     "required": true,
+    "mappedTo": "reading",
     "step": 0.1
   },
   "minPoints": 1,
@@ -511,7 +548,8 @@ A minimal field therefore remains minimal:
 {
   "kind": "text",
   "label": "name",
-  "required": true
+  "required": true,
+  "mappedTo": 0
 }
 ```
 
@@ -522,14 +560,12 @@ An enriched field only includes the attributes that are actually set:
   "kind": "text",
   "label": "Full name",
   "required": true,
+  "mappedTo": "name",
   "description": "Visible customer name.",
   "minLength": 1,
   "maxLength": 80,
   "placeholder": "Ada Lovelace",
-  "defaultValue": "Ada",
-  "ui": {
-    "autocomplete": "name"
-  }
+  "defaultValue": "Ada"
 }
 ```
 
@@ -583,7 +619,7 @@ A consumer should:
 * Branch on `kind`.
 * Treat unknown kinds as unsupported unless explicitly registered.
 * Respect `required`, `defaultValue`, and kind-specific constraints.
-* Ignore unknown `ui` metadata if it is not relevant to that renderer.
+* Ignore unknown attributes only after validating against a compatible schema version.
 * Avoid relying on absent optional keys.
 * Treat missing optional keys as “not configured”.
 
@@ -597,7 +633,7 @@ Good schemas start with deliberate DataFrames.
 
 Use pandas numeric dtypes for numeric fields, categorical dtypes for closed option sets, boolean dtypes for boolean controls, and datetime dtypes for date controls. Object columns are acceptable, but they are ambiguous and usually fall back to `text`.
 
-Use overrides for final product decisions: labels, descriptions, bounds, defaults, placeholders, units, boolean labels, point limits, and UI metadata.
+Use overrides for final product decisions: labels, descriptions, bounds, defaults, placeholders, units, boolean labels, and point limits.
 
 Use custom builders for reusable rules that still map to existing kinds.
 

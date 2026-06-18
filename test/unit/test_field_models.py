@@ -10,6 +10,7 @@ from mlschema.strategies.domain import (
     CategoryField,
     DateField,
     NumberField,
+    OneHotCategoryField,
     SeriesField,
     TextField,
 )
@@ -17,15 +18,25 @@ from mlschema.strategies.domain import (
 
 def test_builtin_models_accept_valid_success_cases():
     """Validates every builtin field model accepts a representative valid field."""
-    BooleanField(label="flag", defaultValue=True, trueLabel="yes", falseLabel="no")
-    CategoryField(label="tier", options=["free", "pro"], defaultValue="pro")
-    DateField(label="start", min="2024-01-01", max="2024-12-31", step=1)
-    NumberField(label="score", min=0, max=100, defaultValue=50, step=1)
-    TextField(label="name", minLength=1, maxLength=20, defaultValue="Ada")
+    BooleanField(
+        label="flag", mappedTo=0, defaultValue=True, trueLabel="yes", falseLabel="no"
+    )
+    CategoryField(label="tier", mappedTo=1, options=["free", "pro"], defaultValue="pro")
+    DateField(label="start", mappedTo=2, min="2024-01-01", max="2024-12-31", step=1)
+    NumberField(label="score", mappedTo=3, min=0, max=100, defaultValue=50, step=1)
+    TextField(label="name", mappedTo=4, minLength=1, maxLength=20, defaultValue="Ada")
+    OneHotCategoryField(
+        label="color",
+        options=[
+            {"label": "Red", "value": "red", "mappedTo": "color__red"},
+            {"label": "Blue", "value": "blue", "mappedTo": "color__blue"},
+        ],
+    )
     SeriesField(
         label="readings",
-        field1={"kind": "text", "label": "x"},
-        field2={"kind": "number", "label": "y", "step": 1},
+        mappedTo=5,
+        field1={"kind": "text", "label": "x", "mappedTo": 5},
+        field2={"kind": "number", "label": "y", "mappedTo": 5, "step": 1},
         minPoints=1,
         maxPoints=2,
     )
@@ -42,7 +53,7 @@ def test_builtin_models_accept_valid_success_cases():
 )
 def test_boolean_model_accepts_optional_display_attributes(kwargs):
     """Validates boolean optional labels and default value success cases."""
-    assert BooleanField(**kwargs).kind == "boolean"
+    assert BooleanField(mappedTo=0, **kwargs).kind == "boolean"
 
 
 @pytest.mark.parametrize(
@@ -56,7 +67,7 @@ def test_boolean_model_accepts_optional_display_attributes(kwargs):
 def test_number_model_rejects_invalid_constraints(kwargs):
     """Validates number min/max/defaultValue exceptions."""
     with pytest.raises(ValidationError):
-        NumberField(label="n", **kwargs)
+        NumberField(label="n", mappedTo=0, **kwargs)
 
 
 @pytest.mark.parametrize(
@@ -72,7 +83,7 @@ def test_number_model_rejects_invalid_constraints(kwargs):
 )
 def test_number_model_accepts_optional_attributes(kwargs):
     """Validates number optional attributes and valid constraints."""
-    assert NumberField(label="n", **kwargs).kind == "number"
+    assert NumberField(label="n", mappedTo=0, **kwargs).kind == "number"
 
 
 @pytest.mark.parametrize(
@@ -86,7 +97,7 @@ def test_number_model_accepts_optional_attributes(kwargs):
 def test_text_model_rejects_invalid_constraints(kwargs):
     """Validates text length/defaultValue exceptions."""
     with pytest.raises(ValidationError):
-        TextField(label="t", **kwargs)
+        TextField(label="t", mappedTo=0, **kwargs)
 
 
 @pytest.mark.parametrize(
@@ -101,15 +112,15 @@ def test_text_model_rejects_invalid_constraints(kwargs):
 )
 def test_text_model_accepts_optional_attributes(kwargs):
     """Validates text optional attributes and valid length constraints."""
-    assert TextField(label="t", **kwargs).kind == "text"
+    assert TextField(label="t", mappedTo=0, **kwargs).kind == "text"
 
 
 def test_category_model_rejects_invalid_options():
     """Validates category requires options and defaultValue membership."""
     with pytest.raises(ValidationError):
-        CategoryField(label="c", options=[])
+        CategoryField(label="c", mappedTo=0, options=[])
     with pytest.raises(ValidationError):
-        CategoryField(label="c", options=["a"], defaultValue="b")
+        CategoryField(label="c", mappedTo=0, options=["a"], defaultValue="b")
 
 
 @pytest.mark.parametrize(
@@ -122,7 +133,21 @@ def test_category_model_rejects_invalid_options():
 )
 def test_category_model_accepts_valid_options(kwargs):
     """Validates category options and defaultValue success cases."""
-    assert CategoryField(label="c", **kwargs).kind == "category"
+    assert CategoryField(label="c", mappedTo=0, **kwargs).kind == "category"
+
+
+def test_onehot_category_model_rejects_invalid_option_targets():
+    """Validates onehot-category options require concrete backend targets."""
+    with pytest.raises(ValidationError):
+        OneHotCategoryField(
+            label="color",
+            options=[{"label": "Red", "value": "red", "mappedTo": ""}],
+        )
+    with pytest.raises(ValidationError):
+        OneHotCategoryField(
+            label="color",
+            options=[{"label": "Red", "value": "red", "mappedTo": -1}],
+        )
 
 
 @pytest.mark.parametrize(
@@ -137,7 +162,7 @@ def test_category_model_accepts_valid_options(kwargs):
 def test_date_model_rejects_invalid_constraints(kwargs):
     """Validates date range/defaultValue/step exceptions."""
     with pytest.raises(ValidationError):
-        DateField(label="d", **kwargs)
+        DateField(label="d", mappedTo=0, **kwargs)
 
 
 @pytest.mark.parametrize(
@@ -152,7 +177,7 @@ def test_date_model_rejects_invalid_constraints(kwargs):
 )
 def test_date_model_accepts_optional_attributes(kwargs):
     """Validates date optional attributes and valid date constraints."""
-    assert DateField(label="d", **kwargs).kind == "date"
+    assert DateField(label="d", mappedTo=0, **kwargs).kind == "date"
 
 
 def test_series_model_rejects_invalid_subfields_and_point_ranges():
@@ -160,8 +185,9 @@ def test_series_model_rejects_invalid_subfields_and_point_ranges():
     with pytest.raises(ValidationError):
         SeriesField(
             label="s",
-            field1={"kind": "series", "label": "nested"},
-            field2={"kind": "text", "label": "value"},
+            mappedTo=0,
+            field1={"kind": "series", "label": "nested", "mappedTo": 0},
+            field2={"kind": "text", "label": "value", "mappedTo": 0},
         )
 
 
@@ -177,8 +203,9 @@ def test_series_model_accepts_valid_point_constraints(kwargs):
     """Validates series point constraints success cases."""
     field = SeriesField(
         label="s",
-        field1={"kind": "text", "label": "x"},
-        field2={"kind": "number", "label": "y", "step": 1},
+        mappedTo=0,
+        field1={"kind": "text", "label": "x", "mappedTo": 0},
+        field2={"kind": "number", "label": "y", "mappedTo": 0, "step": 1},
         **kwargs,
     )
 
@@ -186,14 +213,16 @@ def test_series_model_accepts_valid_point_constraints(kwargs):
     with pytest.raises(ValidationError):
         SeriesField(
             label="s",
-            field1={"kind": "unknown", "label": "x"},
-            field2={"kind": "text", "label": "value"},
+            mappedTo=0,
+            field1={"kind": "unknown", "label": "x", "mappedTo": 0},
+            field2={"kind": "text", "label": "value", "mappedTo": 0},
         )
     with pytest.raises(ValidationError):
         SeriesField(
             label="s",
-            field1={"kind": "text", "label": "x"},
-            field2={"kind": "text", "label": "y"},
+            mappedTo=0,
+            field1={"kind": "text", "label": "x", "mappedTo": 0},
+            field2={"kind": "text", "label": "y", "mappedTo": 0},
             minPoints=2,
             maxPoints=1,
         )

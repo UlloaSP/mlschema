@@ -29,7 +29,7 @@ uv add mlschema
 Pin a specific version when the environment must be reproducible:
 
 ```bash
-uv add "mlschema==0.2.0"
+uv add "mlschema==0.2.1"
 ```
 
 `uv` updates the project dependency metadata and lockfile, so this is the preferred option for applications, libraries, and CI workflows that already use `uv`.
@@ -47,7 +47,7 @@ pip install mlschema
 Pinned installation:
 
 ```bash
-pip install "mlschema==0.2.0"
+pip install "mlschema==0.2.1"
 ```
 
 When working inside a Conda environment, use `pip` after activating the environment:
@@ -69,7 +69,7 @@ poetry add mlschema
 Pinned installation:
 
 ```bash
-poetry add "mlschema==0.2.0"
+poetry add "mlschema==0.2.1"
 ```
 
 ---
@@ -155,9 +155,9 @@ Expected shape:
 
 ```python
 [
-    {"kind": "text", "label": "name", "required": True},
-    {"kind": "number", "label": "score", "required": True, "step": 0.1},
-    {"kind": "boolean", "label": "active", "required": True},
+    {"kind": "text", "label": "name", "required": True, "mappedTo": 0},
+    {"kind": "number", "label": "score", "required": True, "mappedTo": 1, "step": 0.1},
+    {"kind": "boolean", "label": "active", "required": True, "mappedTo": 2},
 ]
 ```
 
@@ -214,7 +214,7 @@ Patch releases should be safe for compatible fixes. Minor releases may add suppo
 For production systems, pin a known version and upgrade deliberately:
 
 ```bash
-uv add "mlschema==0.2.0"
+uv add "mlschema==0.2.1"
 ```
 
 ---

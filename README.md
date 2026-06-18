@@ -15,7 +15,7 @@ It pairs naturally with [mlform](https://github.com/UlloaSP/mlform), but the gen
 
 DataFrame columns already carry useful contract information: names, dtypes, categories, nullability, dates, numeric values, and structured pairs. MLSchema turns that information into a validated field list.
 
-Instead of maintaining separate form definitions beside the data pipeline, use `infer_schema(df)` as the baseline and refine only what is genuinely product-specific: labels, bounds, defaults, units, placeholders, UI hints, or custom field kinds.
+Instead of maintaining separate form definitions beside the data pipeline, use `infer_schema(df)` as the baseline and refine only what is genuinely product-specific: labels, bounds, defaults, units, placeholders, or custom field kinds.
 
 ```python id="54fwnz"
 import pandas as pd
@@ -39,24 +39,28 @@ schema = infer_schema(df)
   {
     "kind": "text",
     "label": "name",
-    "required": true
+    "required": true,
+    "mappedTo": "name"
   },
   {
     "kind": "number",
     "label": "score",
     "required": true,
+    "mappedTo": "score",
     "step": 0.1
   },
   {
     "kind": "category",
     "label": "role",
     "required": true,
+    "mappedTo": "role",
     "options": ["engineer", "scientist"]
   },
   {
     "kind": "boolean",
     "label": "active",
-    "required": true
+    "required": true,
+    "mappedTo": "active"
   }
 ]
 ```
@@ -64,7 +68,7 @@ schema = infer_schema(df)
 ## Key Features
 
 * Function-first API: `infer_schema(df)`.
-* Builtin inference for `text`, `number`, `category`, `boolean`, `date`, and two-axis `series` fields.
+* Builtin inference for `text`, `number`, `category`, `onehot-category`, `boolean`, `date`, and two-axis `series` fields.
 * Pydantic v2 validation before any schema is returned.
 * JSON-serialisable field-list output for frontend and service integration.
 * Field refinements through `overrides`.
@@ -97,7 +101,7 @@ poetry add mlschema
 Pin a version when reproducible environments matter:
 
 ```bash id="yrqcr7"
-uv add "mlschema==0.2.0"
+uv add "mlschema==0.2.1"
 ```
 
 ## Quick Start
@@ -134,24 +138,28 @@ There is no top-level envelope by default. MLSchema returns the contract directl
   {
     "kind": "text",
     "label": "customer",
-    "required": true
+    "required": true,
+    "mappedTo": "customer"
   },
   {
     "kind": "number",
     "label": "age",
     "required": true,
+    "mappedTo": "age",
     "step": 1
   },
   {
     "kind": "category",
     "label": "tier",
     "required": true,
+    "mappedTo": "tier",
     "options": ["free", "pro"]
   },
   {
     "kind": "date",
     "label": "created",
-    "required": true
+    "required": true,
+    "mappedTo": "created"
   }
 ]
 ```
@@ -171,14 +179,21 @@ Builtin kinds are enabled by default and resolved in a fixed order.
 
 | Kind       | Detection                                                    | Notes                                                                  |
 | ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| `series`   | Non-null cells are 2-element tuples, lists, or dictionaries. | Infers `field1` and `field2` recursively.                              |
-| `boolean`  | `bool`, `boolean`                                            | Emits a boolean field contract.                                        |
-| `category` | `category`                                                   | Emits `options` from categorical categories.                           |
-| `date`     | `datetime64[ns]`, `datetime64[us]`, `datetime64`             | Emits a date field contract.                                           |
-| `number`   | `int64`, `int32`, `float64`, `float32`                       | Emits `step: 1` for integer columns and `step: 0.1` for float columns. |
-| `text`     | fallback                                                     | Claims columns not handled by earlier kinds.                           |
+| `series`          | Non-null cells are 2-element tuples, lists, or dictionaries. | Infers `field1` and `field2` recursively.                              |
+| `onehot-category` | 0/1 columns grouped by `onehot_separator`.                   | Emits one category field with `options[].mappedTo`.                    |
+| `boolean`         | `bool`, `boolean`                                            | Emits a boolean field contract.                                        |
+| `category`        | `category`                                                   | Emits `options` from categorical categories.                           |
+| `date`            | `datetime64[ns]`, `datetime64[us]`, `datetime64`             | Emits a date field contract.                                           |
+| `number`          | `int64`, `int32`, `float64`, `float32`                       | Emits `step: 1` for integer columns and `step: 0.1` for float columns. |
+| `text`            | fallback                                                     | Claims columns not handled by earlier kinds.                           |
 
-The order matters. `series` runs before `text` because it detects pair-shaped object cells by content. `text` runs last as the safe fallback.
+The order matters. `series` runs before `text` because it detects pair-shaped object cells by content. `onehot-category` groups strict 0/1 named feature columns such as `color__red` and `color__blue`. Positional binary columns stay as ordinary fields with integer `mappedTo` targets. `text` runs last as the safe fallback.
+
+## Feature Mapping
+
+Normal fields always include `mappedTo`. Named DataFrame columns emit string targets matching the column name. Positional columns emit numeric targets and generated labels such as `feature_0`.
+
+`onehot-category` puts `mappedTo` on each option instead of the parent field. Options map like fields: strings for named feature columns, integers for positional inputs. The default one-hot separator is `"__"`.
 
 ## Series Columns
 
@@ -235,7 +250,7 @@ Nested series are rejected. Cardinality constraints such as `minPoints` and `max
 
 ## Refining Fields With Overrides
 
-Inference provides the structural baseline. Production interfaces often need clearer labels, ranges, defaults, units, placeholders, or UI metadata.
+Inference provides the structural baseline. Production interfaces often need clearer labels, ranges, defaults, units, or placeholders.
 
 ```python id="v9tboo"
 schema = infer_schema(
@@ -276,6 +291,7 @@ def money_builder(series: Series, ctx: FieldContext) -> dict | None:
         "kind": "number",
         "label": "Amount",
         "required": ctx.required,
+        "mappedTo": ctx.mappedTo,
         "step": 0.01,
         "unit": "EUR",
         "min": 0,
@@ -307,6 +323,7 @@ def duration_builder(series: Series, ctx: FieldContext) -> dict | None:
         "kind": "duration",
         "label": ctx.name,
         "required": ctx.required,
+        "mappedTo": ctx.mappedTo,
         "unit": "seconds",
         "minSeconds": int(series.min().total_seconds()),
         "maxSeconds": int(series.max().total_seconds()),

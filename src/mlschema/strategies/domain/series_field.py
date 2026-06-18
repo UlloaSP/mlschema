@@ -13,6 +13,7 @@ from mlschema.strategies.domain.category_field import CategoryField
 from mlschema.strategies.domain.date_field import DateField
 from mlschema.strategies.domain.field_types import FieldTypes
 from mlschema.strategies.domain.number_field import NumberField
+from mlschema.strategies.domain.onehot_category_field import OneHotCategoryField
 from mlschema.strategies.domain.text_field import TextField
 
 # Module-level registry: kind name → field class.
@@ -22,6 +23,7 @@ _SUB_FIELD_REGISTRY: dict[str, type[BaseField]] = {
     FieldTypes.CATEGORY: CategoryField,
     FieldTypes.DATE: DateField,
     FieldTypes.NUMBER: NumberField,
+    FieldTypes.ONEHOT_CATEGORY: OneHotCategoryField,
     FieldTypes.TEXT: TextField,
 }
 

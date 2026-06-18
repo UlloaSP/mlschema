@@ -14,7 +14,12 @@ from mlschema.strategies import category_builder, number_builder, series_builder
 
 def _ctx(name: str = "field", dtype: str = "object") -> FieldContext:
     return FieldContext(
-        name, dtype, True, 0, lambda series: {"kind": "text", "label": str(series.name)}
+        name,
+        dtype,
+        True,
+        0,
+        0,
+        lambda series: {"kind": "text", "label": str(series.name), "mappedTo": 0},
     )
 
 
@@ -118,9 +123,9 @@ def test_series_builder_coerces_subseries_before_recursive_inference(values):
 
     def infer_field(series: Series) -> dict:
         seen_dtypes.append(str(series.dtype))
-        return {"kind": "text", "label": str(series.name)}
+        return {"kind": "text", "label": str(series.name), "mappedTo": 0}
 
-    ctx = FieldContext("series", "object", True, 0, infer_field)
+    ctx = FieldContext("series", "object", True, 0, 0, infer_field)
     series_builder(Series(values), ctx)
 
     assert seen_dtypes

@@ -17,7 +17,7 @@ from mlschema.strategies import (
 
 
 def _ctx(dtype: str) -> FieldContext:
-    return FieldContext("field", dtype, True, 0, lambda series: {})
+    return FieldContext("field", dtype, True, 0, 0, lambda series: {})
 
 
 @pytest.mark.parametrize("dtype", ["bool", "boolean"])

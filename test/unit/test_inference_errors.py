@@ -57,7 +57,12 @@ def test_infer_schema_rejects_unknown_generated_kind():
     """Validates unregistered custom kinds are rejected before output escapes."""
 
     def unknown(_series: Series, ctx: FieldContext) -> dict:
-        return {"kind": "missing", "label": ctx.name, "required": ctx.required}
+        return {
+            "kind": "missing",
+            "label": ctx.name,
+            "required": ctx.required,
+            "mappedTo": ctx.mappedTo,
+        }
 
     with pytest.raises(UnknownFieldKindError):
         infer_schema(DataFrame({"x": [1]}), builders=[unknown])
@@ -67,7 +72,12 @@ def test_infer_schema_rejects_duplicate_kind_models():
     """Validates custom kinds cannot collide with builtin kind names."""
 
     def builder(_series: Series, ctx: FieldContext) -> dict:
-        return {"kind": "number", "label": ctx.name, "required": ctx.required}
+        return {
+            "kind": "number",
+            "label": ctx.name,
+            "required": ctx.required,
+            "mappedTo": ctx.mappedTo,
+        }
 
     with pytest.raises(FieldKindAlreadyRegisteredError):
         infer_schema(
@@ -89,7 +99,12 @@ def test_custom_kind_invalid_payload_raises_validation_error():
         latKey: str
 
     def geo(_series: Series, ctx: FieldContext) -> dict:
-        return {"kind": "geo", "label": ctx.name, "required": ctx.required}
+        return {
+            "kind": "geo",
+            "label": ctx.name,
+            "required": ctx.required,
+            "mappedTo": ctx.mappedTo,
+        }
 
     with pytest.raises(ValidationError):
         infer_schema(
@@ -110,7 +125,9 @@ def test_custom_kind_invalid_payload_raises_validation_error():
         ),
         lambda: infer_schema(
             DataFrame({"x": [1]}),
-            builders=[lambda _s, c: {"kind": "ghost", "label": c.name}],
+            builders=[
+                lambda _s, c: {"kind": "ghost", "label": c.name, "mappedTo": c.mappedTo}
+            ],
         ),
     ],
 )
@@ -118,3 +135,9 @@ def test_known_mlschema_errors_inherit_from_project_root(raising_call):
     """Validates known MLSchema exceptions share the MLSchemaError root."""
     with pytest.raises(MLSchemaError):
         raising_call()
+
+
+def test_infer_schema_rejects_empty_onehot_separator():
+    """Validates onehot separator cannot be empty."""
+    with pytest.raises(FieldBuilderError):
+        infer_schema(DataFrame({"x": [1]}), onehot_separator="")

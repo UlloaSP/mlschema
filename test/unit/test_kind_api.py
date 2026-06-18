@@ -23,6 +23,7 @@ def test_kind_extracts_name_from_model_literal_default():
             "kind": "geo",
             "label": ctx.name,
             "required": ctx.required,
+            "mappedTo": ctx.mappedTo,
             "latKey": "lat",
         }
 
@@ -37,7 +38,12 @@ def test_kind_rejects_non_basefield_models():
     """Validates strict kind registration rejects non-BaseField models."""
 
     def builder(_series: Series, ctx: FieldContext) -> dict | None:
-        return {"kind": "x", "label": ctx.name, "required": ctx.required}
+        return {
+            "kind": "x",
+            "label": ctx.name,
+            "required": ctx.required,
+            "mappedTo": ctx.mappedTo,
+        }
 
     with pytest.raises(FieldKindError):
         kind(model=object, infer=builder)  # type: ignore[arg-type]

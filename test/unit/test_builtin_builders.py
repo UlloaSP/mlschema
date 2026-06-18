@@ -17,7 +17,7 @@ from mlschema.strategies import (
 
 
 def _ctx(name: str, dtype: str, required: bool = True) -> FieldContext:
-    return FieldContext(name, dtype, required, 0, lambda series: {"kind": "text"})
+    return FieldContext(name, dtype, required, 0, 0, lambda series: {"kind": "text"})
 
 
 def test_boolean_builder_claims_only_boolean_dtypes():
@@ -26,6 +26,7 @@ def test_boolean_builder_claims_only_boolean_dtypes():
         "kind": "boolean",
         "label": "flag",
         "required": True,
+        "mappedTo": 0,
         "description": None,
     }
     assert boolean_builder(Series([1]), _ctx("count", "int64")) is None
@@ -40,6 +41,7 @@ def test_category_builder_extracts_ordered_options():
         "kind": "category",
         "label": "priority",
         "required": True,
+        "mappedTo": 0,
         "description": None,
         "options": ["high", "medium", "low"],
     }
@@ -54,6 +56,7 @@ def test_date_builder_claims_supported_datetime_dtypes():
         "kind": "date",
         "label": "d",
         "required": True,
+        "mappedTo": 0,
         "description": None,
     }
     assert date_builder(Series([1]), _ctx("n", "int64")) is None
@@ -77,9 +80,14 @@ def test_series_builder_infers_tuple_subfields_through_context_callback():
 
     def infer_field(series: Series) -> dict:
         calls.append(str(series.name))
-        return {"kind": "text", "label": str(series.name), "required": True}
+        return {
+            "kind": "text",
+            "label": str(series.name),
+            "required": True,
+            "mappedTo": 0,
+        }
 
-    ctx = FieldContext("readings", "object", True, 0, infer_field)
+    ctx = FieldContext("readings", "object", True, 0, 0, infer_field)
     field = series_builder(Series([(1, "a"), (2, "b")]), ctx)
 
     assert field["kind"] == "series"
@@ -95,5 +103,6 @@ def test_text_builder_is_total_fallback():
         "kind": "text",
         "label": "anything",
         "required": True,
+        "mappedTo": 0,
         "description": None,
     }
