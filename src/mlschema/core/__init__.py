@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Pablo Ulloa Santin
-"""Core strict inference API and field contracts for MLSchema."""
+"""Core strict inference API and field contracts for MLschema."""
 
 from mlschema.core.app import (
     FieldBuilder,
@@ -9,6 +9,7 @@ from mlschema.core.app import (
     FieldKind,
     infer_schema,
     kind,
+    with_positional_mappings,
 )
 from mlschema.core.domain import BaseField
 from mlschema.core.exceptions import (
@@ -38,4 +39,5 @@ __all__ = [
     "UnknownFieldKindError",
     "infer_schema",
     "kind",
+    "with_positional_mappings",
 ]

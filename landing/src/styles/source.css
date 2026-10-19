@@ -1,0 +1,64 @@
+/* The script and raw JSON stay optional, and side by side when open. */
+.source {
+  min-width: 0;
+  border-top: 1px solid var(--border);
+}
+.source summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  padding: 0.75rem 0;
+  color: var(--text-2);
+  font-size: 0.8125rem;
+  list-style: none;
+  cursor: pointer;
+}
+.source summary::-webkit-details-marker {
+  display: none;
+}
+.source summary::before {
+  content: "";
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 180ms var(--ease);
+}
+.source[open] summary::before {
+  transform: rotate(45deg);
+}
+.source summary:hover {
+  color: var(--text);
+}
+.source-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+  padding-bottom: 1rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+.source-pane {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  scroll-snap-align: start;
+}
+.source-pane figcaption {
+  padding: 0.375rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 0.6875rem;
+}
+.example .source-pane .code {
+  max-height: 22rem;
+  padding: 0.75rem;
+  font-size: 0.6875rem;
+}

@@ -89,8 +89,8 @@ def test_series_builder_extracts_supported_pair_shapes(
     """Validates tuple/list/dict series cells split into two sub-fields."""
     field = series_builder(Series(values), _ctx("pair"))
 
-    assert field["field1"]["label"] == first_label
-    assert field["field2"]["label"] == second_label
+    assert field["columns"][0]["label"] == first_label
+    assert field["columns"][1]["label"] == second_label
 
 
 @pytest.mark.parametrize(

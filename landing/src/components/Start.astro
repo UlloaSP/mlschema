@@ -1,0 +1,21 @@
+---
+import Icon from "./Icon.astro";
+import { links } from "../data/site";
+---
+
+<section class="section start" id="start" aria-labelledby="start-title">
+  <div class="wrap start-inner">
+    <header class="section-head">
+      <h2 id="start-title">Try it on your own DataFrame.</h2>
+      <p>The playground runs MLschema in your browser, with nothing to install.</p>
+    </header>
+    <div class="hero-actions">
+      <a class="button" href={links.playground}>
+        Open the playground <Icon name="arrow-up-right" size={14} />
+      </a>
+      <a class="button ghost" href={links.quickStart}>
+        Read the quick start
+      </a>
+    </div>
+  </div>
+</section>

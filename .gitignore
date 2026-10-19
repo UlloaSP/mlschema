@@ -177,10 +177,23 @@ cython_debug/
 # Custom
 .vscode/
 .history/
-uv.lock
 
 # Graphify
 graphify-out/
 
 # Codex
 .codex/
+
+# Product sites
+!/landing/src/lib/
+!/landing/src/lib/**
+node_modules/
+.astro/
+.wrangler/
+playwright-report/
+test-results/
+
+# Local browser verification
+.playwright-cli/
+output/playwright/
+.vite/

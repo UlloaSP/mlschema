@@ -1,6 +1,6 @@
 # Authors and Contributors
 
-MLSchema is made possible by the contributions of the following individuals and organizations.
+MLschema is made possible by the contributions of the following individuals and organizations.
 
 ## Core Maintainers
 
@@ -35,7 +35,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ### Dependencies
 
-MLSchema is built on the shoulders of giants. We are grateful to the maintainers and contributors of:
+MLschema is built on the shoulders of giants. We are grateful to the maintainers and contributors of:
 
 - **pandas** - The foundational data analysis library
 - **Pydantic** - Data validation using Python type annotations
@@ -44,7 +44,7 @@ For a complete list of dependencies and their licenses, see [THIRD_PARTY_LICENSE
 
 ### Inspiration
 
-MLSchema draws inspiration from:
+MLschema draws inspiration from:
 
 - **JSON Schema** specification
 - **FastAPI** for its excellent use of Pydantic

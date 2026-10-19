@@ -1,0 +1,82 @@
+---
+import { Image } from "astro:assets";
+import mark from "../../../brand/mlschema.png";
+import ExampleTabs from "./ExampleTabs.astro";
+import Icon from "./Icon.astro";
+import Wordmark from "./Wordmark.astro";
+import { hero } from "../data/diagrams";
+import { install, links } from "../data/site";
+import { latestVersion } from "../lib/release";
+
+const version = await latestVersion();
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-inner wrap">
+    <Image
+      src={mark}
+      alt=""
+      width={112}
+      densities={[1, 2]}
+      loading="eager"
+      fetchpriority="high"
+      class="hero-mark"
+    />
+    <h1 id="hero-title">
+      Typed inputs, <span class="accent">straight from your data.</span>
+    </h1>
+    <p class="lede">
+      Give <code class="mono">infer_schema</code> the DataFrame your model learned from. MLschema
+      returns one validated field per feature, typed and pointing at the input it feeds, ready for
+      MLform or any frontend to render.
+    </p>
+    <div class="hero-actions">
+      <a class="button" href={links.playground}>
+        Open the playground <Icon name="arrow-up-right" size={14} />
+      </a>
+      <a class="button ghost" href={links.quickStart}>
+        Read the docs
+      </a>
+      <div class="install mono">
+        <span class="prompt" aria-hidden="true">
+          $
+        </span>
+        <code>{install}</code>
+        <button class="copy" type="button" data-copy={install} aria-label="Copy install command">
+          <Icon name="copy" size={15} />
+        </button>
+        {version && (
+          <a class="install-version" href={`${links.pypi}#history`} title="Latest on PyPI">
+            v{version}
+          </a>
+        )}
+        <span class="copy-status" role="status"></span>
+      </div>
+    </div>
+  </div>
+  <figure class="stage wrap">
+    <div class="plate hero-plate">
+      <ExampleTabs label="From DataFrame to fields" diagrams={[hero]} />
+    </div>
+    <figcaption>
+      Real output of this example.{" "}
+      <a href="#integrate">
+        See the fields rendered by <Wordmark name="mlform" />
+      </a>
+    </figcaption>
+  </figure>
+</section>
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+    const status = button.parentElement!.querySelector(".copy-status")!;
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy!);
+        status.textContent = "Copied";
+      } catch {
+        status.textContent = "Select the command to copy it";
+      }
+      window.setTimeout(() => (status.textContent = ""), 2000);
+    });
+  }
+</script>

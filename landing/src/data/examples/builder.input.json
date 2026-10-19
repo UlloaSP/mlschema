@@ -1,0 +1,9 @@
+{
+  "columns": [
+    {
+      "name": "amount_eur",
+      "dtype": "float64",
+      "values": ["12.5", "80.0", "43.2"]
+    }
+  ]
+}

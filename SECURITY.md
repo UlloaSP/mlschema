@@ -11,7 +11,7 @@ We release patches for security vulnerabilities for the following versions:
 
 ## Reporting a Vulnerability
 
-We take the security of MLSchema seriously. If you believe you have found a security vulnerability, please report it to us as described below.
+We take the security of MLschema seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
 ### Please Do NOT
 
@@ -39,7 +39,7 @@ We take the security of MLSchema seriously. If you believe you have found a secu
 
 ## Security Best Practices
 
-When using MLSchema, we recommend:
+When using MLschema, we recommend:
 
 ### Input Validation
 
@@ -83,7 +83,7 @@ df.columns = [col.replace(" ", "_").lower() for col in df.columns]
 
 ### Data Processing
 
-MLSchema processes pandas DataFrames to generate JSON schemas. It:
+MLschema processes pandas DataFrames to generate JSON schemas. It:
 
 - **Does not** modify the original DataFrame
 - **Does not** send data over the network
@@ -92,7 +92,7 @@ MLSchema processes pandas DataFrames to generate JSON schemas. It:
 
 ### Type Safety
 
-MLSchema uses Pydantic for validation, which provides:
+MLschema uses Pydantic for validation, which provides:
 
 - Type checking and validation
 - Protection against invalid data structures
@@ -100,7 +100,7 @@ MLSchema uses Pydantic for validation, which provides:
 
 ### Known Limitations
 
-- MLSchema assumes DataFrames come from trusted sources
+- MLschema assumes DataFrames come from trusted sources
 - Column names are used as-is in the output schema
 - Very large DataFrames may cause memory issues
 
@@ -128,11 +128,11 @@ Security updates are announced via:
 
 - GitHub Security Advisories: <https://github.com/UlloaSP/mlschema/security/advisories>
 - Release notes: <https://github.com/UlloaSP/mlschema/releases>
-- Changelog: [docs/changelog.md](docs/changelog.md)
+- Changelog: [release notes](https://docs.mlschema.eshkra.dev/changelog/)
 
 ## Dependency Security
 
-MLSchema depends on:
+MLschema depends on:
 
 ### Runtime Dependencies
 
@@ -179,7 +179,7 @@ When contributing code:
 
 ## Security-Related Configuration
 
-MLSchema has minimal configuration. Security-relevant settings:
+MLschema has minimal configuration. Security-relevant settings:
 
 ```python
 # Example: Safe usage pattern
@@ -200,7 +200,7 @@ schema = mls.build(dataframe)
 For security concerns:
 
 - **Email**: <pablo.ulloa.santin@udc.es>
-- **Subject**: `[SECURITY] MLSchema Vulnerability Report`
+- **Subject**: `[SECURITY] MLschema Vulnerability Report`
 
 For general questions:
 
@@ -209,14 +209,14 @@ For general questions:
 
 ## Attribution
 
-We appreciate responsible security researchers who help keep MLSchema safe. With your permission, we will:
+We appreciate responsible security researchers who help keep MLschema safe. With your permission, we will:
 
 - Credit you in the security advisory
 - Add your name to our hall of fame (if you wish)
 - Provide a reference for your responsible disclosure
 
-Thank you for helping keep MLSchema and its users safe! 🔒
+Thank you for helping keep MLschema and its users safe! 🔒
 
 ---
 
-**Last Updated**: June 1, 2026
+**Last Updated**: October 19, 2026

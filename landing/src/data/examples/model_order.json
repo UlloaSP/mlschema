@@ -1,0 +1,26 @@
+[
+  {
+    "label": "age",
+    "required": true,
+    "mappedTo": 2,
+    "kind": "number",
+    "step": 1.0
+  },
+  {
+    "label": "plan",
+    "required": true,
+    "kind": "onehot-category",
+    "options": [
+      {
+        "label": "monthly",
+        "value": "monthly",
+        "mappedTo": 0
+      },
+      {
+        "label": "yearly",
+        "value": "yearly",
+        "mappedTo": 1
+      }
+    ]
+  }
+]

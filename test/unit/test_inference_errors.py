@@ -132,7 +132,7 @@ def test_custom_kind_invalid_payload_raises_validation_error():
     ],
 )
 def test_known_mlschema_errors_inherit_from_project_root(raising_call):
-    """Validates known MLSchema exceptions share the MLSchemaError root."""
+    """Validates known MLschema exceptions share the MLSchemaError root."""
     with pytest.raises(MLSchemaError):
         raising_call()
 

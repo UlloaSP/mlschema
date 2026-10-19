@@ -20,7 +20,7 @@ def base_field(ctx: FieldContext, kind_name: str) -> FieldDict:
         kind_name: Field kind discriminator to place in the output dict.
 
     Returns:
-        Dict containing the reserved field keys populated by MLSchema:
+        Dict containing the reserved field keys populated by MLschema:
         `kind`, `label`, `required`, `mappedTo`, and `description`.
     """
     return {

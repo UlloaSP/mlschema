@@ -1,0 +1,51 @@
+/* The editor frame fills the stage, or simulates a device size as in MLForm's preview.css. */
+.app-stage {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.app-preview,
+.app-preview-viewport,
+.app-preview-frame {
+  width: 100%;
+  height: 100%;
+}
+.app-preview-frame {
+  display: block;
+  border: 0;
+  background: var(--bg);
+}
+
+.app-stage.is-preview {
+  overflow: auto;
+  padding: 0 1rem;
+  border-top: var(--border-width) solid var(--border);
+}
+.is-preview .app-preview {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 0.55rem;
+  height: auto;
+  padding-block: 0.75rem 1rem;
+}
+.is-preview .app-preview-label {
+  color: var(--text-muted);
+  font: 700 0.82rem/1.5 var(--font-mono);
+  font-variant-ligatures: none;
+  text-align: center;
+}
+.is-preview .app-preview-viewport {
+  position: relative;
+  overflow: hidden;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-sizing: content-box;
+}
+.is-preview .app-preview-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}

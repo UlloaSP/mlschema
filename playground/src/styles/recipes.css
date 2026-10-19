@@ -1,0 +1,23 @@
+/* MLForm's style recipes, applied to the playground chrome. Default is tokens.css. */
+:root[data-style="minimal"] {
+  /* Compact density, no motion, no shadows. */
+  --control-size: 2rem;
+  --motion-fast: 0ms linear;
+  --shadow: none;
+}
+:root[data-style="soft"] {
+  --chrome-bg:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 10%, transparent), transparent 42%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 92%, var(--surface-elevated)),
+      color-mix(in srgb, var(--surface-muted) 88%, var(--surface-elevated))
+    );
+}
+:root[data-style="contrast"] {
+  /* Spacious density with stronger borders. */
+  --control-size: 2.5rem;
+  --border-width: 1.5px;
+  --border-strong: var(--text);
+  --border: var(--text);
+}

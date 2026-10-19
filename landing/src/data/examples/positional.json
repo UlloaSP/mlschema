@@ -1,0 +1,22 @@
+[
+  {
+    "label": "feature_0",
+    "required": true,
+    "mappedTo": 0,
+    "kind": "number",
+    "step": 0.1
+  },
+  {
+    "label": "feature_1",
+    "required": true,
+    "mappedTo": 1,
+    "kind": "number",
+    "step": 0.1
+  },
+  {
+    "label": "feature_2",
+    "required": true,
+    "mappedTo": 2,
+    "kind": "boolean"
+  }
+]

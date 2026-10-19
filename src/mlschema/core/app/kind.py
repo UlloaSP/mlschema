@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Pablo Ulloa Santin
-"""Strict field-kind contracts for MLSchema.
+"""Strict field-kind contracts for MLschema.
 
 This module defines the public extension types used by `infer_schema()`.
 Applications normally customize inference by writing a `FieldBuilder` callable,

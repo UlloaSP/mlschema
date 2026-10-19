@@ -1,6 +1,6 @@
 # Third-Party Licenses
 
-MLSchema depends on the following open-source libraries. We are grateful to their maintainers and contributors.
+MLschema depends on the following open-source libraries. We are grateful to their maintainers and contributors.
 
 ---
 
@@ -150,53 +150,33 @@ Copyright (c) 2014 pre-commit dev team
 
 ---
 
-## Documentation Dependencies
+## Website Dependencies
 
-### MkDocs (BSD 2-Clause License)
+Astro and Starlight (MIT) build the landing and documentation. The landing's live
+form loads MLform (MIT) with its dependencies Lit (BSD-3-Clause) and Zod (MIT);
+their license texts are served with the site under `/licenses/`. The playground uses
+Vite (MIT), CodeMirror (MIT) and Pyodide (MPL-2.0); its bundled Python runtime and
+packages retain their upstream notices. Website dependencies are separate from
+the Python package runtime. Exact versions are recorded in `pnpm-lock.yaml`.
 
-**Version:** >=1.6.1
-**License:** BSD-2-Clause
-**Project URL:** <https://www.mkdocs.org/>
-**License URL:** <https://github.com/mkdocs/mkdocs/blob/master/LICENSE>
-
-Copyright © 2014-present, Tom Christie. All rights reserved.
-
----
-
-### MkDocs Material (MIT License)
-
-**Version:** >=9.7.6
-**License:** MIT
-**Project URL:** <https://squidfunk.github.io/mkdocs-material/>
-**License URL:** <https://github.com/squidfunk/mkdocs-material/blob/master/LICENSE>
-
-Copyright (c) 2016-2025 Martin Donath
-
----
-
-### mkdocstrings (ISC License)
-
-**Version:** >=1.0.4
-**License:** ISC
-**Project URL:** <https://mkdocstrings.github.io/>
-**License URL:** <https://github.com/mkdocstrings/mkdocstrings/blob/master/LICENSE>
-
-Copyright (c) 2019, Timothée Mazzucotelli
+Mona Sans and JetBrains Mono use the SIL Open Font License 1.1. Font licenses are
+included with the corresponding website assets; the outlined README wordmark's
+license is in `brand/mona-sans-LICENSE.txt`.
 
 ---
 
 ## License Compatibility
 
-All dependencies of MLSchema use permissive open-source licenses (MIT, BSD, Apache 2.0, ISC, PSF) that are compatible with MLSchema's MIT License.
+The Python runtime depends on pandas (BSD-3-Clause) and Pydantic (MIT). Website tooling and assets retain their own licenses, including Pyodide's MPL-2.0 and the fonts' SIL OFL-1.1.
 
 ---
 
 ## Attribution
 
-If you use MLSchema in your project, please include the following attribution in your documentation or credits:
+If you use MLschema in your project, please include the following attribution in your documentation or credits:
 
-> This project uses MLSchema (<https://github.com/UlloaSP/mlschema>), licensed under the MIT License.
-> MLSchema depends on pandas and Pydantic, which are also open-source projects.
+> This project uses MLschema (<https://github.com/UlloaSP/mlschema>), licensed under the MIT License.
+> MLschema depends on pandas and Pydantic, which are also open-source projects.
 
 ---
 
@@ -207,4 +187,4 @@ If you believe any license information is incorrect or outdated, please open an 
 
 ---
 
-**Last Updated:** June 1, 2026
+**Last Updated:** October 19, 2026

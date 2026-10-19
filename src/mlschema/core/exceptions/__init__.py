@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Pablo Ulloa Santin
-"""Public exception hierarchy for MLSchema.
+"""Public exception hierarchy for MLschema.
 
 All package-specific exceptions derive from `MLSchemaError`. Leaf errors are
 split by responsibility so callers can catch broad domains (`FieldKindError`,

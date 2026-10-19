@@ -1,0 +1,103 @@
+---
+import FieldCard from "./FieldCard.astro";
+import SourcePair from "./SourcePair.astro";
+import type { Diagram } from "../data/diagrams";
+
+// DataFrame columns on the left, the fields they become on the right, one row per field.
+interface Props {
+  diagram: Diagram;
+  order?: string[];
+}
+const { diagram, order } = Astro.props;
+const { title, call, note, example, rows } = diagram;
+const vector = example.featureNames;
+// Long values keep the first two, so a preview never runs past three short lines.
+const preview = (values: string[]) =>
+  values.join(" · ").length > 30 ? values.slice(0, 2) : values;
+---
+
+<div class="map">
+  <div class="map-head">
+    <code class="map-call mono">{call}</code>
+    {note && <p class="map-note">{note}</p>}
+  </div>
+  {vector && (
+    <div class="map-vector mono">
+      <span id={`${example.file}-vector`}>feature_names</span>
+      <ol aria-labelledby={`${example.file}-vector`}>
+        {vector.map((name, index) => (
+          <li>
+            <span class="map-slot">{index}</span>
+            {name}
+          </li>
+        ))}
+      </ol>
+    </div>
+  )}
+  <div
+    class="map-scroll"
+    role="region"
+    tabindex="0"
+    aria-label={`${title}: DataFrame columns and the fields they become`}
+  >
+    <table class="map-table">
+      <colgroup>
+        <col class="map-col-input" />
+        <col class="map-col-arrow" />
+        <col />
+      </colgroup>
+      <thead>
+        <tr>
+          <th scope="col">Column</th>
+          <td aria-hidden="true"></td>
+          <th scope="col">Field</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(({ columns, field, changed }) => (
+          <tr>
+            <td>
+              <ul class="map-columns">
+                {columns.map(({ name, dtype, values, slot }) => (
+                  <li>
+                    <span class="column-head">
+                      {slot !== undefined && (
+                        <span class="map-slot mono" title="Model input position">
+                          <span class="sr-only">model input </span>
+                          {slot}
+                        </span>
+                      )}
+                      <code class="column-name mono">{name}</code>
+                    </span>
+                    <span class="column-values mono" aria-label={`Values: ${values.join(", ")}`}>
+                      <span class="column-dtype">{dtype}</span>
+                      {preview(values).map((value) => (
+                        <span>{value}</span>
+                      ))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </td>
+            <td class="map-arrow" aria-hidden="true">
+              <svg viewBox="0 0 40 12">
+                <path d="M0 6h34" />
+                <path d="m30 1.5 6 4.5-6 4.5" />
+              </svg>
+            </td>
+            <td>
+              <FieldCard field={field} changed={changed} order={order} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  {rows.some(({ changed }) => changed.length > 0) && (
+    <p class="map-legend">
+      <span class="map-changed" aria-hidden="true" /> Set through overrides; everything else is
+      inferred.
+    </p>
+  )}
+  <SourcePair example={example} />
+</div>

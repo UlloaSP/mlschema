@@ -1,0 +1,37 @@
+:is(.code-editor, .output-json) .cm-editor {
+  height: 100%;
+  background: var(--surface);
+  color: var(--text);
+}
+:is(.code-editor, .output-json) .cm-scroller {
+  overflow: auto;
+  font: var(--code-font-size)/var(--code-line-height) var(--font-mono);
+  font-variant-ligatures: none;
+}
+:is(.code-editor, .output-json) .cm-content {
+  padding: 0.75rem 0;
+  caret-color: var(--text);
+}
+:is(.code-editor, .output-json) .cm-gutters {
+  border-color: var(--border);
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+.code-editor :is(.cm-activeLine, .cm-activeLineGutter) {
+  background: var(--hover-surface);
+}
+:is(.code-editor, .output-json) .cm-editor.cm-focused {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+.code-editor .cm-cursor {
+  border-left-color: var(--text);
+}
+:is(.code-editor, .output-json) .cm-editor .cm-selectionBackground,
+:is(.code-editor, .output-json) .cm-content ::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent) !important;
+}
+.code-editor .cm-matchingBracket {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  outline: 1px solid var(--accent);
+}

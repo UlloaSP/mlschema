@@ -1,254 +1,165 @@
-name: CI Pipeline
+name: CI & Publish
 
 on:
   push:
     branches: [main, docs, develop, config, application, domain]
   pull_request:
     branches: [main, develop, 'release/*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  pre-commit:
-    name: Run pre-commit hooks
-    runs-on: ubuntu-latest
+  python:
+    name: Python 3.14 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python 3.14
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
         with:
+          version: '0.13.1'
           python-version: '3.14'
-
-      - name: Install UV CLI
-        run: pip install uv
-
-      - name: Create and activate virtual environment
-        run: |
-          uv venv
-          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
-          echo ".venv/bin" >> $GITHUB_PATH
-
-      - name: Cache pre-commit
-        uses: actions/cache@v4
+          enable-cache: true
+      - run: uv sync --locked --group dev
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pyright
+      - run: uv run python landing/scripts/examples.py --check
+      - run: uv run pytest --cov=mlschema --cov-report=xml --cov-fail-under=80
+      - run: uv build --no-sources
+      - name: Check PyPI description
+        if: runner.os == 'Linux'
+        run: uv tool run --from twine twine check --strict dist/*
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
         with:
-          path: ~/.cache/pre-commit
-          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml', 'pyproject.toml', 'uv.lock') }}
-
-      - name: Cache UV
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
-
-      # Do NOT install the package itself here; only tools
-      - name: Install dev tools (locked, no-editable)
-        run: uv sync --group dev --no-editable
-
-      - name: Run pre-commit hooks
-        run: uv run pre-commit run --all-files
-
-  docs:
-    name: Build MkDocs site
-    runs-on: ubuntu-latest
-    needs: pre-commit
-    env:
-      # Allow mkdocstrings to resolve your package without installing it
-      PYTHONPATH: src
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python 3.14
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.14'
-
-      - name: Install UV CLI
-        run: pip install uv
-
-      - name: Create and activate virtual environment
-        run: |
-          uv venv
-          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
-          echo ".venv/bin" >> $GITHUB_PATH
-
-      - name: Cache UV
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
-
-      # Only docs deps; skip installing the package itself
-      - name: Install docs deps (locked, no-editable)
-        run: uv sync --group docs --no-editable
-
-      - name: Build MkDocs (strict)
-        run: uv run mkdocs build --strict
-
-      - name: Upload built docs artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mkdocs-site
-          path: ./site
+          name: distributions
+          path: dist/*
           if-no-files-found: error
-          retention-days: 7
 
-  tests:
-    name: Run tests
+  sites:
+    name: Build ${{ matrix.site }}
     runs-on: ubuntu-latest
-    needs: pre-commit
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        site: [landing, docs, playground]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python 3.14
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          python-version: '3.14'
-
-      - name: Install UV CLI
-        run: pip install uv
-
-      - name: Create and activate virtual environment
+          node-version: '24.15.0'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check landing formatting
+        if: matrix.site == 'landing'
+        run: pnpm exec vp run mlschema-landing#check:format
+      - name: Check playground types and runtime
+        if: matrix.site == 'playground'
         run: |
-          uv venv
-          echo "VIRTUAL_ENV=.venv" >> $GITHUB_ENV
-          echo ".venv/bin" >> $GITHUB_PATH
-
-      - name: Cache UV
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}
-
-      # Here we DO install the project in editable mode (default) + test deps
-      - name: Install test deps (locked)
-        run: uv sync --group test
-
-      - name: Run tests with coverage
+          pnpm exec vp run mlschema-playground#typecheck
+          pnpm exec vp run mlschema-playground#test:unit
+          pnpm exec vp run mlschema-playground#test:runtime
+      - name: Check playground in Chromium
+        if: matrix.site == 'playground'
         run: |
-          uv run pytest \
-            --maxfail=1 \
-            --disable-warnings \
-            --cov=src \
-            --cov-report=xml \
-            --cov-fail-under=80
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+          pnpm --dir playground exec playwright install --with-deps chromium
+          pnpm exec vp run mlschema-playground#test:e2e
+      - run: pnpm exec vp run --filter './${{ matrix.site }}' build
+      - uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: coverage.xml
+          name: ${{ matrix.site }}-build
+          path: ${{ matrix.site }}/dist/
+          if-no-files-found: error
 
   publish:
-    name: Publish to PyPI
+    name: Publish new version to PyPI
+    needs: [python, sites]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'UlloaSP/mlschema'
     runs-on: ubuntu-latest
-    needs: [pre-commit, tests, docs]
-    if: github.ref == 'refs/heads/main'
+    concurrency:
+      group: mlschema-pypi
+      cancel-in-progress: false
     permissions:
-      contents: write  # Required for creating releases
-      id-token: write  # Required for trusted publishing
-    outputs:
-      version: ${{ steps.get_version.outputs.version }}
-      published: ${{ steps.publish.outcome == 'success' }}
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Python 3.14
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
         with:
+          version: '0.13.1'
           python-version: '3.14'
-
-      - name: Install UV CLI
-        run: pip install uv
-
-      - name: Get package version
-        id: get_version
+      - name: Read version and check PyPI
+        id: version
+        shell: bash
         run: |
-          VERSION=$(uv run python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Package version: $VERSION"
-
-      - name: Check if version already published
-        id: check_version
-        env:
-          VERSION: ${{ steps.get_version.outputs.version }}
-        run: |
-          if curl --silent --fail https://pypi.org/pypi/mlschema/${VERSION}/json > /dev/null; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "PyPI already has version ${VERSION}; skipping publish."
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "PyPI does not have version ${VERSION}; proceeding with publish."
-          fi
-
-      - name: Build package (PEP 517)
-        if: steps.check_version.outputs.exists == 'false'
-        run: uv build
-
-      - name: Publish to PyPI
-        id: publish
-        if: steps.check_version.outputs.exists == 'false'
-        uses: pypa/gh-action-pypi-publish@release/v1
+          version=$(uv run --no-project python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+          status=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "https://pypi.org/pypi/mlschema/$version/json")
+          case "$status" in
+            200) echo 'exists=true' >> "$GITHUB_OUTPUT" ;;
+            404) echo 'exists=false' >> "$GITHUB_OUTPUT" ;;
+            *) echo "PyPI version lookup failed: HTTP $status" >&2; exit 1 ;;
+          esac
+      - uses: actions/download-artifact@v4
+        if: steps.version.outputs.exists == 'false'
+        with:
+          name: distributions
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: steps.version.outputs.exists == 'false'
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-
-      - name: Create GitHub Release
-        if: steps.publish.outcome == 'success'
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
+        if: steps.version.outputs.exists == 'false'
         with:
-          tag_name: v${{ steps.get_version.outputs.version }}
-          name: Release v${{ steps.get_version.outputs.version }}
-          body: |
-            ## 🎉 MLSchema v${{ steps.get_version.outputs.version }}
-
-            ### 📦 Package Published
-            - **PyPI**: https://pypi.org/project/mlschema/${{ steps.get_version.outputs.version }}/
-            - **Install**: `pip install mlschema==${{ steps.get_version.outputs.version }}`
-
-            ### 📚 Documentation
-            - **Docs**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
-
-            ### 📝 Changes
-            See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/docs/changelog.md) for details.
-          files: |
-            dist/*.tar.gz
-            dist/*.whl
-          draft: false
-          prerelease: false
+          tag_name: v${{ steps.version.outputs.value }}
+          name: MLschema ${{ steps.version.outputs.value }}
           generate_release_notes: true
+          body: 'Release notes: https://docs.mlschema.eshkra.dev/changelog/'
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
 
-  deploy-docs:
-    name: Deploy documentation to GitHub Pages
+  deploy-sites:
+    name: Deploy ${{ matrix.site }}
+    needs: [python, sites]
+    if: github.ref == 'refs/heads/main' && github.repository == 'UlloaSP/mlschema' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    needs: docs
-    if: success()
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    concurrency:
-      group: "pages"
-      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - site: landing
+            url: https://mlschema.eshkra.dev
+          - site: docs
+            url: https://docs.mlschema.eshkra.dev
+          - site: playground
+            url: https://playground.mlschema.eshkra.dev
     environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      name: ${{ matrix.site }}
+      url: ${{ matrix.url }}
+    concurrency:
+      group: ${{ matrix.site }}-production
+      cancel-in-progress: false
     steps:
-      - name: Download built docs
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          name: mkdocs-site
-          path: ./site
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact to GitHub Pages
-        uses: actions/upload-pages-artifact@v3
+          node-version: '24.15.0'
+      - uses: actions/download-artifact@v4
         with:
-          path: ./site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          name: ${{ matrix.site }}-build
+          path: ${{ matrix.site }}/dist/
+      - name: Deploy verified static files
+        run: pnpm dlx wrangler@4.151.1 deploy --config ${{ matrix.site }}/wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -1,0 +1,31 @@
+---
+import ExampleTabs from "./ExampleTabs.astro";
+import { kinds } from "../data/diagrams";
+import { builtinKinds } from "../data/examples";
+---
+
+<section class="section kinds" id="kinds" aria-labelledby="kinds-title">
+  <div class="wrap split">
+    <div>
+      <header class="section-head">
+        <h2 id="kinds-title">{builtinKinds.length} kinds, tried in order.</h2>
+        <p>
+          Each column goes to the first kind that claims it. A column of pairs becomes a series
+          before anything else looks at it, 0/1 columns sharing a prefix become one onehot-category,
+          and object columns nobody claims fall back to text.
+        </p>
+      </header>
+      <ol class="kind-order mono" aria-label="Builtin kinds, in the order they are tried">
+        {builtinKinds.map((kind, index) => (
+          <li>
+            <span class="field-rank">{index + 1}</span>
+            {kind}
+          </li>
+        ))}
+      </ol>
+    </div>
+    <div class="plate kinds-plate">
+      <ExampleTabs label="Every builtin kind" diagrams={[kinds]} order={builtinKinds} />
+    </div>
+  </div>
+</section>

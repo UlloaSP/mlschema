@@ -1,0 +1,54 @@
+---
+import { Image } from "astro:assets";
+import mark from "../../../brand/mlschema.png";
+const { siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<span class="brand-title">
+  <a href={siteTitleHref} class="mlschema-brand" aria-label="MLschema documentation home">
+    <Image src={mark} width={64} alt="" loading="eager" />
+    <span class="mlschema-wordmark" translate="no">
+      <span class="ml">ML</span><span class="rest">schema</span>
+    </span>
+  </a>
+  <a class="parent-brand" href="https://eshkra.dev">by eshkra</a>
+</span>
+
+<style>
+  .brand-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .mlschema-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--ms-text);
+    font-size: 1.55rem;
+    text-decoration: none;
+  }
+  .mlschema-brand :global(img) {
+    width: 2rem;
+    height: 2rem;
+    object-fit: contain;
+  }
+  .mlschema-wordmark {
+    font-family: var(--brand-font-sans);
+    white-space: nowrap;
+  }
+  .ml {
+    font-weight: 800;
+    font-stretch: 125%;
+    letter-spacing: -0.01em;
+  }
+  .rest {
+    font-weight: 300;
+    font-stretch: 100%;
+  }
+  @media (max-width: 40rem) {
+    .parent-brand {
+      display: none;
+    }
+  }
+</style>

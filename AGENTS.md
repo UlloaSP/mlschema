@@ -1,138 +1,193 @@
-# AGENTS.md
+# MLschema
 
-These instructions are binding for any coding agent working in this repository.
-Hard constraints override convenience. If a requested change conflicts with them, stop and say so.
+MLschema is a Python library that derives validated field schemas from pandas DataFrames.
 
-## How To Apply These Instructions
+Columns, dtypes and values provide the initial contract. Builders infer fields, overrides refine them, and strict Pydantic models validate the result. The output is a JSON-compatible field list that applications can pass to MLform, include in MLbundle, or consume independently.
 
-- Read this root file first for repository-wide rules.
-- Then read the nearest nested `AGENTS.md` for the subtree you are changing.
-- Local `AGENTS.md` files extend this file and override it within their subtree when rules conflict.
-- If no nested `AGENTS.md` exists for the target path, only this root file applies.
+Read this root file first, then the nearest nested `AGENTS.md` for the area being changed. Nested instructions take precedence within their subtree.
 
-## Mission
+## What must remain true
 
-- Keep MLSchema correct, reproducible, and maintainable across all modules
-- Prefer simple, coherent changes that reduce legacy assumptions.
+### 1. Inference and validation share one contract
 
-## Hard Constraints
+The field models own validation and serialization. Builders propose field dictionaries; they do not establish a parallel definition of valid fields.
 
-- No source file may exceed 300 lines.
-- If an edit would exceed 300 lines, split the file first.
-- Prefer new modules over growing existing files.
-- For any communication with the user, always use the `caveman` skill in `ultra` mode.
-- For any Python work, use `uv` for environment/commands, `ruff` for lint/format, and `pyright` for type checking.
-- `tasks/debt.md` is mandatory repo memory for technical debt, known bugs, architectural compromises, and incomplete migrations.
-- Any change touching `src\`, `test\`, `docs\`, or `README.md` must update `tasks/debt.md` if the debt picture changes, including debt removed, debt added, or scope/status changes.
-- `tasks/tdd.md` is mandatory repo memory for the test suite map, coverage intent, and test organization.
-- Any change touching `test\` must update `tasks/tdd.md` in the same change so the test overview stays synchronized.
-- Do not duplicate business rules unless duplication is explicitly justified by UX or runtime needs.
-- Do not add new runtime dependencies without explicit reason.
-- Do not leave dead branches, half-wired flags, placeholder implementations, or misleading UI copy.
-- Do not fake verification, passing tests, or supported environments.
+Keep inference rules in their owning Python modules. Websites, examples and downstream consumers use the resulting contract rather than reconstructing it.
 
-## Change Strategy
+### 2. Backend identity is explicit
 
-- Prefer smallest coherent change that fully resolves task.
-- Remove obsolete assumptions before extending behavior.
-- If touching multiple layers, keep one clear source of truth and adapt other layers to it.
-- Refactor before feature work when target file is near line limit or already mixes unrelated concerns.
-- Preserve data compatibility and migration safety unless task explicitly allows breaking changes.
-- When closing debt, remove or downgrade the corresponding entry in `tasks/debt.md` in the same change.
-- When introducing a temporary compromise, document it in `tasks/debt.md` immediately with scope, reason, and exit condition.
+Column names, display labels and backend `mappedTo` targets serve different purposes.
 
-## Testing Rules
+Named DataFrame columns map to their names. Columns forming the positional sequence `0..n-1` map to integer positions and receive generated labels. Changing a label does not implicitly change its target.
 
-- When creating a test for a feature do it in a single file.
-- Tests for a feature have to cover at least the success case and each error case at least once.
-- Read `tasks/tdd.md` before changing tests.
-- Update `tasks/tdd.md` whenever tests are added, removed, renamed, reorganized, or their validation intent changes.
-- Update tests in same change when behavior or contract changes.
-- Run narrowest relevant verification first, then broader checks when environment supports them.
-- If full verification cannot run, report exact command attempted and exact blocker.
+One-hot fields map through `options[].mappedTo`; their parent has no `mappedTo`. Series fields map at the parent; their ordered `columns[]` use local ids and scalar-kind validation, without backend mappings.
 
-## Do Not Do
+Use `with_positional_mappings()` for explicit conversion into a model's feature order. It returns a copy and rejects missing, unknown or ambiguous targets instead of guessing from labels.
 
-- Do not preserve migration-only fields in active code or tests after migration path is removed.
-- Do not expand already-large files instead of splitting them.
-- Do not silently change public API contracts.
-- Do not mix unrelated refactors into bug-fix patches unless required by hard constraints.
+### 3. Extensions follow the normal path
 
-## Done Criteria
+Custom builders and custom kinds use the same inference context, validation and serialization as built-ins.
 
-- Hard constraints satisfied.
-- No stale references to removed behavior remain.
-- Code, tests, and UI copy agree on actual contract.
-- `tasks/debt.md` matches the new repo reality.
-- Verification performed, or exact blocker documented.
-- Result leaves codebase simpler than before.
+Builder order is observable behavior: user builders precede custom-kind builders and built-ins; the first non-`None` result wins. The text builder is the final fallback. Named one-hot groups are handled by the inference pipeline before ordinary columns.
 
-## Workflow Orchestration
+Keep overrides in the validation path. A patch that violates the selected field model must fail rather than bypass its constraints.
 
-### 1. Plan Mode Default
+### 4. The library owns field inference
 
-- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan immediately - don't keep pushing
-- Use plan mode for verification steps, not just building
-- Write detailed specs upfront to reduce ambiguity
+MLschema produces a field list, not a complete frontend application or a JSON Schema document. Rendering, reports, transport, model execution and application-specific rules belong to consumers.
 
-### 2. Subagent Strategy
+MLform compatibility is an output contract, not a dependency on a browser or a rendering runtime. The Python package must remain usable independently of the product websites.
 
-- Use subagents liberally to keep main context window clean
-- Offload research, exploration, and parallel analysis to subagents
-- For complex problems, throw more compute at it via subagents
-- One tack per subagent for focused execution
+### 5. Examples describe actual behavior
 
-### 3. Self-Improvement Loop
+Published examples and diagrams must agree with the current Python implementation. Generate example data through the library and verify it before presenting it as output.
 
-- After ANY correction from the user: update `tasks/lessons.md` with the pattern
-- Write rules for yourself that prevent the same mistake
-- Ruthlessly iterate on these lessons until mistake rate drops
-- Review lessons at session start for relevant project
+Supported environments come from `pyproject.toml` and verification. The playground's experimental Pyodide environment does not establish support for a different desktop dependency range.
 
-### 4. Verification Before Done
+## Maintainer intent
 
-- Never mark a task complete without proving it works
-- Diff behavior between main and your changes when relevant
-- Ask yourself: "Would a staff engineer approve this?"
-- Run tests, check logs, demonstrate correctness
+Favor small, explicit models that support useful capabilities without parallel rules.
 
-### 5. Demand Elegance (Extreme)
+Remove complexity whose original constraint no longer exists. Compatibility paths, migration fields and configuration need a current purpose.
 
-- For non-trivial changes: pause and ask "is there a more elegant way?"
-- If a fix feels hacky: "Knowing everything I know now, implement the elegant solution"
-- Skip this for simple, obvious fixes - don't over-engineer
-- Challenge your own work before presenting it
+Implement the smallest coherent change that fixes the owning rule and every affected path. Preserve data compatibility unless the task explicitly permits a breaking change.
 
-### 6. Autonomous Bug Fixing
+These instructions are defaults unless marked as invariants. An explicit maintainer request may override a default. Explain conflicts with an invariant or public contract before proceeding.
 
-- When given a bug report: just fix it. Don't ask for hand-holding
-- Point at logs, errors, failing tests - then resolve them
-- Zero context switching required from the user
-- Go fix failing CI tests without being told how
+Use the `caveman` skill in ultra mode for user communication. Keep product copy and repository documentation in English.
 
-## Task Management
+## Vocabulary
 
-1. **Plan First**: Write plan to `tasks/todo.md` with checkable items
-2. **Verify Plan**: Check in before starting implementation
-3. **Track Progress**: Mark items complete as you go
-4. **Explain Changes**: High-level summary at each step
-5. **Document Results**: Add review section to `tasks/todo.md`
-6. **Capture Lessons**: Update `tasks/lessons.md` after corrections
+- **field list / schema**: the ordered JSON-compatible dictionaries returned by inference
+- **field**: a validated input description, including its kind and external mapping
+- **builder**: callable receiving a pandas Series and `FieldContext`, returning a field dictionary or `None`
+- **kind**: a discriminator paired with a strict field model and inference builder
+- **context**: column metadata and the callback used for nested field inference
+- **override**: a column-keyed patch applied after ordinary field inference and before validation
+- **mapped target**: external feature identity expressed through `mappedTo`
+- **series column**: a local scalar field description inside an ordered `columns[]` list
+- **positional conversion**: explicit rewriting of targets against an ordered feature-name list
 
-## Core Principles
+## Invariants
 
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
-- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+- Source files stay at or below 300 lines. Split by responsibility before crossing the limit.
+- Python environments and commands use `uv`; linting/formatting use Ruff and type checking uses Pyright.
+- Product-site workspace tasks use Vite+ (`vp`). Python packaging remains separate from the pnpm workspace.
+- The supported public API is exported from `mlschema`; public exceptions are exported from `mlschema.core`. Internal implementation paths remain private.
+- Public API and schema changes are deliberate and visible, with corresponding examples, tests and documentation.
+- Rules have one owner. Duplication requires an explicit UX or runtime reason.
+- New runtime dependencies require a concrete benefit that existing code, platform APIs or current dependencies cannot provide cleanly.
+- Verification claims match commands actually run. Unsupported environments and known limits remain explicit.
+- Brand spelling is `MLschema`. Package names, imports, URLs, paths and technical identifiers retain their actual spelling.
 
-## graphify
+## How MLschema fits together
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+Typical flow:
 
-Rules:
+1. Validate the DataFrame input and derive column labels and mapped targets.
+2. Assemble active kind models and ordered builders; identify named one-hot groups.
+3. Build column context and run builders until one claims an ordinary column.
+4. Apply matching overrides and validate through the selected field model.
+5. Serialize fields in JSON mode, preserving field order and one-hot grouping.
+6. Optionally convert named mappings to a consumer's ordered input positions.
 
-- ALWAYS read graphify-out/GRAPH_REPORT.md before reading any source files, running grep/glob searches, or answering codebase questions. The graph is your primary map of the codebase.
-- IF graphify-out/wiki/index.md EXISTS, navigate it instead of reading raw files
-- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+Complexity belongs at the inference, dtype, field-validation and mapping boundaries. A caller should not need to repair the schema shape after inference.
+
+## Where code lives
+
+- `src/mlschema/core/app` — inference, extension contracts and positional mapping conversion
+- `src/mlschema/core/domain` — shared strict field contract
+- `src/mlschema/core/exceptions` — public inference errors
+- `src/mlschema/core/util` — dtype normalization
+- `src/mlschema/strategies/app` — built-in builders and their order
+- `src/mlschema/strategies/domain` — built-in field models and series-column validation
+- `test/unit`, `test/integration`, `test/architecture`, `test/load` — focused behavior, workflows, boundaries and scale
+- `docs` — Astro Starlight documentation
+- `landing` — product site and executable examples
+- `playground` — browser editor and experimental Python worker
+- `brand` — shared product assets
+
+Treat `pyproject.toml`, package scripts, module exports and tests as the source of truth for versions, commands and public structure. A generated relationship graph, when present, can help broad navigation; it is not required to understand a focused change.
+
+## Check every affected path
+
+Apply the entries relevant to the change:
+
+- **Inference:** builder precedence, first-match behavior, dtype handling and fallback remain intentional.
+- **Identity:** named targets, positional targets, display labels and one-hot option targets stay distinct.
+- **Validation:** built-in and custom fields, overrides and nested series columns obey their owning models.
+- **Mapping:** conversion preserves the original input, field grouping and nested values; invalid targets fail explicitly.
+- **Extensions:** custom builders and kinds use the same success and error paths as built-ins.
+- **Errors:** exception type, context and validation diagnostics still describe the failure.
+- **Consumers:** Python output, MLform-compatible fields and downstream adapters agree on one shape.
+- **Packaging:** exports, typing markers, dependency bounds and built distributions remain usable independently of the sites.
+- **Sites:** Python examples, displayed output, keyboard behavior and browser-worker lifecycle match the documented capability.
+
+A change is incomplete when it works only through the path used by its first test.
+
+## Change style
+
+Fix root causes at their owning boundary. Prefer an existing abstraction over a parallel one, explicit contracts over fallback guesses, and deletion over unused compatibility scaffolding.
+
+Keep comments focused on reasons that the code cannot express. Remove dead branches, placeholder implementations and flags without a complete supported path.
+
+When a file mixes responsibilities or approaches 300 lines, split around ownership rather than extracting arbitrary helpers. Keep package `__init__.py` files focused on public exports.
+
+For non-trivial work, establish scope and verification before editing. Delegate independent work when useful and keep shared-file ownership explicit. User-interface implementation belongs to Claude Opus 5.5 with high effort when that provider is available; report a missing capability instead of silently substituting another model.
+
+## Compatibility
+
+MLschema is pre-1.0. Preserve an existing contract when the task requires compatibility. When a clean break is intended, remove the old implementation, tests, examples, documentation and migration-only fallbacks together.
+
+Document changes to field shapes and mappings in the upgrade notes. Downstream packages should consume the library's contract instead of retaining patches for behavior now owned here.
+
+## Testing
+
+Use the smallest proof that exercises observable behavior:
+
+- Start with the focused test file or affected group.
+- Put new tests for one feature in one focused file, covering success and each affected error case.
+- Test public results and failures rather than private wiring.
+- Use integration tests when correctness depends on multiple modules or a complete field-list workflow.
+- Use browser-backed verification for rendering, focus, keyboard interaction and real worker behavior.
+- Wait for observable events or state transitions instead of arbitrary sleeps.
+
+For Python source or public-contract changes, the usual quality gates are:
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run pyright
+uv run pytest
+uv build
+```
+
+For sites, use the affected package's declared checks and `vp run build` when all sites are affected. Validate landing examples with `uv run python landing/scripts/examples.py --check` when their code or displayed output changes.
+
+A documentation-only edit needs relevant example, link and rendering checks, not every code gate. A README used as the PyPI description must remain valid distribution metadata.
+
+If verification cannot run, report the exact command, failure and unverified scope.
+
+## Documentation and product sites
+
+Explain what a capability does, how to use it, its external contract and non-obvious limits. Keep architecture guidance focused on durable decisions and traps rather than implementation inventories or task history.
+
+Rewrite or remove stale guidance when behavior changes. Record known limitations alongside the affected capability, with a clear distinction between current behavior and intended work.
+
+Keep `README.md` focused on identity, installation, primary usage, customization and links to detailed docs. Its content serves both GitHub and PyPI; use links and assets that work in both contexts.
+
+Use shared eshkra assets and the `MLschema` wordmark. Landing examples should explain distinct benefits without repeating code-shaped diagrams. Paired input/output examples stay side by side at every breakpoint, with contained horizontal navigation where necessary. Verify mobile and desktop, light and dark, and keyboard operation for changed interactions.
+
+When asked to run local sites, leave the verified servers running and report their URLs. Keep experimental runtime details accurate in the playground documentation.
+
+## Git and pull requests
+
+Preserve unrelated working-tree changes, including intentional deletions. Do not recreate removed plans, caches or generated artifacts merely because an old instruction referenced them.
+
+Commit, push, create branches and open pull requests only when requested. Use Conventional Commit titles and keep each change focused.
+
+Keep transient plans, scratch notes, browser artifacts, generated coverage and review-only evidence out of commits. Pull request descriptions explain the resulting behavior and actual verification.
+
+## Done
+
+Work is complete when the requested behavior works through every affected path, the owning layer contains the rule, public contracts remain intentional, stale guidance is gone, relevant verification has run, and the result is simpler or more explicit than before.

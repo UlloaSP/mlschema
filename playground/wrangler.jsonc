@@ -1,0 +1,11 @@
+{
+  "name": "mlschema-playground",
+  "compatibility_date": "2026-10-19",
+  "workers_dev": false,
+  "preview_urls": false,
+  // Static site: Python runs in the visitor's browser, so there is no Worker script
+  // and no server that executes code.
+  "assets": { "directory": "./dist" },
+  // Creates the DNS record and certificate for the zone on deploy.
+  "routes": [{ "pattern": "playground.mlschema.eshkra.dev", "custom_domain": true }],
+}

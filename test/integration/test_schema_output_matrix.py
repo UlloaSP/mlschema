@@ -64,4 +64,7 @@ def test_infer_schema_output_matrix_for_series_shapes(values, expected_labels):
     field = infer_schema(DataFrame({"series": values}))[0]
 
     assert field["kind"] == "series"
-    assert (field["field1"]["label"], field["field2"]["label"]) == expected_labels
+    assert (
+        field["columns"][0]["label"],
+        field["columns"][1]["label"],
+    ) == expected_labels

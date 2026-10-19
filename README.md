@@ -1,423 +1,163 @@
-# MLSchema
+<p align="center">
+  <img src="https://raw.githubusercontent.com/UlloaSP/mlschema/main/brand/mlschema.png" alt="" height="112" />
+</p>
 
-[![PyPI - Version](https://img.shields.io/pypi/v/mlschema.svg)](https://pypi.org/project/mlschema/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/mlschema.svg)](https://pypi.org/project/mlschema/)
-[![CI](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml/badge.svg)](https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml)
-[![License](https://img.shields.io/github/license/UlloaSP/mlschema.svg)](https://github.com/UlloaSP/mlschema/blob/main/LICENSE)
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/UlloaSP/mlschema/main/brand/wordmark-dark.svg" />
+    <img src="https://raw.githubusercontent.com/UlloaSP/mlschema/main/brand/wordmark-light.svg" alt="MLschema" height="52" />
+  </picture>
+</h1>
 
-> Turn pandas DataFrames into validated, front-end-ready field schemas.
+<p align="center">From pandas DataFrames to validated field schemas.</p>
 
-`mlschema` is a lightweight Python SDK for deriving JSON-serialisable field contracts from tabular data. It is designed for model inputs, prediction forms, review tools, annotation workflows, dashboards, and any frontend that needs to render fields from a `pandas.DataFrame` without hand-writing the same schema twice.
+<p align="center">
+  <a href="https://mlschema.eshkra.dev/"><img src="https://img.shields.io/badge/website-303039?style=flat&amp;logo=astro&amp;logoColor=ff6a1a" alt="Website" /></a>
+  <a href="https://docs.mlschema.eshkra.dev/"><img src="https://img.shields.io/badge/docs-303039?style=flat&amp;logo=readthedocs&amp;logoColor=ff6a1a" alt="Documentation" /></a>
+  <a href="https://playground.mlschema.eshkra.dev/"><img src="https://img.shields.io/badge/playground-303039?style=flat&amp;logo=python&amp;logoColor=ff6a1a" alt="Playground" /></a>
+  <a href="https://pypi.org/project/mlschema/"><img src="https://img.shields.io/pypi/v/mlschema?style=flat&amp;logo=pypi&amp;logoColor=white&amp;labelColor=303039&amp;color=b73d00" alt="PyPI version" /></a>
+  <a href="https://github.com/UlloaSP/mlschema"><img src="https://img.shields.io/badge/source-303039?style=flat&amp;logo=github&amp;logoColor=white" alt="Source on GitHub" /></a>
+  <a href="https://github.com/UlloaSP/mlschema/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/UlloaSP/mlschema/ci.yml?branch=main&amp;style=flat&amp;label=CI&amp;labelColor=303039" alt="CI status" /></a>
+  <a href="https://github.com/UlloaSP/mlschema/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-b73d00?style=flat&amp;labelColor=303039" alt="MIT license" /></a>
+  <a href="https://eshkra.dev"><img src="https://img.shields.io/badge/part_of-eshkra-b73d00?style=flat&amp;labelColor=303039" alt="Part of eshkra" /></a>
+</p>
 
-It pairs naturally with [mlform](https://github.com/UlloaSP/mlform), but the generated schema is plain JSON-compatible data and can be consumed by any frontend or service layer.
+MLschema is a Python library for deriving validated field schemas from pandas DataFrames. It reads column names, dtypes, categories and nullability, then validates the inferred fields with Pydantic and returns a JSON-compatible list.
 
-## Why MLSchema
+Use the result with [MLform](https://mlform.eshkra.dev/), include it in [MLbundle](https://github.com/UlloaSP/mlbundle), or consume it in your own frontend. Start with built-in inference, refine individual fields, or add domain-specific builders and kinds.
 
-DataFrame columns already carry useful contract information: names, dtypes, categories, nullability, dates, numeric values, and structured pairs. MLSchema turns that information into a validated field list.
+## Why infer a field schema?
 
-Instead of maintaining separate form definitions beside the data pipeline, use `infer_schema(df)` as the baseline and refine only what is genuinely product-specific: labels, bounds, defaults, units, placeholders, or custom field kinds.
+The data pipeline already knows whether an input is a number, a date or a category. Writing those definitions again in a frontend creates another place for the model and its inputs to drift apart.
 
-```python id="54fwnz"
-import pandas as pd
-
-from mlschema import infer_schema
-
-df = pd.DataFrame(
-    {
-        "name": ["Ada", "Linus", "Grace"],
-        "score": [98.5, 86.0, 91.0],
-        "role": pd.Categorical(["engineer", "engineer", "scientist"]),
-        "active": [True, False, True],
-    }
-)
-
-schema = infer_schema(df)
-```
-
-```json id="mt9rru"
-[
-  {
-    "kind": "text",
-    "label": "name",
-    "required": true,
-    "mappedTo": "name"
-  },
-  {
-    "kind": "number",
-    "label": "score",
-    "required": true,
-    "mappedTo": "score",
-    "step": 0.1
-  },
-  {
-    "kind": "category",
-    "label": "role",
-    "required": true,
-    "mappedTo": "role",
-    "options": ["engineer", "scientist"]
-  },
-  {
-    "kind": "boolean",
-    "label": "active",
-    "required": true,
-    "mappedTo": "active"
-  }
-]
-```
-
-## Key Features
-
-* Function-first API: `infer_schema(df)`.
-* Builtin inference for `text`, `number`, `category`, `onehot-category`, `boolean`, `date`, and two-axis `series` fields.
-* Pydantic v2 validation before any schema is returned.
-* JSON-serialisable field-list output for frontend and service integration.
-* Field refinements through `overrides`.
-* Domain-specific behaviour through custom builders.
-* New frontend contracts through strict custom kinds.
-* Typed public API with `py.typed`, Pyright, Ruff, pytest, and CI.
-
-## Requirements
-
-* Python `>=3.14,<3.15`
-* pandas `>=3.0.3,<4.0.0`
-* pydantic `>=2.13.4,<3.0.0`
+MLschema turns that information into a starting contract with explicit backend mappings. Your application supplies product-specific labels, bounds and defaults; the same validation path checks both inferred and customized fields. Inference runs locally and the resulting list is ordinary data, independent of a rendering framework.
 
 ## Installation
 
-```bash id="ejpqxw"
+> MLschema is pre-1.0. Public contracts may change between minor releases. Requires Python 3.14 (`>=3.14,<3.15`); supported pandas 3 and Pydantic 2 versions are installed as dependencies.
+
+```bash
 uv add mlschema
 ```
 
-Alternative package managers:
+Or install from PyPI with `pip install mlschema`.
 
-```bash id="gqitqn"
-pip install mlschema
-```
+See the [release and upgrade notes](https://docs.mlschema.eshkra.dev/changelog/) when updating an existing integration. Version 0.3 changes the series field contract.
 
-```bash id="2n70wl"
-poetry add mlschema
-```
+## Quick start
 
-Pin a version when reproducible environments matter:
+Create a DataFrame with the dtypes your inputs should use:
 
-```bash id="yrqcr7"
-uv add "mlschema==0.2.1"
-```
+```python
+import json
 
-## Quick Start
-
-```python id="f7024l"
 import pandas as pd
-
 from mlschema import infer_schema
 
-df = pd.DataFrame(
+frame = pd.DataFrame(
     {
-        "customer": ["Ada", "Linus", "Grace"],
-        "age": [42, 55, 38],
-        "tier": pd.Categorical(["pro", "free", "pro"], categories=["free", "pro"]),
-        "created": pd.date_range("2024-01-01", periods=3),
+        "age": [28, 41],
+        "plan": pd.Categorical(["free", "pro"]),
+        "active": [True, False],
     }
 )
 
-schema = infer_schema(df)
+fields = infer_schema(frame)
+print(json.dumps(fields, indent=2))
 ```
 
-The result can be returned from an API, stored as a contract, passed to a form renderer, or used in tests to detect schema drift.
+The result is a field list, ready to serialize:
 
-MLSchema works best when DataFrame dtypes are deliberate. Numeric columns should use numeric dtypes, categorical columns should use `category`, date columns should use pandas datetime dtypes, and boolean columns should use boolean dtypes. Ambiguous object columns fall back to `text`.
-
-## Schema Output
-
-The canonical output is a field list.
-
-There is no top-level envelope by default. MLSchema returns the contract directly:
-
-```json id="25et3y"
+```json
 [
-  {
-    "kind": "text",
-    "label": "customer",
-    "required": true,
-    "mappedTo": "customer"
-  },
-  {
-    "kind": "number",
-    "label": "age",
-    "required": true,
-    "mappedTo": "age",
-    "step": 1
-  },
-  {
-    "kind": "category",
-    "label": "tier",
-    "required": true,
-    "mappedTo": "tier",
-    "options": ["free", "pro"]
-  },
-  {
-    "kind": "date",
-    "label": "created",
-    "required": true,
-    "mappedTo": "created"
-  }
+  {"kind": "number", "label": "age", "required": true, "mappedTo": "age", "step": 1.0},
+  {"kind": "category", "label": "plan", "required": true, "mappedTo": "plan", "options": ["free", "pro"]},
+  {"kind": "boolean", "label": "active", "required": true, "mappedTo": "active"}
 ]
 ```
 
-Each field includes:
+Pass it to MLform as the schema's `fields` property. Your application owns reports, transport and model execution.
 
-* `kind`: the frontend discriminator.
-* `label`: the human-readable label, inferred from the column name unless overridden.
-* `required`: `true` when the source column contains no missing values.
-* kind-specific metadata, such as `step`, `options`, `field1`, `field2`, or validation bounds.
+## Choose your customization
 
-Optional values set to `None` are omitted from the output.
+| API | Use it to |
+| --- | --- |
+| `infer_schema(frame)` | Infer fields using the built-in kinds. |
+| `overrides={...}` | Refine a column's label, bounds or other supported properties before validation. |
+| `builders=[...]` | Supply inference logic for an existing kind, before the built-in builders. |
+| `kinds=[kind(model=..., infer=...)]` | Add a strict field model and the builder that produces it. |
+| `with_positional_mappings(fields, feature_names)` | Copy a field list and convert mappings into an explicit model input order. |
 
-## Builtin Kinds
+For example, refine a label and bounds, then adapt the mappings for a model that consumes a feature vector:
 
-Builtin kinds are enabled by default and resolved in a fixed order.
+```python
+from mlschema import with_positional_mappings
 
-| Kind       | Detection                                                    | Notes                                                                  |
-| ---------- | ------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| `series`          | Non-null cells are 2-element tuples, lists, or dictionaries. | Infers `field1` and `field2` recursively.                              |
-| `onehot-category` | 0/1 columns grouped by `onehot_separator`.                   | Emits one category field with `options[].mappedTo`.                    |
-| `boolean`         | `bool`, `boolean`                                            | Emits a boolean field contract.                                        |
-| `category`        | `category`                                                   | Emits `options` from categorical categories.                           |
-| `date`            | `datetime64[ns]`, `datetime64[us]`, `datetime64`             | Emits a date field contract.                                           |
-| `number`          | `int64`, `int32`, `float64`, `float32`                       | Emits `step: 1` for integer columns and `step: 0.1` for float columns. |
-| `text`            | fallback                                                     | Claims columns not handled by earlier kinds.                           |
-
-The order matters. `series` runs before `text` because it detects pair-shaped object cells by content. `onehot-category` groups strict 0/1 named feature columns such as `color__red` and `color__blue`. Positional binary columns stay as ordinary fields with integer `mappedTo` targets. `text` runs last as the safe fallback.
-
-## Feature Mapping
-
-Normal fields always include `mappedTo`. Named DataFrame columns emit string targets matching the column name. Positional columns emit numeric targets and generated labels such as `feature_0`.
-
-`onehot-category` puts `mappedTo` on each option instead of the parent field. Options map like fields: strings for named feature columns, integers for positional inputs. The default one-hot separator is `"__"`.
-
-## Series Columns
-
-A `series` field represents a two-axis value stored in a single DataFrame column, such as timestamp-value readings.
-
-```python id="vjf8bq"
-import pandas as pd
-
-from mlschema import infer_schema
-
-df = pd.DataFrame(
-    {
-        "readings": [
-            (pd.Timestamp("2024-01-01"), 23.5),
-            (pd.Timestamp("2024-01-02"), 24.1),
-            (pd.Timestamp("2024-01-03"), 22.8),
-        ],
-    }
+fields = infer_schema(
+    frame,
+    overrides={"age": {"label": "Age", "min": 0, "max": 120}},
 )
-
-schema = infer_schema(df)
+positional = with_positional_mappings(fields, ["plan", "age", "active"])
 ```
 
-```json id="f1a308"
-[
-  {
-    "kind": "series",
-    "label": "readings",
-    "required": true,
-    "field1": {
-      "kind": "date",
-      "label": "field1",
-      "required": true
-    },
-    "field2": {
-      "kind": "number",
-      "label": "field2",
-      "required": true,
-      "step": 0.1
-    }
-  }
-]
-```
+The `age` field keeps its displayed label `Age`; its target changes from `"age"` to position `1` in the returned copy. The helper rewrites mappings, preserving field order, series columns and one-hot grouping. It leaves the original list unchanged.
 
-Supported cell shapes are:
+All application-facing functions and extension types come from `mlschema`. Public inference exceptions come from `mlschema.core`; see the [Python API](https://docs.mlschema.eshkra.dev/reference/api/).
 
-```python id="iv6b5b"
-(timestamp, value)
-[timestamp, value]
-{"timestamp": timestamp, "value": value}
-```
+## What is included?
 
-Nested series are rejected. Cardinality constraints such as `minPoints` and `maxPoints` can be added with `overrides`.
+- Inference for text, numbers, categories, booleans, dates and two-axis series.
+- One-hot groups from named binary columns such as `color__red` and `color__blue`.
+- Explicit backend mappings: names for named columns, positions for positional columns.
+- Series output with ordered `columns[]`, compatible with MLform.
+- Strict field validation, overrides, custom builders and custom kinds.
+- A typed, function-first API that runs entirely in your Python process.
 
-## Refining Fields With Overrides
+DataFrame dtypes matter: categorical options come from `category`, and date inference accepts specific datetime dtypes. Columns unclaimed by earlier builders reach the text fallback. See the [field-kind reference](https://docs.mlschema.eshkra.dev/schema/field-kinds/) for supported inputs and limits.
 
-Inference provides the structural baseline. Production interfaces often need clearer labels, ranges, defaults, units, or placeholders.
+## Some notes
 
-```python id="v9tboo"
-schema = infer_schema(
-    df,
-    overrides={
-        "age": {
-            "label": "Age",
-            "description": "Customer age in years.",
-            "min": 0,
-            "max": 120,
-            "step": 1,
-            "unit": "years",
-        },
-        "tier": {
-            "label": "Plan",
-            "defaultValue": "pro",
-        },
-    },
-)
-```
+MLschema owns field inference, validation and explicit mappings. Your application owns rendering, report definitions, model training and execution. The output is a field list, not a JSON Schema document or a complete MLform schema.
 
-Overrides are applied after inference and before final validation. Missing columns and invalid constraints fail explicitly instead of producing a broken schema.
-
-## Extending MLSchema
-
-Use a custom builder when an existing kind is correct, but the column needs domain-aware metadata.
-
-```python id="0r5mdy"
-from pandas import Series
-
-from mlschema import FieldContext, infer_schema
-
-def money_builder(series: Series, ctx: FieldContext) -> dict | None:
-    if ctx.name != "amount_eur":
-        return None
-
-    return {
-        "kind": "number",
-        "label": "Amount",
-        "required": ctx.required,
-        "mappedTo": ctx.mappedTo,
-        "step": 0.01,
-        "unit": "EUR",
-        "min": 0,
-    }
-
-schema = infer_schema(df, builders=[money_builder])
-```
-
-Use a custom kind when the frontend needs a new field discriminator and a dedicated validation model.
-
-```python id="96x5rn"
-from typing import Literal
-
-from pandas import Series
-
-from mlschema import BaseField, FieldContext, infer_schema, kind
-
-class DurationField(BaseField):
-    kind: Literal["duration"] = "duration"
-    unit: Literal["seconds"] = "seconds"
-    minSeconds: int
-    maxSeconds: int
-
-def duration_builder(series: Series, ctx: FieldContext) -> dict | None:
-    if ctx.dtype not in {"timedelta64[ns]", "timedelta64[us]"}:
-        return None
-
-    return {
-        "kind": "duration",
-        "label": ctx.name,
-        "required": ctx.required,
-        "mappedTo": ctx.mappedTo,
-        "unit": "seconds",
-        "minSeconds": int(series.min().total_seconds()),
-        "maxSeconds": int(series.max().total_seconds()),
-    }
-
-schema = infer_schema(
-    df,
-    kinds=[
-        kind(model=DurationField, infer=duration_builder),
-    ],
-)
-```
-
-Resolution is predictable:
-
-```text id="kwtd5b"
-user builders
-custom kind builders
-builtin builders
-```
-
-The first builder returning a field dictionary owns the column.
-
-## Validation And Errors
-
-MLSchema validates the generated contract before returning it.
-
-Common errors include:
-
-| Error                             | Meaning                                                                                                              |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `EmptyDataFrameError`             | The input DataFrame has no rows or no columns.                                                                       |
-| `FieldBuilderError`               | A builder returned an invalid payload, omitted `kind`, no builder matched, or an override targeted a missing column. |
-| `UnknownFieldKindError`           | A builder emitted a kind with no registered field model.                                                             |
-| `FieldKindAlreadyRegisteredError` | Duplicate kind names were registered.                                                                                |
-| `FieldKindError`                  | `kind()` received an invalid field model.                                                                            |
-| `pydantic.ValidationError`        | The final field payload violates its Pydantic model.                                                                 |
-
-Library exceptions are available from `mlschema.core.exceptions` and re-exported from `mlschema.core`.
-
-## With mlform
-
-MLSchema focuses on inference and validation. [mlform](https://github.com/UlloaSP/mlform) can consume the generated field list to render interactive forms.
-
-The split is intentional: Python owns the data contract; the frontend owns rendering, interaction, and submission.
+Empty DataFrames are rejected, and invalid builder output or overrides fail validation. Inference does not establish that a dataset is suitable for a model. The returned list can contain category values, so treat it as part of your data contract when sharing it.
 
 ## Documentation
 
-* Documentation: https://ulloasp.github.io/mlschema/
-* Usage guide: https://ulloasp.github.io/mlschema/usage/
-* Schema standard: https://ulloasp.github.io/mlschema/schema-standard/
-* API reference: https://ulloasp.github.io/mlschema/reference/
-* Changelog: https://ulloasp.github.io/mlschema/changelog/
+Full documentation lives at [docs.mlschema.eshkra.dev](https://docs.mlschema.eshkra.dev/).
 
-## Tooling And Quality
+- [Installation](https://docs.mlschema.eshkra.dev/getting-started/installation/)
+- [Quick start](https://docs.mlschema.eshkra.dev/getting-started/quick-start/)
+- [Field contract](https://docs.mlschema.eshkra.dev/schema/overview/)
+- [Backend mappings](https://docs.mlschema.eshkra.dev/schema/mappings/)
+- [Custom builders and kinds](https://docs.mlschema.eshkra.dev/guides/extensions/)
+- [Python API](https://docs.mlschema.eshkra.dev/reference/api/)
 
-* MIT-licensed package distributed as wheel and sdist.
-* Built with Hatchling.
-* Typed with `py.typed`.
-* Tested with `pytest` and `pytest-cov`.
-* Checked with `ruff` and `pyright`.
-* CI provided by GitHub Actions.
+Try the examples in the [Python playground](https://playground.mlschema.eshkra.dev/). It runs the repository's Python code in an experimental browser environment; its dependency limits are documented in the [playground guide](https://github.com/UlloaSP/mlschema/blob/main/playground/README.md).
 
 ## Contributing
 
-Contributions are welcome.
+Python development uses [uv](https://docs.astral.sh/uv/), Ruff, Pyright and pytest:
 
-Useful commands for local development:
-
-```bash id="2fzokc"
-uv sync
-uv run pre-commit install
+```bash
+uv sync --locked --group dev
+uv run ruff check .
+uv run ruff format --check .
+uv run pyright
 uv run pytest
+uv build
 ```
 
-Project links:
+The landing page, documentation and playground use [Vite+](https://viteplus.dev/guide/) (`vp`) with a pnpm workspace. This tooling is separate from the Python package:
 
-* Issues: https://github.com/UlloaSP/mlschema/issues
-* Discussions: https://github.com/UlloaSP/mlschema/discussions
-* Contributing guide: https://github.com/UlloaSP/mlschema/blob/main/CONTRIBUTING.md
+```bash
+vp install --frozen-lockfile
+vp run build
+```
 
-## Security
+Read [CONTRIBUTING.md](https://github.com/UlloaSP/mlschema/blob/main/CONTRIBUTING.md) for local development and release setup.
 
-Please report security concerns privately by emailing `pablo.ulloa.santin@udc.es`.
-
-The disclosure process is documented in [SECURITY.md](https://github.com/UlloaSP/mlschema/blob/main/SECURITY.md).
+Run `vp run dev:playground` to serve the local Python playground at `http://127.0.0.1:10011`. The [playground guide](https://github.com/UlloaSP/mlschema/blob/main/playground/README.md) covers examples and verification commands.
 
 ## License
 
-Released under the MIT License.
-
-* License: https://github.com/UlloaSP/mlschema/blob/main/LICENSE
-* Third-party notices: https://github.com/UlloaSP/mlschema/blob/main/THIRD_PARTY_LICENSES.md
-
----
-
-Made by [Pablo Ulloa Santin](https://github.com/UlloaSP) and contributors.
+MIT

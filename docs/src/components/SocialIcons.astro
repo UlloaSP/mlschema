@@ -1,0 +1,53 @@
+---
+import { Icon } from "@astrojs/starlight/components";
+---
+
+<a class="nav-link" href="https://mlschema.eshkra.dev/">Product</a>
+<a class="nav-link" href="https://pypi.org/project/mlschema/">PyPI</a>
+<a href="https://github.com/UlloaSP/mlschema" rel="me" class="icon-link sl-flex">
+  <span class="sr-only">MLschema on GitHub</span>
+  <Icon name="github" />
+</a>
+<a class="playground" href="https://playground.mlschema.eshkra.dev/">
+  Playground <Icon name="external" size="0.9rem" />
+</a>
+
+<style>
+  .nav-link,
+  .icon-link {
+    color: var(--ms-text-2);
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+  .icon-link {
+    padding: 0.5em;
+    margin: -0.5em;
+  }
+  .nav-link:hover,
+  .icon-link:hover {
+    color: var(--ms-text);
+  }
+  .playground {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.25rem;
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    background: var(--ms-text);
+    color: var(--ms-bg);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .playground:hover {
+    background: var(--ms-ember-ink);
+    color: #fff;
+  }
+  @media (forced-colors: active) {
+    .playground {
+      border: 1px solid ButtonText;
+    }
+  }
+</style>

@@ -1,0 +1,54 @@
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--control-size);
+  height: var(--control-size);
+  padding: 0;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--motion-fast);
+}
+.code-workspace .icon-button {
+  min-height: 0;
+  padding: 0;
+}
+.icon-button:hover:not(:disabled) {
+  background: var(--hover-surface);
+}
+
+/* Icon-only controls name themselves in a tooltip on hover and on keyboard focus. */
+:where([data-tooltip]) {
+  position: relative;
+}
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 0.45rem);
+  right: 0;
+  width: max-content;
+  max-width: min(20rem, 80vw);
+  padding: 0.35rem 0.55rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-elevated);
+  color: var(--text);
+  font: 500 0.75rem/1.4 var(--font-sans);
+  text-align: left;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--motion-fast);
+}
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
+}
+@media (hover: hover) {
+  [data-tooltip]:hover::after {
+    opacity: 1;
+  }
+}

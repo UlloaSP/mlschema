@@ -1,0 +1,44 @@
+{
+  "columns": [
+    {
+      "name": "customer",
+      "dtype": "str",
+      "values": ["Ada", "Linus", "Grace"]
+    },
+    {
+      "name": "age",
+      "dtype": "int64",
+      "values": ["42", "55", "38"]
+    },
+    {
+      "name": "tier",
+      "dtype": "category",
+      "values": ["pro", "free", "pro"]
+    },
+    {
+      "name": "plan__monthly",
+      "dtype": "int64",
+      "values": ["1", "0", "0"]
+    },
+    {
+      "name": "plan__yearly",
+      "dtype": "int64",
+      "values": ["0", "1", "1"]
+    },
+    {
+      "name": "active",
+      "dtype": "bool",
+      "values": ["True", "False", "True"]
+    },
+    {
+      "name": "created",
+      "dtype": "datetime64[us]",
+      "values": ["2024-01-01", "2024-01-02", "2024-01-03"]
+    },
+    {
+      "name": "readings",
+      "dtype": "object",
+      "values": ["(2024-01-01, 23.5)", "(2024-01-02, 24.1)", "(2024-01-03, 22.8)"]
+    }
+  ]
+}

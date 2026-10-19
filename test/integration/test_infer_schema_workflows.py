@@ -37,8 +37,8 @@ def test_infer_schema_end_to_end_with_builtins_and_overrides():
     ]
     assert fields[1]["unit"] == "EUR"
     assert fields[5]["options"] == ["free", "pro"]
-    assert fields[6]["field1"]["kind"] == "date"
-    assert fields[6]["field2"]["kind"] == "number"
+    assert fields[6]["columns"][0]["kind"] == "date"
+    assert fields[6]["columns"][1]["kind"] == "number"
 
 
 def test_infer_schema_end_to_end_with_custom_builder_and_kind():

@@ -1,0 +1,17 @@
+/* The closing call: one sentence and the two ways to start. */
+.start {
+  border-top: 1px solid var(--border);
+}
+.start-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem 3rem;
+}
+.start .hero-actions {
+  margin-top: 0;
+}
+.start .section-head {
+  max-width: 36rem;
+}

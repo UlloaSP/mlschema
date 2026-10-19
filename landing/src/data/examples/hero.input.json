@@ -1,0 +1,24 @@
+{
+  "columns": [
+    {
+      "name": "area_m2",
+      "dtype": "float64",
+      "values": ["74.5", "120.0", "56.2"]
+    },
+    {
+      "name": "rooms",
+      "dtype": "int64",
+      "values": ["3", "5", "2"]
+    },
+    {
+      "name": "district",
+      "dtype": "category",
+      "values": ["center", "north", "center"]
+    },
+    {
+      "name": "has_lift",
+      "dtype": "bool",
+      "values": ["True", "False", "True"]
+    }
+  ]
+}

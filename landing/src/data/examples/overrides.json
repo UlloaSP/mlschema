@@ -1,0 +1,21 @@
+[
+  {
+    "label": "Age",
+    "description": "Customer age in years.",
+    "required": true,
+    "mappedTo": "age",
+    "kind": "number",
+    "min": 0.0,
+    "max": 120.0,
+    "step": 1.0,
+    "unit": "years"
+  },
+  {
+    "label": "Plan",
+    "required": true,
+    "mappedTo": "tier",
+    "defaultValue": "pro",
+    "kind": "category",
+    "options": ["free", "pro"]
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "label": "wait",
+    "required": true,
+    "mappedTo": "wait",
+    "kind": "duration",
+    "unit": "seconds",
+    "minSeconds": 45,
+    "maxSeconds": 300
+  }
+]

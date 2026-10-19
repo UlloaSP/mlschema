@@ -1,6 +1,6 @@
 [project]
 name = "mlschema"
-version = "0.2.1"
+version = "0.3.0"
 description = "Infer validated, frontend-ready field schemas from pandas DataFrames."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { text = "MIT" }
@@ -61,12 +61,13 @@ requires-python = ">=3.14,<3.15"
 dependencies = ["pandas>=3.0.3,<4.0.0", "pydantic>=2.13.4,<3.0.0"]
 
 [project.urls]
-Homepage = "https://github.com/UlloaSP/mlschema"
-Documentation = "https://ulloasp.github.io/mlschema/"
+Homepage = "https://mlschema.eshkra.dev/"
+Documentation = "https://docs.mlschema.eshkra.dev/"
+Playground = "https://playground.mlschema.eshkra.dev/"
 Repository = "https://github.com/UlloaSP/mlschema"
 "Bug Tracker" = "https://github.com/UlloaSP/mlschema/issues"
 "Source Code" = "https://github.com/UlloaSP/mlschema"
-Changelog = "https://ulloasp.github.io/mlschema/changelog/"
+Changelog = "https://docs.mlschema.eshkra.dev/changelog/"
 Discussions = "https://github.com/UlloaSP/mlschema/discussions"
 Funding = "https://github.com/sponsors/UlloaSP"
 "Release Notes" = "https://github.com/UlloaSP/mlschema/releases"
@@ -75,20 +76,12 @@ Funding = "https://github.com/sponsors/UlloaSP"
 # Development dependencies
 dev = [
     { include-group = "test" },
-    { include-group = "docs" },
     { include-group = "lint" },
     "pre-commit>=4.6.0",
 ]
 
 # Testing dependencies
 test = ["pytest>=9.0.3", "pytest-cov>=7.1.0", "pytest-mock>=3.15.1"]
-
-# Documentation dependencies
-docs = [
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.7.6",
-    "mkdocstrings[python]>=1.0.4",
-]
 
 # Linting and formatting dependencies
 lint = ["pyright>=1.1.409", "ruff>=0.15.15"]
@@ -104,7 +97,8 @@ build-backend = "hatchling.build"
 include = [
     "/src",
     "/test",
-    "/docs",
+    "/docs/src/content/docs",
+    "/brand",
     "LICENSE",
     "README.md",
     "CONTRIBUTING.md",

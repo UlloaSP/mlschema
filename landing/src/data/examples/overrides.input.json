@@ -1,0 +1,27 @@
+{
+  "columns": [
+    {
+      "name": "age",
+      "dtype": "int64",
+      "values": ["42", "55", "38"]
+    },
+    {
+      "name": "tier",
+      "dtype": "category",
+      "values": ["pro", "free", "pro"]
+    }
+  ],
+  "overrides": {
+    "age": {
+      "label": "Age",
+      "description": "Customer age in years.",
+      "min": 0,
+      "max": 120,
+      "unit": "years"
+    },
+    "tier": {
+      "label": "Plan",
+      "defaultValue": "pro"
+    }
+  }
+}

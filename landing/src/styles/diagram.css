@@ -1,0 +1,220 @@
+/* Mapping diagrams: DataFrame columns beside the fields they become, never stacked. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.map {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.875rem;
+  padding: 1rem clamp(0.75rem, 2.5vw, 1.375rem) 0.25rem;
+}
+/* The one line of code an example needs, and a sentence on what it shows. */
+.map-head {
+  display: grid;
+  gap: 0.375rem;
+}
+.map-call {
+  justify-self: start;
+  max-width: 100%;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background: var(--bg-subtle);
+  color: var(--text);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+.map-note {
+  color: var(--text-2);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.map-vector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.map-vector ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.map-vector li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.5rem 0.1875rem 0.1875rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+}
+.map-slot {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding-inline: 0.25rem;
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--ember) 16%, transparent);
+  color: var(--ember-ink);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+/* Narrow screens scroll the diagram sideways inside its window instead of stacking it. */
+.map-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+.map-scroll:focus-visible {
+  outline-offset: 2px;
+}
+.map-table {
+  width: 100%;
+  min-width: 17.5rem;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+/* Columns sit right-aligned against the arrow, so each row reads as one connection. */
+.map-col-input {
+  width: 42%;
+}
+.map-col-arrow {
+  width: 2.25rem;
+}
+.map-table th {
+  padding: 0 0 0.5rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.map-table th:first-child,
+.map-table tbody td:first-child {
+  text-align: right;
+}
+.map-table thead td {
+  border-bottom: 1px solid var(--border);
+}
+.map-table tbody td {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.map-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.map-columns {
+  display: grid;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Each column reads as its name and dtype, then its first values. */
+.map-columns li {
+  display: grid;
+  justify-items: end;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.column-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.25rem 0.375rem;
+  max-width: 100%;
+  min-width: 0;
+}
+.column-name {
+  color: var(--text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.column-dtype {
+  flex-shrink: 0;
+  padding: 0 0.3125rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-3);
+  font-size: 0.6875rem;
+}
+/* Sample values wrap whole instead of being cut; narrow screens keep the first two. */
+.column-values {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.125rem 0.5rem;
+  color: var(--text-2);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.column-values span {
+  white-space: nowrap;
+}
+.column-values span:not(.column-dtype, :last-child)::after {
+  content: " ·";
+  color: var(--text-3);
+}
+@media (max-width: 30rem) {
+  .map-col-input {
+    width: 46%;
+  }
+  .column-values span:nth-child(n + 4) {
+    display: none;
+  }
+  .column-values span:nth-child(3)::after {
+    content: none;
+  }
+}
+.map-arrow svg {
+  display: block;
+  width: 100%;
+  height: 0.75rem;
+  padding-inline: 0.375rem;
+  fill: none;
+  stroke: var(--ember);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-3);
+  font-size: 0.75rem;
+}
+.map-changed {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--ember) 24%, transparent);
+}
+@media (max-width: 22.5rem) {
+  .map {
+    padding-inline: 0.625rem;
+  }
+  .map-table {
+    min-width: 15rem;
+  }
+}

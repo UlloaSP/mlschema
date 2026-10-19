@@ -1,0 +1,30 @@
+{
+  "name": "mlschema-landing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --host 127.0.0.1 --port 4330",
+    "build": "astro check && astro build",
+    "typecheck": "astro check",
+    "examples": "uv run --project .. python scripts/examples.py",
+    "check:examples": "uv run --project .. python scripts/examples.py --check",
+    "check:format": "prettier --check .",
+    "format": "prettier --write .",
+    "preview": "astro preview --host 127.0.0.1 --port 4330"
+  },
+  "dependencies": {
+    "astro": "7.3.2",
+    "mlform": "0.2.0",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "prettier": "3.9.10",
+    "prettier-plugin-astro": "1.1.1",
+    "typescript": "6.0.3"
+  },
+  "engines": {
+    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
+  }
+}

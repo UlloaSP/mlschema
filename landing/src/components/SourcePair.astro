@@ -1,0 +1,27 @@
+---
+import { Code } from "astro:components";
+import type { Example } from "../data/examples";
+
+// The script and its raw output, on demand and always side by side.
+interface Props {
+  example: Example;
+}
+const { example } = Astro.props;
+const themes = { light: "github-light-default", dark: "github-dark-default" } as const;
+const panes = [
+  { title: example.file, code: example.code, lang: "python" },
+  { title: "schema (JSON)", code: example.output, lang: "json" },
+] as const;
+---
+
+<details class="source">
+  <summary>Code and raw output</summary>
+  <div class="source-pair">
+    {panes.map(({ title, code, lang }) => (
+      <figure class="source-pane">
+        <figcaption class="mono">{title}</figcaption>
+        <Code code={code} lang={lang} themes={themes} defaultColor="light" class="code" />
+      </figure>
+    ))}
+  </div>
+</details>

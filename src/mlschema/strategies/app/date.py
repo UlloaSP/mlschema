@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Pablo Ulloa Santin
 """Date field inference.
 
-The date builder recognises pandas datetime dtype names supported by MLSchema
+The date builder recognises pandas datetime dtype names supported by MLschema
 and emits the builtin `date` field contract. Date constraints such as `min`,
 `max`, and `step` remain explicit overrides rather than inferred values.
 """

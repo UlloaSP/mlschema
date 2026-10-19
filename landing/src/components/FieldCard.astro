@@ -1,0 +1,83 @@
+---
+import type { Field, Json } from "../data/examples";
+
+// One schema field, compact: kind, label, then the keys that carry information beyond the
+// defaults. mappedTo shows only where it differs from the label; the raw JSON has every key.
+interface Props {
+  field: Field;
+  changed?: string[];
+  // Builtin kind order; when given, the kind badge shows its position.
+  order?: string[];
+}
+const { field, changed = [], order } = Astro.props;
+const structural = new Set(["kind", "label", "mappedTo", "required", "options", "columns", "id"]);
+const text = (value: Json | undefined) => JSON.stringify(value);
+const props = (item: Field) => Object.entries(item).filter(([key]) => !structural.has(key));
+const isField = (value: Json): value is Field =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+const target = (item: Field) => "mappedTo" in item && item.mappedTo !== item.label;
+const options = Array.isArray(field.options) ? field.options : [];
+const choices = options.filter(isField);
+const scalars = options.filter((option) => !isField(option));
+const columns = Array.isArray(field.columns) ? field.columns.filter(isField) : [];
+const rank = order ? order.indexOf(String(field.kind)) + 1 : 0;
+---
+
+<div class="field">
+  <span class="field-kind mono">
+    {rank > 0 && (
+      <span class="field-rank" title={`Tried ${rank} of ${order!.length}`}>
+        {rank}
+      </span>
+    )}
+    {field.kind}
+  </span>
+  <strong class="field-label" data-changed={changed.includes("label") || undefined}>
+    {field.label}
+  </strong>
+  {field.required === false && <span class="field-prop mono">optional</span>}
+  {target(field) && (
+    <span class="field-target mono">
+      mappedTo <b>{text(field.mappedTo)}</b>
+    </span>
+  )}
+  {props(field).map(([key, value]) => (
+    <span class="field-prop mono" data-changed={changed.includes(key) || undefined}>
+      {key} <span>{text(value)}</span>
+    </span>
+  ))}
+  {scalars.length > 0 && (
+    <span class="field-prop mono" data-changed={changed.includes("options") || undefined}>
+      options <span>{scalars.map(text).join(" · ")}</span>
+    </span>
+  )}
+  {choices.length > 0 && (
+    <ul class="field-parts mono" aria-label="Options">
+      {choices.map((choice) => (
+        <li>
+          <span>{choice.label}</span>
+          {target(choice) && (
+            <span class="field-target">
+              mappedTo <b>{text(choice.mappedTo)}</b>
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )}
+  {columns.length > 0 && (
+    <ul class="field-parts mono" aria-label="Series columns">
+      {columns.map((column) => (
+        <li>
+          <span class="field-kind">{column.kind}</span>
+          <span>{column.label}</span>
+          {props(column).map(([key, value]) => (
+            <span class="field-prop">
+              {key} <span>{text(value)}</span>
+            </span>
+          ))}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>

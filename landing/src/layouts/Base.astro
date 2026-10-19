@@ -1,0 +1,146 @@
+---
+import { Image, getImage } from "astro:assets";
+import mark from "../../../brand/mlschema.png";
+import Icon from "../components/Icon.astro";
+import Wordmark from "../components/Wordmark.astro";
+import { description as defaultDescription, links } from "../data/site";
+import "../styles/typography.css";
+import "../styles/base.css";
+import "../styles/chrome.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+const {
+  title = "MLschema · Field schemas from pandas DataFrames",
+  description = defaultDescription,
+  noindex = false,
+} = Astro.props;
+const favicon = await getImage({ src: mark, width: 48, format: "png" });
+const touchIcon = await getImage({ src: mark, width: 180, format: "png" });
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  name: "MLschema",
+  description,
+  url: links.home,
+  codeRepository: links.github,
+  programmingLanguage: "Python",
+  runtimePlatform: "Python",
+  license: "https://opensource.org/license/mit",
+  author: { "@type": "Person", name: "Pablo Ulloa Santín", url: "https://github.com/UlloaSP" },
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0d" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/png" href={favicon.src} />
+    <link rel="apple-touch-icon" href={touchIcon.src} />
+    <link rel="canonical" href={canonical} />
+    <link rel="sitemap" href="/sitemap.xml" />
+    {noindex && <meta name="robots" content="noindex" />}
+    <title>{title}</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MLschema" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL("/og.png", Astro.site)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="The MLschema mark above the headline: typed inputs, straight from your data."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  </head>
+  <body>
+    <a class="skip" href="#main">
+      Skip to content
+    </a>
+    <header class="nav">
+      <div class="nav-inner wrap">
+        <a class="mlschema-brand" href="/" aria-label="MLschema home">
+          <Image src={mark} alt="" width={36} densities={[1, 2]} loading="eager" />
+          <Wordmark name="mlschema" />
+        </a>
+        <a class="parent-brand" href={links.eshkra}>
+          by eshkra
+        </a>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a class="nav-section" href="/#kinds">
+            Kinds
+          </a>
+          <a class="nav-section" href="/#mapping">
+            Mapping
+          </a>
+          <a class="nav-section" href="/#refine">
+            Refine
+          </a>
+          <a class="nav-section" href="/#integrate">
+            Integrate
+          </a>
+          <a href={links.docs}>Docs</a>
+        </nav>
+        <div class="nav-actions">
+          <a class="icon-link" href={links.pypi} aria-label="MLschema on PyPI">
+            <Icon name="package" size={20} />
+          </a>
+          <a class="icon-link" href={links.github} aria-label="MLschema on GitHub">
+            <Icon name="github" size={20} />
+          </a>
+          <a class="button small" href={links.playground}>
+            Playground <Icon name="arrow-up-right" size={14} />
+          </a>
+        </div>
+      </div>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="footer">
+      <div class="footer-inner wrap">
+        <div class="footer-brand">
+          <a class="mlschema-brand" href="/" aria-label="MLschema home">
+            <Image src={mark} alt="" width={64} densities={[1, 2]} />
+            <Wordmark name="mlschema" />
+          </a>
+          <p>
+            Part of <a href={links.eshkra}>eshkra</a>.<br />
+            Open-source tools for models people can use.
+          </p>
+        </div>
+        <nav aria-label="Build">
+          <h2>Build</h2>
+          <a href={links.docs}>Documentation</a>
+          <a href={links.playground}>Playground</a>
+          <a href={links.changelog}>Releases</a>
+        </nav>
+        <nav aria-label="Project">
+          <h2>Project</h2>
+          <a href={links.pypi}>PyPI</a>
+          <a href={links.github}>GitHub</a>
+          <a href={links.issues}>Issues</a>
+          <a href={links.license}>MIT license</a>
+        </nav>
+      </div>
+      <div class="footer-bottom wrap">
+        <span>© {new Date().getFullYear()} eshkra</span>
+        <a href={links.eshkra}>
+          Explore the family <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

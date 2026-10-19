@@ -1,0 +1,11 @@
+[
+  {
+    "label": "Amount",
+    "required": true,
+    "mappedTo": "amount_eur",
+    "kind": "number",
+    "min": 0.0,
+    "step": 0.01,
+    "unit": "EUR"
+  }
+]

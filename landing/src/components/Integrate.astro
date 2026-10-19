@@ -1,0 +1,92 @@
+---
+import Icon from "./Icon.astro";
+import Wordmark from "./Wordmark.astro";
+import { hero } from "../data/diagrams";
+import { family, links } from "../data/site";
+
+// MLform renders the hero's real fields, prefilled with the first row of the hero DataFrame.
+const parse = (dtype: string, value: string) => {
+  if (/^(int|float)/.test(dtype)) return Number(value);
+  if (dtype === "bool") return value === "True";
+  if (dtype === "category" || dtype === "object") return value;
+  throw new Error(`Prefill the live form: no parser for dtype ${dtype}.`);
+};
+const row = Object.fromEntries(
+  hero.example.columns.map(({ name, dtype, values }) => [name, parse(dtype, values[0]!)]),
+);
+---
+
+<section class="section integrate" id="integrate" aria-labelledby="integrate-title">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="integrate-title">Python owns the contract. The frontend renders it.</h2>
+      <p>
+        MLschema stops at inference and validation; the field list is plain JSON your API can serve.
+        Here <Wordmark name="mlform" /> renders the fields from the top of this page and assembles
+        the values your model receives, keyed by <code class="mono">mappedTo</code>.
+      </p>
+      <a class="text-link" href={links.mlformGuide}>
+        Use MLschema with <Wordmark name="mlform" />
+        <Icon name="arrow-up-right" size={14} />
+      </a>
+    </header>
+    <figure class="stage">
+      <div class="plate integrate-plate">
+        <div class="live-pair" role="region" tabindex="0" aria-label="Rendered form and its values">
+          <div class="live-pane">
+            <p class="live-caption">
+              Rendered by <Wordmark name="mlform" />
+            </p>
+            <div
+              class="live-form"
+              data-live-form
+              data-fields={hero.example.output}
+              data-row={JSON.stringify(row)}
+            >
+              <p class="live-status">Loading MLform…</p>
+              <noscript>
+                <p class="live-status">The live form needs JavaScript.</p>
+              </noscript>
+            </div>
+          </div>
+          <div class="live-pane">
+            <p class="live-caption mono">modelValues</p>
+            <pre class="live-values mono" data-live-values aria-live="polite">{"{}"}</pre>
+          </div>
+        </div>
+      </div>
+      <figcaption>
+        Live MLform components in this page. Edit a value and the payload follows; nothing leaves
+        your browser.
+      </figcaption>
+    </figure>
+    <ol class="path" aria-label="The eshkra path from trained model to reviewed prediction">
+      {family.map(({ name, stage, href }) => (
+        <li aria-current={name === "mlschema" ? "step" : undefined}>
+          <span class="path-stage mono">{stage}</span>
+          <a href={href}>
+            <Wordmark name={name} />
+          </a>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+<script>
+  import { mountLiveForm } from "../lib/live-form";
+
+  const host = document.querySelector<HTMLElement>("[data-live-form]");
+  const output = document.querySelector<HTMLElement>("[data-live-values]");
+  if (host && output) {
+    // MLform loads only when the section comes near the viewport.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        void mountLiveForm(host, output);
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(host);
+  }
+</script>

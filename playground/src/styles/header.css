@@ -1,0 +1,80 @@
+/* Brand header, as in MLForm's playground (brand-header.css); the menu floats at its left. */
+.app-brand-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  height: var(--header-height);
+  padding: 1rem 1.25rem calc(var(--header-height) - 4rem) 5rem;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.mlschema-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  color: inherit;
+  font-size: 1.625rem;
+  text-decoration: none;
+}
+.mlschema-brand img {
+  width: 1.625rem;
+  height: 2.5rem;
+  object-fit: contain;
+}
+.mlschema-wordmark {
+  white-space: nowrap;
+}
+.mlschema-wordmark .ml {
+  font-weight: 800;
+  font-stretch: 125%;
+  letter-spacing: -0.01em;
+}
+.mlschema-wordmark .rest {
+  font-weight: 300;
+  font-stretch: 100%;
+}
+.app-brand-header a:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 4px;
+}
+.app-brand-header nav {
+  display: flex;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+.app-brand-header nav .icon-button {
+  border-color: transparent;
+  background: transparent;
+  text-decoration: none;
+}
+.app-brand-header nav .icon-button:hover {
+  background: var(--hover-surface);
+}
+@media (max-width: 620px) {
+  :root {
+    --header-height: 4.35rem;
+  }
+  .app-brand-header {
+    gap: 0.65rem;
+    padding-inline: 4.6rem 0.75rem;
+  }
+  .app-brand-header nav {
+    gap: 0;
+  }
+  .mlschema-brand {
+    gap: 0.35rem;
+    font-size: 1.5rem;
+  }
+  .mlschema-brand img {
+    width: 1.4rem;
+    height: 2.15rem;
+  }
+}
+@media (max-width: 380px) {
+  .mlschema-brand {
+    font-size: 1.3rem;
+  }
+}

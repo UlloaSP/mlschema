@@ -1,0 +1,71 @@
+/* Schema fields inside the mapping diagrams. */
+/* A field reads left to right: kind, label, target, then its other keys. */
+.field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3125rem 0.625rem;
+  min-width: 0;
+}
+.field-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.0625rem 0.4375rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--bg-subtle);
+  color: var(--text);
+  font-size: 0.6875rem;
+}
+.field-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.field-target,
+.field-prop {
+  color: var(--text-3);
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+.field-target b {
+  color: var(--ember-ink);
+  font-weight: 600;
+}
+.field-prop span {
+  color: var(--text-2);
+}
+.field [data-changed] {
+  padding-inline: 0.25rem;
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--ember) 14%, transparent);
+}
+.field-parts {
+  display: grid;
+  flex-basis: 100%;
+  gap: 0.25rem;
+  margin: 0.125rem 0 0;
+  padding: 0 0 0 0.75rem;
+  border-left: 1px solid var(--border-strong);
+  list-style: none;
+  font-size: 0.75rem;
+}
+.field-parts li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.125rem 0.5rem;
+}
+/* Builtin kind order: the same number on the list and on each field's kind. */
+.field-rank {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--ember) 16%, transparent);
+  color: var(--ember-ink);
+  font-size: 0.625rem;
+  font-weight: 700;
+}

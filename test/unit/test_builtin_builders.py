@@ -91,8 +91,8 @@ def test_series_builder_infers_tuple_subfields_through_context_callback():
     field = series_builder(Series([(1, "a"), (2, "b")]), ctx)
 
     assert field["kind"] == "series"
-    assert field["field1"]["label"] == "field1"
-    assert field["field2"]["label"] == "field2"
+    assert field["columns"][0]["label"] == "field1"
+    assert field["columns"][1]["label"] == "field2"
     assert calls == ["field1", "field2"]
     assert series_builder(Series(["x"]), ctx) is None
 

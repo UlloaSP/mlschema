@@ -1,0 +1,187 @@
+/* Kinds, mapping, refinements and integration. */
+.kinds,
+.mapping,
+.refine,
+.integrate {
+  border-top: 1px solid var(--border);
+}
+/* Copy beside a plate; the plate keeps its own height and scrolls long output inside. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(2rem, 5vw, 4rem);
+  align-items: start;
+}
+.split.reverse > :first-child {
+  order: 2;
+}
+.split.reverse {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+}
+.section-head p + p {
+  margin-top: 0.75rem;
+}
+.kinds-plate {
+  --gx: 92%;
+  --gy: 8%;
+}
+.mapping-plate {
+  --gx: 8%;
+  --gy: 12%;
+}
+.refine-plate {
+  --gx: 90%;
+  --gy: 88%;
+  margin-top: 2.5rem;
+}
+.integrate-plate {
+  --gx: 12%;
+  --gy: 14%;
+}
+/* The builtin order, as numbered chips that match the badges in the diagram. */
+.kind-order {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.kind-order li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.625rem 0.1875rem 0.25rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.8125rem;
+}
+.kind-order .field-rank {
+  min-width: 1.25rem;
+  height: 1.25rem;
+  font-size: 0.6875rem;
+}
+.refine-errors {
+  max-width: 48rem;
+  margin-top: 1.5rem;
+  color: var(--text-2);
+  font-size: 0.9375rem;
+}
+.refine-errors .text-link {
+  display: inline;
+  margin-left: 0.25rem;
+  white-space: nowrap;
+}
+/* The live form and the values it builds, side by side at every width. */
+.integrate .stage {
+  margin-top: 2.5rem;
+}
+.live-pair {
+  display: grid;
+  grid-template-columns: minmax(18rem, 1.35fr) minmax(13rem, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: rgb(255 255 255 / 0.3) transparent;
+  scrollbar-width: thin;
+}
+.live-pair:focus-visible {
+  outline-offset: 2px;
+}
+.live-pane {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radius);
+  background: var(--surface);
+  scroll-snap-align: start;
+}
+@media (prefers-color-scheme: dark) {
+  .live-pane {
+    border-color: rgb(255 255 255 / 0.1);
+    background: #0b0b0d;
+  }
+}
+.live-caption {
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3);
+  font-size: 0.8125rem;
+}
+.live-form {
+  min-height: 22rem;
+  padding: clamp(0.75rem, 2vw, 1.25rem);
+}
+.live-status {
+  color: var(--text-3);
+  font-size: 0.875rem;
+}
+.live-values {
+  margin: 0;
+  padding: 1rem;
+  color: var(--text);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  white-space: pre;
+  overflow-x: auto;
+}
+.path {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 3rem 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--border);
+}
+.path li {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1.25rem 1rem 0 0;
+  border-top: 2px solid transparent;
+  margin-top: -1px;
+}
+.path li[aria-current="step"] {
+  border-top-color: var(--ember);
+}
+.path-stage {
+  color: var(--text-3);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+.path a {
+  line-height: 1.2;
+  font-size: 1.375rem;
+  text-decoration: none;
+}
+.path a:hover {
+  color: var(--ember-ink);
+}
+@media (max-width: 64rem) {
+  .split,
+  .split.reverse {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .split.reverse > :first-child {
+    order: 0;
+  }
+}
+@media (max-width: 48rem) {
+  .path {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .path li {
+    grid-template-columns: 7rem minmax(0, 1fr);
+    align-items: center;
+    padding: 0.875rem 0;
+    border-top: 0;
+    border-bottom: 1px solid var(--border);
+    margin-top: 0;
+  }
+  .path li[aria-current="step"] {
+    border-left: 2px solid var(--ember);
+    padding-left: 0.75rem;
+  }
+}

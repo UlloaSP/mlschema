@@ -31,7 +31,7 @@ from mlschema.core.exceptions import (
 from mlschema.core.util import normalize_dtype
 from mlschema.strategies.app import builtin_kinds
 from mlschema.strategies.domain import FieldTypes
-from mlschema.strategies.domain.series_field import add_series_sub_field
+from mlschema.strategies.domain.series_column import add_series_sub_field
 
 
 def infer_schema(
@@ -200,7 +200,7 @@ def _models_by_kind(kinds: Sequence[FieldKind]) -> dict[str, type]:
         if item.name in models:
             raise FieldKindAlreadyRegisteredError(item.name)
         models[item.name] = item.model
-        if item.name != FieldTypes.SERIES:
+        if item.name not in (FieldTypes.SERIES, FieldTypes.ONEHOT_CATEGORY):
             add_series_sub_field(item.model)
     return models
 

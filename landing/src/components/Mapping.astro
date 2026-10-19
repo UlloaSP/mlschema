@@ -1,0 +1,23 @@
+---
+import ExampleTabs from "./ExampleTabs.astro";
+import { mapping } from "../data/diagrams";
+---
+
+<section class="section mapping" id="mapping" aria-labelledby="mapping-title">
+  <div class="wrap split reverse">
+    <header class="section-head">
+      <h2 id="mapping-title">Every value knows where it goes.</h2>
+      <p>
+        Labels are for people; <code class="mono">mappedTo</code> is for your model. By default it
+        is the column name, and renaming a label never moves it.
+      </p>
+      <p>
+        When the model reads one array instead, <code class="mono">with_positional_mappings</code>{" "}
+        swaps names for the positions it was trained with, so every value lands in its slot.
+      </p>
+    </header>
+    <div class="plate mapping-plate">
+      <ExampleTabs label="Backend mappings" diagrams={mapping} />
+    </div>
+  </div>
+</section>

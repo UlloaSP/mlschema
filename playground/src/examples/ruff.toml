@@ -1,0 +1,10 @@
+# Playground examples are interactive scripts, not library code.
+extend = "../../../pyproject.toml"
+
+[lint]
+extend-ignore = [
+    "B018",   # The final bare expression is the result the playground displays.
+    "T201",   # print() output is shown in the playground console.
+    "ERA001", # Commented code is a suggested edit for the visitor to try.
+    "ARG001", # Builders follow the FieldBuilder (series, ctx) signature.
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "label": "area_m2",
+    "required": true,
+    "mappedTo": "area_m2",
+    "kind": "number",
+    "step": 0.1
+  },
+  {
+    "label": "rooms",
+    "required": true,
+    "mappedTo": "rooms",
+    "kind": "number",
+    "step": 1.0
+  },
+  {
+    "label": "district",
+    "required": true,
+    "mappedTo": "district",
+    "kind": "category",
+    "options": ["center", "north"]
+  },
+  {
+    "label": "has_lift",
+    "required": true,
+    "mappedTo": "has_lift",
+    "kind": "boolean"
+  }
+]

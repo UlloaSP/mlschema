@@ -1,0 +1,9 @@
+{
+  "columns": [
+    {
+      "name": "wait",
+      "dtype": "timedelta64[s]",
+      "values": ["90s", "45s", "300s"]
+    }
+  ]
+}

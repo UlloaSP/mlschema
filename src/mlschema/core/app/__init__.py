@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Pablo Ulloa Santin
 from .inference import infer_schema
 from .kind import FieldBuilder, FieldContext, FieldDict, FieldKind, kind
+from .mappings import with_positional_mappings
 
 __all__ = [
     "FieldBuilder",
@@ -10,4 +11,5 @@ __all__ = [
     "FieldKind",
     "infer_schema",
     "kind",
+    "with_positional_mappings",
 ]

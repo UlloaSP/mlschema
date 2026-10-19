@@ -1,0 +1,46 @@
+/* The eshkra design system, MLForm's default theme; themes.css holds the others.
+   light-dark() follows color-scheme: the system's, or the visitor's choice. */
+:root {
+  color-scheme: light dark;
+  --font-sans: "Mona Sans Variable", "Mona Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --border-width: 1px;
+  --motion-fast: 120ms ease;
+  --shadow: 0 10px 30px rgb(0 0 0 / 0.08);
+  --control-size: 2.25rem;
+  --code-font-size: 0.8rem;
+  --code-line-height: 1.6;
+  --header-height: 4.75rem;
+
+  --bg: light-dark(#ffffff, #0a0a0d);
+  --surface: light-dark(#ffffff, #131318);
+  --surface-muted: light-dark(#f7f7f9, #1a1a21);
+  --surface-elevated: light-dark(#ffffff, #1c1c24);
+  --text: light-dark(#0b0b10, #f4f4f6);
+  --text-muted: light-dark(#666675, #b6b6c2);
+  --text-inverse: light-dark(#ffffff, #0a0a0d);
+  --border: light-dark(#e7e7ee, #24242c);
+  --border-strong: light-dark(#d2d2dc, #34343e);
+  /* The ink shade keeps small orange text readable on white. */
+  --accent: light-dark(#c2410c, #ff9a55);
+  --success: light-dark(#16704f, #65d2a1);
+  --info: light-dark(#3b4fc4, #9aa8ff);
+  --danger: light-dark(#b93636, #ff8e8a);
+  --danger-soft: light-dark(rgba(185, 54, 54, 0.08), rgba(255, 142, 138, 0.12));
+  --hover-surface: light-dark(#fff0e8, #29221f);
+  /* Derived roles follow whichever design system sets the palette. */
+  --button-bg: var(--text);
+  --button-text: var(--surface);
+  --chrome-bg: var(--surface-elevated);
+}
+
+:root[data-appearance="light"] {
+  color-scheme: light;
+}
+
+:root[data-appearance="dark"] {
+  color-scheme: dark;
+}

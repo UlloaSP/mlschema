@@ -1,0 +1,141 @@
+/* Floating options menu, as in MLForm's playground (demo-menu.css). */
+.app-menu {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 50;
+}
+
+.app-menu-button {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-content: center;
+  padding: 0;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  background: var(--surface-elevated);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    transform var(--motion-fast),
+    background var(--motion-fast);
+}
+.app-menu-button::after {
+  right: auto;
+  left: 0;
+}
+.app-menu.is-open .app-menu-button::after {
+  display: none;
+}
+
+.app-menu-button:hover,
+.app-menu-button:focus-visible,
+.app-menu.is-open .app-menu-button {
+  transform: translateY(-1px);
+  background: var(--hover-surface);
+}
+
+.app-menu-button:focus-visible,
+.app-menu-option:focus-visible,
+.app-menu-field :is(select, input):focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 3px;
+}
+
+.app-menu-panel {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  left: 0;
+  width: min(18rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 5rem);
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.55rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  background: var(--chrome-bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  transform-origin: top left;
+}
+.app-menu-panel[hidden] {
+  display: none;
+}
+
+.app-menu-list {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.app-menu-section-label {
+  padding: 0 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.app-menu-option {
+  width: 100%;
+  min-height: 2.35rem;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.app-menu-option:hover,
+.app-menu-option:focus-visible {
+  background: var(--hover-surface);
+}
+.app-menu-option.is-active {
+  background: var(--accent);
+  color: var(--text-inverse);
+  font-weight: 700;
+}
+
+.app-menu-settings {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.8rem 0.35rem 0.2rem;
+  border-top: var(--border-width) solid var(--border);
+}
+
+.app-menu-field {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.app-menu-field :is(select, input) {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.35rem;
+  padding: 0.35rem 0.55rem;
+  border: var(--border-width) solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 400;
+  cursor: pointer;
+}
+.app-menu-field input {
+  cursor: text;
+}
+
+.app-menu-custom-size {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+@media (forced-colors: active) {
+  .app-menu-option.is-active {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+}

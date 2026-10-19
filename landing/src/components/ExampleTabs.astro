@@ -1,0 +1,89 @@
+---
+import MapDiagram from "./MapDiagram.astro";
+import type { Diagram } from "../data/diagrams";
+
+// A card of mapping diagrams; several become tabs, a single one shows on its own.
+interface Props {
+  label: string;
+  diagrams: Diagram[];
+  // Builtin kind order, to number each field's kind (the kinds section only).
+  order?: string[];
+}
+const { label, diagrams, order } = Astro.props;
+const id = (kind: string, index: number) =>
+  `${label.toLowerCase().replace(/\W+/g, "-")}-${kind}-${index}`;
+const [only] = diagrams.length === 1 ? diagrams : [];
+---
+
+<figure class="example" data-example-tabs aria-label={label}>
+  {only && <MapDiagram diagram={only} order={order} />}
+  {!only && (
+    <div class="example-tabs" role="tablist" aria-label={label}>
+      {diagrams.map(({ title }, index) => (
+        <button
+          class="example-tab"
+          type="button"
+          role="tab"
+          id={id("tab", index)}
+          aria-controls={id("panel", index)}
+          aria-selected={index === 0 ? "true" : "false"}
+          tabindex={index === 0 ? 0 : -1}
+        >
+          {title}
+        </button>
+      ))}
+    </div>
+  )}
+  {!only &&
+    diagrams.map((diagram, index) => (
+      <div
+        class="example-panel"
+        role="tabpanel"
+        id={id("panel", index)}
+        aria-labelledby={id("tab", index)}
+        hidden={index !== 0}
+      >
+        <MapDiagram diagram={diagram} order={order} />
+      </div>
+    ))}
+</figure>
+<script>
+  // Tabs follow the WAI-ARIA pattern: arrow keys move between examples, Home and End jump.
+  for (const root of document.querySelectorAll<HTMLElement>("[data-example-tabs]")) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const select = (next: HTMLButtonElement) => {
+      for (const tab of tabs) {
+        const selected = tab === next;
+        tab.setAttribute("aria-selected", `${selected}`);
+        tab.tabIndex = selected ? 0 : -1;
+        root.querySelector<HTMLElement>(`#${tab.getAttribute("aria-controls")}`)!.hidden =
+          !selected;
+      }
+    };
+    for (const [index, tab] of tabs.entries()) {
+      tab.addEventListener("click", () => select(tab));
+      tab.addEventListener("keydown", (event) => {
+        const offset = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+        const target =
+          event.key === "Home"
+            ? tabs[0]
+            : event.key === "End"
+              ? tabs.at(-1)
+              : offset === undefined
+                ? undefined
+                : tabs[(index + offset + tabs.length) % tabs.length];
+        if (!target) return;
+        event.preventDefault();
+        select(target);
+        target.focus();
+      });
+    }
+  }
+</script>
+<noscript>
+  <style>
+    .example-panel[hidden] {
+      display: block;
+    }
+  </style>
+</noscript>

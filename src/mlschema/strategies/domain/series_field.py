@@ -4,90 +4,33 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Literal
 
-from pydantic import BeforeValidator, PositiveInt, SerializeAsAny, model_validator
+from pydantic import BeforeValidator, Field, PositiveInt, model_validator
 from pydantic_core import PydanticCustomError
 
 from mlschema.core.domain import BaseField
-from mlschema.strategies.domain.boolean_field import BooleanField
-from mlschema.strategies.domain.category_field import CategoryField
-from mlschema.strategies.domain.date_field import DateField
 from mlschema.strategies.domain.field_types import FieldTypes
-from mlschema.strategies.domain.number_field import NumberField
-from mlschema.strategies.domain.onehot_category_field import OneHotCategoryField
-from mlschema.strategies.domain.text_field import TextField
+from mlschema.strategies.domain.series_column import parse_column
 
-# Module-level registry: kind name → field class.
-# Pre-populated with built-ins; custom kinds are added by infer_schema().
-_SUB_FIELD_REGISTRY: dict[str, type[BaseField]] = {
-    FieldTypes.BOOLEAN: BooleanField,
-    FieldTypes.CATEGORY: CategoryField,
-    FieldTypes.DATE: DateField,
-    FieldTypes.NUMBER: NumberField,
-    FieldTypes.ONEHOT_CATEGORY: OneHotCategoryField,
-    FieldTypes.TEXT: TextField,
-}
-
-
-def add_series_sub_field(cls: type[BaseField]) -> None:
-    """Register a custom BaseField subclass as valid SeriesField sub-field.
-
-    Raises ValueError if cls has kind == "series" (no nesting allowed).
-    """
-    kind_val = str(cls.model_fields["kind"].default)
-    if kind_val == FieldTypes.SERIES:
-        raise ValueError("SeriesField cannot be registered as a sub-field (no nesting)")
-    _SUB_FIELD_REGISTRY[kind_val] = cls
-
-
-def _parse_sub_field(v: Any) -> BaseField:
-    """BeforeValidator: resolve dict → concrete BaseField subclass via registry."""
-    if isinstance(v, BaseField):
-        if v.__class__.__name__ == "SeriesField":
-            raise PydanticCustomError(
-                "no_series_nesting", "SeriesField cannot be nested"
-            )
-        return v
-    if isinstance(v, dict):
-        kind_name = str(v.get("kind", ""))
-        if kind_name == FieldTypes.SERIES:
-            raise PydanticCustomError(
-                "no_series_nesting", "SeriesField cannot be nested"
-            )
-        cls = _SUB_FIELD_REGISTRY.get(kind_name)
-        if cls is None:
-            raise PydanticCustomError(
-                "unknown_sub_field_type",
-                "Unknown sub-field type: '{kind_name}'. Register it as a custom kind.",
-                {"kind_name": kind_name},
-            )
-        return cls(**v)
-    raise PydanticCustomError(
-        "invalid_sub_field", "Sub-field must be a dict or BaseField instance"
-    )
-
-
-_SubField = Annotated[SerializeAsAny[BaseField], BeforeValidator(_parse_sub_field)]
+_Column = Annotated[dict[str, Any], BeforeValidator(parse_column)]
 
 
 class SeriesField(BaseField):
-    """Field schema for a series (two-axis) column.
+    """Two-axis series with ordered local columns and one parent mapping.
 
-    Attributes:
-        kind:       Fixed type identifier ``"series"``.
-        field1:     Schema of the first element of each cell.
-        field2:     Schema of the second element of each cell.
-        minPoints:  Minimum number of data points in the series (≥ 1).
-        maxPoints:  Maximum number of data points in the series (≥ 1).
+    Columns have ids field1 and field2, scalar-kind properties, and no mappedTo.
     """
 
     kind: Literal[FieldTypes.SERIES] = FieldTypes.SERIES
-    field1: _SubField
-    field2: _SubField
+    columns: Annotated[list[_Column], Field(min_length=2, max_length=2)]
     minPoints: PositiveInt | None = None
     maxPoints: PositiveInt | None = None
 
     @model_validator(mode="after")
     def _check_series_constraints(self) -> SeriesField:
+        if [column["id"] for column in self.columns] != ["field1", "field2"]:
+            raise PydanticCustomError(
+                "series_column_order", "Series columns must be field1 then field2"
+            )
         if (
             self.minPoints is not None
             and self.maxPoints is not None

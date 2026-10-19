@@ -10,6 +10,7 @@ from mlschema.core import (
     FieldKind,
     infer_schema,
     kind,
+    with_positional_mappings,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "FieldKind",
     "infer_schema",
     "kind",
+    "with_positional_mappings",
 ]

@@ -38,11 +38,12 @@ def series_builder(series: Series, ctx: FieldContext) -> FieldDict | None:
     if not all(_is_pair(value) for value in non_null):
         return None
     field1, field2 = _extract_sub_series(non_null)
-    return {
-        **base_field(ctx, FieldTypes.SERIES),
-        "field1": ctx.infer_field(_coerce_sub_series(field1)),
-        "field2": ctx.infer_field(_coerce_sub_series(field2)),
-    }
+    columns = []
+    for column_id, values in zip(("field1", "field2"), (field1, field2), strict=True):
+        column = dict(ctx.infer_field(_coerce_sub_series(values)))
+        column.pop("mappedTo", None)
+        columns.append({**column, "id": column_id})
+    return {**base_field(ctx, FieldTypes.SERIES), "columns": columns}
 
 
 def _is_pair(value: object) -> bool:

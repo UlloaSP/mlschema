@@ -1,0 +1,20 @@
+{
+  "columns": [
+    {
+      "name": "age",
+      "dtype": "int64",
+      "values": ["42", "55", "38"]
+    },
+    {
+      "name": "plan__monthly",
+      "dtype": "int64",
+      "values": ["1", "0", "0"]
+    },
+    {
+      "name": "plan__yearly",
+      "dtype": "int64",
+      "values": ["0", "1", "1"]
+    }
+  ],
+  "featureNames": ["plan__monthly", "plan__yearly", "age"]
+}

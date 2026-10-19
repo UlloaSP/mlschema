@@ -11,7 +11,6 @@ from mlschema.strategies.domain import (
     DateField,
     NumberField,
     OneHotCategoryField,
-    SeriesField,
     TextField,
 )
 
@@ -31,14 +30,6 @@ def test_builtin_models_accept_valid_success_cases():
             {"label": "Red", "value": "red", "mappedTo": "color__red"},
             {"label": "Blue", "value": "blue", "mappedTo": "color__blue"},
         ],
-    )
-    SeriesField(
-        label="readings",
-        mappedTo=5,
-        field1={"kind": "text", "label": "x", "mappedTo": 5},
-        field2={"kind": "number", "label": "y", "mappedTo": 5, "step": 1},
-        minPoints=1,
-        maxPoints=2,
     )
 
 
@@ -178,51 +169,3 @@ def test_date_model_rejects_invalid_constraints(kwargs):
 def test_date_model_accepts_optional_attributes(kwargs):
     """Validates date optional attributes and valid date constraints."""
     assert DateField(label="d", mappedTo=0, **kwargs).kind == "date"
-
-
-def test_series_model_rejects_invalid_subfields_and_point_ranges():
-    """Validates series nesting, unknown sub-kind, and point range exceptions."""
-    with pytest.raises(ValidationError):
-        SeriesField(
-            label="s",
-            mappedTo=0,
-            field1={"kind": "series", "label": "nested", "mappedTo": 0},
-            field2={"kind": "text", "label": "value", "mappedTo": 0},
-        )
-
-
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        {"minPoints": 1},
-        {"maxPoints": 2},
-        {"minPoints": 1, "maxPoints": 2},
-    ],
-)
-def test_series_model_accepts_valid_point_constraints(kwargs):
-    """Validates series point constraints success cases."""
-    field = SeriesField(
-        label="s",
-        mappedTo=0,
-        field1={"kind": "text", "label": "x", "mappedTo": 0},
-        field2={"kind": "number", "label": "y", "mappedTo": 0, "step": 1},
-        **kwargs,
-    )
-
-    assert field.kind == "series"
-    with pytest.raises(ValidationError):
-        SeriesField(
-            label="s",
-            mappedTo=0,
-            field1={"kind": "unknown", "label": "x", "mappedTo": 0},
-            field2={"kind": "text", "label": "value", "mappedTo": 0},
-        )
-    with pytest.raises(ValidationError):
-        SeriesField(
-            label="s",
-            mappedTo=0,
-            field1={"kind": "text", "label": "x", "mappedTo": 0},
-            field2={"kind": "text", "label": "y", "mappedTo": 0},
-            minPoints=2,
-            maxPoints=1,
-        )

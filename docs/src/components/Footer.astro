@@ -1,0 +1,41 @@
+---
+import Default from "@astrojs/starlight/components/Footer.astro";
+---
+
+<Default />
+<div class="brand-footer">
+  <span
+    >MLschema is part of <a href="https://eshkra.dev">eshkra</a>, open-source tools for models people
+    can use.</span
+  >
+  <span class="links">
+    <a href="https://github.com/UlloaSP/mlschema">GitHub</a>
+    <a href="https://pypi.org/project/mlschema/">PyPI</a>
+    <a href="https://github.com/UlloaSP/mlschema/blob/main/LICENSE">MIT license</a>
+  </span>
+</div>
+
+<style>
+  .brand-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--ms-border);
+    color: var(--ms-text-3);
+    font-size: 0.8125rem;
+  }
+  .links {
+    display: inline-flex;
+    gap: 1.25rem;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  a:hover {
+    color: var(--ms-ember-ink);
+  }
+</style>

@@ -1,0 +1,28 @@
+---
+import ExampleTabs from "./ExampleTabs.astro";
+import { refine } from "../data/diagrams";
+import { links } from "../data/site";
+---
+
+<section class="section refine" id="refine" aria-labelledby="refine-title">
+  <div class="wrap">
+    <header class="section-head">
+      <h2 id="refine-title">Infer the baseline. Refine the rest.</h2>
+      <p>
+        Keep what the data already says and add only what is product-specific. Your builders run
+        first, then custom kinds, then the builtins; the first one to return a field owns the
+        column.
+      </p>
+    </header>
+    <div class="plate refine-plate">
+      <ExampleTabs label="Refinements" diagrams={refine} />
+    </div>
+    <p class="refine-errors">
+      Every field is validated before <code class="mono">infer_schema</code> returns. A broken
+      contract raises an exception instead of shipping a half-valid schema.
+      <a class="text-link" href={links.errors}>
+        Errors reference
+      </a>
+    </p>
+  </div>
+</section>

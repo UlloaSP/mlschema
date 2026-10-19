@@ -1,0 +1,171 @@
+/*
+ * The eshkra palette shared with eshkra.dev and the MLForm docs, mapped onto Starlight.
+ * `--ms-*` names the brand values; Starlight's grays are derived from them so its components agree.
+ */
+:root,
+::backdrop {
+  --ms-bg: #0a0a0d;
+  --ms-subtle: #111116;
+  --ms-surface: #131318;
+  --ms-code-bg: #0d0d11;
+  --ms-border: #24242c;
+  --ms-border-strong: #34343e;
+  --ms-text: #f4f4f6;
+  --ms-text-2: #b6b6c2;
+  --ms-text-3: #8e8e9b;
+  --ms-ember: #ff8a3d;
+  --ms-ember-ink: #ff9a55;
+  --ms-ember-soft: rgb(255 138 61 / 0.14);
+
+  --sl-color-accent-low: #3a1a08;
+  --sl-color-accent: #ff8a3d;
+  --sl-color-accent-high: #ffc49b;
+  --sl-color-white: var(--ms-text);
+  --sl-color-gray-1: #e4e4ea;
+  --sl-color-gray-2: var(--ms-text-2);
+  --sl-color-gray-3: var(--ms-text-3);
+  --sl-color-gray-4: #5c5c68;
+  --sl-color-gray-5: var(--ms-border);
+  --sl-color-gray-6: var(--ms-subtle);
+  --sl-color-black: var(--ms-bg);
+  --sl-color-text: #d9d9e0;
+  --sl-color-text-accent: var(--ms-ember-ink);
+  --sl-color-bg-nav: color-mix(in oklab, var(--ms-bg) 88%, transparent);
+  --sl-color-bg-sidebar: var(--ms-bg);
+  --sl-color-bg-inline-code: var(--ms-subtle);
+  --sl-color-hairline: var(--ms-border);
+  --sl-color-hairline-light: var(--ms-border);
+  --sl-color-hairline-shade: var(--ms-border);
+
+  --sl-font: var(--brand-font-sans);
+  --sl-font-mono: var(--brand-font-mono);
+  --sl-text-h1: clamp(2.125rem, 1.6rem + 1.8vw, 2.75rem);
+  --sl-text-h2: 1.75rem;
+  --sl-text-h3: 1.3125rem;
+  --sl-text-h4: 1.0625rem;
+  --sl-line-height: 1.7;
+  --sl-nav-height: 4rem;
+  --sl-content-width: 48rem;
+  --sl-sidebar-width: 17.5rem;
+}
+
+:root[data-theme="light"],
+[data-theme="light"] ::backdrop {
+  --ms-bg: #ffffff;
+  --ms-subtle: #f7f7f9;
+  --ms-surface: #ffffff;
+  --ms-code-bg: #fbfbfc;
+  --ms-border: #e7e7ee;
+  --ms-border-strong: #d2d2dc;
+  --ms-text: #0b0b10;
+  --ms-text-2: #474756;
+  --ms-text-3: #666675;
+  --ms-ember: #e8590c;
+  --ms-ember-ink: #c2410c;
+  --ms-ember-soft: rgb(232 89 12 / 0.09);
+
+  --sl-color-accent-low: #fff1e8;
+  --sl-color-accent: #c2410c;
+  --sl-color-accent-high: #8a2e07;
+  --sl-color-gray-1: #24242e;
+  --sl-color-gray-4: #9a9aa8;
+  --sl-color-gray-7: #fbfbfc;
+  --sl-color-text: #26262f;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--ms-ember) 28%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ms-ember-ink);
+  outline-offset: 3px;
+}
+
+/* Header: the landing's thin sticky bar, blurred over the page. Starlight draws its one hairline. */
+header.header {
+  backdrop-filter: blur(14px);
+}
+
+.parent-brand {
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--ms-border-strong);
+  color: var(--ms-text-3);
+  font-size: 0.8125rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.parent-brand:hover {
+  color: var(--ms-ember-ink);
+}
+
+/* Search reads as a quiet field rather than a second toolbar. */
+site-search button[data-open-modal] {
+  border-color: var(--ms-border);
+  border-radius: 999px;
+  background: var(--ms-subtle);
+}
+
+site-search button[data-open-modal]:hover {
+  border-color: var(--ms-border-strong);
+}
+
+/* Sidebar: subtle group headings, ember marker on the current page. */
+.sidebar-pane {
+  border-inline-end: 1px solid var(--ms-border);
+}
+
+.sidebar-content .top-level > li > details > summary .group-label > span,
+.sidebar-content .top-level > li > .group-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ms-text);
+}
+
+.sidebar-content a {
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--ms-text-2);
+}
+
+.sidebar-content a:hover {
+  color: var(--ms-text);
+  background: var(--ms-subtle);
+}
+
+.sidebar-content a[aria-current="page"],
+.sidebar-content a[aria-current="page"]:hover {
+  background: var(--ms-ember-soft);
+  color: var(--ms-ember-ink);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--ms-ember);
+}
+
+/* Table of contents mirrors the sidebar's current-page marker. */
+starlight-toc a {
+  color: var(--ms-text-3);
+}
+
+starlight-toc a[aria-current="true"] {
+  color: var(--ms-ember-ink);
+}
+
+/* Pagination cards use the landing's window surface. */
+.pagination-links a {
+  border-color: var(--ms-border);
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.pagination-links a:hover {
+  border-color: var(--ms-border-strong);
+  background: var(--ms-subtle);
+}
+
+@media (forced-colors: active) {
+  .sidebar-content a[aria-current="page"] {
+    box-shadow: none;
+    outline: 1px solid Highlight;
+  }
+}

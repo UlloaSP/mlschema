@@ -1,0 +1,72 @@
+[
+  {
+    "label": "customer",
+    "required": true,
+    "mappedTo": "customer",
+    "kind": "text"
+  },
+  {
+    "label": "age",
+    "required": true,
+    "mappedTo": "age",
+    "kind": "number",
+    "step": 1.0
+  },
+  {
+    "label": "tier",
+    "required": true,
+    "mappedTo": "tier",
+    "kind": "category",
+    "options": ["free", "pro"]
+  },
+  {
+    "label": "plan",
+    "required": true,
+    "kind": "onehot-category",
+    "options": [
+      {
+        "label": "monthly",
+        "value": "monthly",
+        "mappedTo": "plan__monthly"
+      },
+      {
+        "label": "yearly",
+        "value": "yearly",
+        "mappedTo": "plan__yearly"
+      }
+    ]
+  },
+  {
+    "label": "active",
+    "required": true,
+    "mappedTo": "active",
+    "kind": "boolean"
+  },
+  {
+    "label": "created",
+    "required": true,
+    "mappedTo": "created",
+    "kind": "date"
+  },
+  {
+    "label": "readings",
+    "required": true,
+    "mappedTo": "readings",
+    "kind": "series",
+    "columns": [
+      {
+        "label": "field1",
+        "required": true,
+        "kind": "date",
+        "id": "field1"
+      },
+      {
+        "label": "field2",
+        "required": true,
+        "kind": "number",
+        "step": 0.1,
+        "id": "field2"
+      }
+    ]
+  }
+]

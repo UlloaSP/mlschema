@@ -1,0 +1,11 @@
+{
+  "builtinKinds": [
+    "series",
+    "onehot-category",
+    "boolean",
+    "category",
+    "date",
+    "number",
+    "text"
+  ]
+}
